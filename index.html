@@ -655,6 +655,155 @@ svg{display:block}
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
 }
+
+/* ════════════════════════════════════════════════════════════════
+   KPI Tower — Wellness House
+   ════════════════════════════════════════════════════════════════ */
+.tower{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  box-shadow:var(--shadow-sm);
+  overflow:hidden;
+}
+.tower-head{
+  padding:var(--sp-5) var(--sp-5) var(--sp-3);
+  border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:flex-start;gap:var(--sp-4);flex-wrap:wrap;
+}
+.tower-head .card-title{font-size:var(--fs-h2);font-weight:700;letter-spacing:-0.02em}
+.tower-body{padding:var(--sp-5);display:flex;flex-direction:column;gap:var(--sp-5)}
+
+/* North Star hero */
+.north-star{
+  position:relative;overflow:hidden;
+  padding:var(--sp-6);
+  border-radius:var(--r-lg);
+  background:
+    radial-gradient(ellipse at 0% 0%, color-mix(in oklab, var(--brand-1) 14%, transparent), transparent 60%),
+    radial-gradient(ellipse at 100% 100%, color-mix(in oklab, var(--cyan) 10%, transparent), transparent 60%),
+    var(--card-alt);
+  border:1px solid color-mix(in oklab, var(--brand-1) 18%, var(--border));
+}
+.ns-eyebrow{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:var(--fs-xs);font-weight:700;
+  color:var(--brand-1);letter-spacing:0.08em;text-transform:uppercase;
+  margin-bottom:var(--sp-3);
+}
+:root[data-theme="dark"] .ns-eyebrow{color:var(--brand-2)}
+.ns-text{
+  font-size:var(--fs-lg);
+  color:var(--t1);line-height:1.5;font-weight:500;
+  max-width:740px;
+}
+
+/* Tower layers */
+.tower-layer{
+  position:relative;
+  padding:var(--sp-5);
+  border-radius:var(--r-lg);
+  background:var(--card-alt);
+  border:1px solid var(--border);
+  display:flex;flex-direction:column;gap:var(--sp-4);
+}
+.tower-layer.l1{border-color:color-mix(in oklab, var(--brand-1) 16%, var(--border));background:color-mix(in oklab, var(--brand-1) 3%, var(--card-alt))}
+.tower-layer.l2{border-color:color-mix(in oklab, var(--cyan) 14%, var(--border))}
+.tower-layer.l3{border-color:color-mix(in oklab, var(--amber) 14%, var(--border))}
+.tower-layer.l4{border-color:color-mix(in oklab, var(--rose) 14%, var(--border))}
+
+.layer-eyebrow{
+  display:flex;align-items:center;gap:var(--sp-3);
+  font-size:var(--fs-xs);font-weight:700;
+  color:var(--t2);letter-spacing:0.08em;text-transform:uppercase;
+}
+.layer-num{
+  display:inline-grid;place-items:center;
+  width:22px;height:22px;border-radius:6px;
+  background:var(--bg-elev);border:1px solid var(--border);
+  font-size:11px;font-weight:700;color:var(--t1);
+  font-family:var(--font-mono);
+}
+.layer-title{color:var(--t1);font-size:var(--fs-sm);font-weight:600;letter-spacing:0;text-transform:none}
+
+.layer-stack{display:flex;flex-direction:column;gap:var(--sp-5)}
+.tower-cat-block{display:flex;flex-direction:column;gap:var(--sp-3)}
+.tower-cat{
+  display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-3);
+  font-size:var(--fs-md);font-weight:600;color:var(--t1);
+}
+.cat-meta{font-size:var(--fs-xs);color:var(--t3);font-weight:500}
+
+.cat-kpis{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(168px, 1fr));
+  gap:var(--sp-3);
+}
+
+.mini-kpi{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  padding:var(--sp-4);
+  display:flex;flex-direction:column;gap:6px;
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  position:relative;overflow:hidden;
+}
+.mini-kpi:hover{transform:translateY(-1px);box-shadow:var(--shadow-md);border-color:var(--border-strong)}
+.mk-lbl{
+  font-size:var(--fs-xs);color:var(--t2);font-weight:600;
+  line-height:1.35;
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+}
+.mk-freq{
+  font-size:9.5px;font-weight:700;
+  padding:2px 6px;border-radius:var(--r-pill);
+  background:var(--card-alt);color:var(--t3);
+  letter-spacing:0.04em;text-transform:uppercase;
+  flex-shrink:0;font-family:var(--font-mono);
+}
+.mk-val{
+  font-size:22px;font-weight:800;letter-spacing:-0.03em;line-height:1.1;
+  color:var(--t1);font-variant-numeric:tabular-nums;
+  margin-top:2px;
+}
+.mk-val .unit{font-size:13px;font-weight:600;color:var(--t3);margin-left:2px;letter-spacing:0;-webkit-text-fill-color:var(--t3)}
+.mk-val.brand{background:var(--brand-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.mk-val.green{color:var(--green)}
+.mk-val.amber{color:var(--amber)}
+.mk-val.red{color:var(--red)}
+.mk-val.cyan{color:var(--cyan)}
+.mk-val.accent{color:var(--accent)}
+.mk-val.rose{color:var(--rose)}
+.mk-ft{
+  font-size:var(--fs-xs);color:var(--t3);
+  display:flex;align-items:center;gap:4px;
+  margin-top:auto;
+}
+.mk-ft.up{color:var(--green)}
+.mk-ft.down{color:var(--red)}
+.mk-owner{
+  font-size:10px;color:var(--t3);
+  font-weight:500;letter-spacing:0.02em;
+  margin-top:6px;padding-top:6px;border-top:1px dashed var(--border);
+}
+
+/* Tower side rail (visual hierarchy) */
+.tower-rail{
+  position:absolute;left:8px;top:8px;bottom:8px;width:3px;border-radius:2px;
+  opacity:0.45;
+}
+.tower-layer.l1 .tower-rail{background:linear-gradient(180deg, var(--brand-1), var(--brand-2))}
+.tower-layer.l2 .tower-rail{background:linear-gradient(180deg, var(--cyan), var(--green))}
+.tower-layer.l3 .tower-rail{background:linear-gradient(180deg, var(--amber), var(--accent))}
+.tower-layer.l4 .tower-rail{background:linear-gradient(180deg, var(--rose), var(--brand-2))}
+
+@media (max-width:640px){
+  .tower-head{padding:var(--sp-4)}
+  .tower-body{padding:var(--sp-4);gap:var(--sp-4)}
+  .tower-layer{padding:var(--sp-4)}
+  .cat-kpis{grid-template-columns:repeat(2, 1fr)}
+}
 </style>
 </head>
 <body>
@@ -1082,6 +1231,330 @@ svg{display:block}
               </tbody>
             </table>
           </div>
+        </div>
+      </div>
+
+      <!-- ─────────────── KPI TOWER (Year 1) ─────────────── -->
+      <div class="tower">
+        <div class="tower-head">
+          <div>
+            <div class="card-title">KPI Tower — Year 1</div>
+            <div class="card-sub">38 metrics, hierarchical from North Star down to activities · Showing dummy numbers, will wire to live data later</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <span class="chip brand">5 layers</span>
+            <span class="chip cyan">38 KPIs</span>
+            <span class="chip amber">Demo data</span>
+          </div>
+        </div>
+
+        <div class="tower-body">
+
+          <!-- North Star -->
+          <div class="north-star">
+            <div class="ns-eyebrow">★ North Star</div>
+            <div class="ns-text">A sustainable, growing base of engaged clients whose mental and emotional well-being is measurably improved through Wellness House experiences.</div>
+          </div>
+
+          <!-- LAYER 1 — Company Health -->
+          <div class="tower-layer l1">
+            <div class="tower-rail"></div>
+            <div class="layer-eyebrow"><span class="layer-num">L1</span> <span class="layer-title">Company health</span> · Top of the tower · CEO view</div>
+            <div class="cat-kpis">
+              <div class="mini-kpi">
+                <div class="mk-lbl">Total monthly revenue<span class="mk-freq">M</span></div>
+                <div class="mk-val brand">EGP 2.40<span class="unit">M</span></div>
+                <div class="mk-ft up">↑ 18% vs last month</div>
+                <div class="mk-owner">Owner · CEO / Finance</div>
+              </div>
+              <div class="mini-kpi">
+                <div class="mk-lbl">Operating profit / loss<span class="mk-freq">M</span></div>
+                <div class="mk-val red">−EGP 380K</div>
+                <div class="mk-ft up">Gap to breakeven shrinking</div>
+                <div class="mk-owner">Owner · CEO / Finance</div>
+              </div>
+              <div class="mini-kpi">
+                <div class="mk-lbl">Cash runway<span class="mk-freq">M</span></div>
+                <div class="mk-val cyan"><span data-target="11">0</span><span class="unit">months</span></div>
+                <div class="mk-ft">At current burn rate</div>
+                <div class="mk-owner">Owner · Finance / CEO</div>
+              </div>
+              <div class="mini-kpi">
+                <div class="mk-lbl">Active B2C clients<span class="mk-freq">M</span></div>
+                <div class="mk-val accent"><span data-target="312">0</span></div>
+                <div class="mk-ft up">↑ 24 vs last month</div>
+                <div class="mk-owner">Owner · Ops / CEO</div>
+              </div>
+              <div class="mini-kpi">
+                <div class="mk-lbl">B2B active accounts<span class="mk-freq">Q</span></div>
+                <div class="mk-val green"><span data-target="9">0</span></div>
+                <div class="mk-ft up">+2 this quarter</div>
+                <div class="mk-owner">Owner · BDM / CEO</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- LAYER 2 — Engines -->
+          <div class="tower-layer l2">
+            <div class="tower-rail"></div>
+            <div class="layer-eyebrow"><span class="layer-num">L2</span> <span class="layer-title">Engines</span> · Drivers of company health · Functional leads</div>
+
+            <div class="layer-stack">
+
+              <!-- Growth & Sales -->
+              <div class="tower-cat-block">
+                <div class="tower-cat">Growth &amp; sales <span class="cat-meta">7 KPIs · Owners: Growth, Tele-sales, BDM</span></div>
+                <div class="cat-kpis">
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Leads generated · B2C<span class="mk-freq">W</span></div>
+                    <div class="mk-val cyan"><span data-target="487">0</span></div>
+                    <div class="mk-ft up">↑ 9% WoW</div>
+                    <div class="mk-owner">Growth / Tele-sales</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Lead → booking conv.<span class="mk-freq">M</span></div>
+                    <div class="mk-val accent"><span data-target="22">0</span><span class="unit">%</span></div>
+                    <div class="mk-ft up">Target 25%</div>
+                    <div class="mk-owner">Growth / Tele-sales</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">B2C revenue · split<span class="mk-freq">M</span></div>
+                    <div class="mk-val brand">EGP 1.86<span class="unit">M</span></div>
+                    <div class="mk-ft">Single 32% · Day 18% · Starter 28% · Fusion 22%</div>
+                    <div class="mk-owner">Commercial / CEO</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">B2B pipeline · opps<span class="mk-freq">W</span></div>
+                    <div class="mk-val cyan"><span data-target="14">0</span></div>
+                    <div class="mk-ft">Active opportunities</div>
+                    <div class="mk-owner">BDM</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">B2B win rate<span class="mk-freq">Q</span></div>
+                    <div class="mk-val green"><span data-target="31">0</span><span class="unit">%</span></div>
+                    <div class="mk-ft up">↑ from 24% last Q</div>
+                    <div class="mk-owner">BDM</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Avg revenue / B2C client<span class="mk-freq">M</span></div>
+                    <div class="mk-val">EGP <span data-target="7650">0</span></div>
+                    <div class="mk-ft up">↑ 6% MoM</div>
+                    <div class="mk-owner">CEO / Finance</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Avg revenue / B2B account<span class="mk-freq">Q</span></div>
+                    <div class="mk-val">EGP <span data-target="145">0</span><span class="unit">K</span></div>
+                    <div class="mk-ft">Steady QoQ</div>
+                    <div class="mk-owner">CEO / Finance</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Operations & CX -->
+              <div class="tower-cat-block">
+                <div class="tower-cat">Operations &amp; customer experience <span class="cat-meta">6 KPIs · Owners: Ops, CX</span></div>
+                <div class="cat-kpis">
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Sessions delivered · B2C<span class="mk-freq">M</span></div>
+                    <div class="mk-val cyan"><span data-target="942">0</span></div>
+                    <div class="mk-ft up">↑ 11% MoM</div>
+                    <div class="mk-owner">Operations Manager</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Sessions delivered · B2B<span class="mk-freq">M</span></div>
+                    <div class="mk-val green"><span data-target="38">0</span></div>
+                    <div class="mk-ft">Workshops + onsite days</div>
+                    <div class="mk-owner">Ops / BDM</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Room utilization<span class="mk-freq">M</span></div>
+                    <div class="mk-val accent"><span data-target="67">0</span><span class="unit">%</span></div>
+                    <div class="mk-ft">Target 75%</div>
+                    <div class="mk-owner">Operations Manager</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">No-show rate<span class="mk-freq">W</span></div>
+                    <div class="mk-val amber"><span data-target="11">0</span><span class="unit">%</span></div>
+                    <div class="mk-ft down">Above 8% target</div>
+                    <div class="mk-owner">Ops / Tele-sales</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Client satisfaction · CSAT<span class="mk-freq">M</span></div>
+                    <div class="mk-val green">4.6<span class="unit">/ 5</span></div>
+                    <div class="mk-ft up">+0.1 vs last month</div>
+                    <div class="mk-owner">CX / Operations</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Complaint rate<span class="mk-freq">Q</span></div>
+                    <div class="mk-val">0.8<span class="unit">/ 100</span></div>
+                    <div class="mk-ft">Avg time to resolve · 1.2 days</div>
+                    <div class="mk-owner">CX / CEO</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Clinical & Programs -->
+              <div class="tower-cat-block">
+                <div class="tower-cat">Clinical &amp; programs <span class="cat-meta">4 KPIs · Owners: Clinical lead, Therapists</span></div>
+                <div class="cat-kpis">
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Starter completion rate<span class="mk-freq">Q</span></div>
+                    <div class="mk-val brand"><span data-target="74">0</span><span class="unit">%</span></div>
+                    <div class="mk-ft up">↑ 6 pts QoQ</div>
+                    <div class="mk-owner">Clinical Lead</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Fusion completion rate<span class="mk-freq">Q</span></div>
+                    <div class="mk-val brand"><span data-target="68">0</span><span class="unit">%</span></div>
+                    <div class="mk-ft">Target 75%</div>
+                    <div class="mk-owner">Clinical Lead</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Clinical goal progress<span class="mk-freq">Q</span></div>
+                    <div class="mk-val green">+1.4<span class="unit">pts</span></div>
+                    <div class="mk-ft up">Self-rated improvement</div>
+                    <div class="mk-owner">Clinical Lead</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Referral-out rate<span class="mk-freq">Q</span></div>
+                    <div class="mk-val accent"><span data-target="6">0</span><span class="unit">%</span></div>
+                    <div class="mk-ft">Higher level of care</div>
+                    <div class="mk-owner">Clinical Lead</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- LAYER 3 — Inputs -->
+          <div class="tower-layer l3">
+            <div class="tower-rail"></div>
+            <div class="layer-eyebrow"><span class="layer-num">L3</span> <span class="layer-title">Inputs</span> · Demand creation &amp; financial inputs</div>
+
+            <div class="layer-stack">
+
+              <!-- Community & Social -->
+              <div class="tower-cat-block">
+                <div class="tower-cat">Community, social &amp; media <span class="cat-meta">6 KPIs · Owners: Social, Marketing, Community</span></div>
+                <div class="cat-kpis">
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Audience size · core platforms<span class="mk-freq">M</span></div>
+                    <div class="mk-val brand"><span data-target="142">0</span><span class="unit">K</span></div>
+                    <div class="mk-ft up">+4.2K MoM · IG/FB/WA/Email</div>
+                    <div class="mk-owner">Social Media Specialist</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Engagement rate<span class="mk-freq">M</span></div>
+                    <div class="mk-val accent">4.8<span class="unit">%</span></div>
+                    <div class="mk-ft">Healthy &gt; 3% benchmark</div>
+                    <div class="mk-owner">Social Media Specialist</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Leads from social &amp; community<span class="mk-freq">M</span></div>
+                    <div class="mk-val cyan"><span data-target="184">0</span></div>
+                    <div class="mk-ft up">38% of total lead flow</div>
+                    <div class="mk-owner">Growth / Marketing</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Community event attendance<span class="mk-freq">M</span></div>
+                    <div class="mk-val green"><span data-target="87">0</span></div>
+                    <div class="mk-ft">Avg per event</div>
+                    <div class="mk-owner">Community Lead / Ops</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Referral clients<span class="mk-freq">M</span></div>
+                    <div class="mk-val green"><span data-target="23">0</span></div>
+                    <div class="mk-ft up">↑ 8 vs last month</div>
+                    <div class="mk-owner">Growth / CX</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Paid media CPL · blended<span class="mk-freq">M</span></div>
+                    <div class="mk-val amber">EGP <span data-target="95">0</span></div>
+                    <div class="mk-ft down">Up from EGP 78 — investigate</div>
+                    <div class="mk-owner">Media Buyer / Marketing Lead</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Finance & Cash -->
+              <div class="tower-cat-block">
+                <div class="tower-cat">Finance &amp; cash <span class="cat-meta">5 KPIs · Owners: Finance, CEO</span></div>
+                <div class="cat-kpis">
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Gross margin<span class="mk-freq">M</span></div>
+                    <div class="mk-val green"><span data-target="58">0</span><span class="unit">%</span></div>
+                    <div class="mk-ft up">↑ 3 pts MoM</div>
+                    <div class="mk-owner">Finance / CEO</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">OpEx vs budget<span class="mk-freq">M</span></div>
+                    <div class="mk-val accent"><span data-target="94">0</span><span class="unit">%</span></div>
+                    <div class="mk-ft">Under plan · 6% buffer</div>
+                    <div class="mk-owner">Finance</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Cash burn rate<span class="mk-freq">M</span></div>
+                    <div class="mk-val red">EGP <span data-target="420">0</span><span class="unit">K / mo</span></div>
+                    <div class="mk-ft">Net cash outflow</div>
+                    <div class="mk-owner">Finance / CEO</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Cash runway<span class="mk-freq">M</span></div>
+                    <div class="mk-val cyan"><span data-target="11">0</span><span class="unit">months</span></div>
+                    <div class="mk-ft">Mirrors L1 · finance view</div>
+                    <div class="mk-owner">Finance / CEO</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">B2B receivables &amp; aging<span class="mk-freq">M</span></div>
+                    <div class="mk-val amber">EGP <span data-target="680">0</span><span class="unit">K</span></div>
+                    <div class="mk-ft">Avg 32 days outstanding</div>
+                    <div class="mk-owner">Finance</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- LAYER 4 — People & Learning -->
+          <div class="tower-layer l4">
+            <div class="tower-rail"></div>
+            <div class="layer-eyebrow"><span class="layer-num">L4</span> <span class="layer-title">People &amp; learning</span> · Foundation · HR / Clinical Lead</div>
+            <div class="cat-kpis">
+              <div class="mini-kpi">
+                <div class="mk-lbl">Headcount by function<span class="mk-freq">Q</span></div>
+                <div class="mk-val rose"><span data-target="24">0</span></div>
+                <div class="mk-ft">Growth 6 · Ops 5 · Clinical 9 · Admin 4</div>
+                <div class="mk-owner">HR / CEO</div>
+              </div>
+              <div class="mini-kpi">
+                <div class="mk-lbl">Staff utilization · clinical<span class="mk-freq">M</span></div>
+                <div class="mk-val accent"><span data-target="71">0</span><span class="unit">%</span></div>
+                <div class="mk-ft">Therapist time booked</div>
+                <div class="mk-owner">Ops / Clinical Lead</div>
+              </div>
+              <div class="mini-kpi">
+                <div class="mk-lbl">Team retention · 12-mo<span class="mk-freq">Q</span></div>
+                <div class="mk-val green"><span data-target="92">0</span><span class="unit">%</span></div>
+                <div class="mk-ft up">2 departures TTM</div>
+                <div class="mk-owner">HR / CEO</div>
+              </div>
+              <div class="mini-kpi">
+                <div class="mk-lbl">Training &amp; supervision<span class="mk-freq">Q</span></div>
+                <div class="mk-val cyan"><span data-target="88">0</span><span class="unit">hrs</span></div>
+                <div class="mk-ft">Per quarter · all clinical staff</div>
+                <div class="mk-owner">Clinical Lead / HR</div>
+              </div>
+              <div class="mini-kpi">
+                <div class="mk-lbl">Staff satisfaction · pulse<span class="mk-freq">Q</span></div>
+                <div class="mk-val brand">4.2<span class="unit">/ 5</span></div>
+                <div class="mk-ft">Stable · burnout watch on Clinical</div>
+                <div class="mk-owner">HR / CEO</div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
