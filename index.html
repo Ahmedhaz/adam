@@ -200,6 +200,13 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
 .imp-medium{background:rgba(251,191,36,0.12);color:var(--amber);border:1px solid rgba(251,191,36,0.25)}
 .imp-low{background:rgba(74,222,128,0.10);color:var(--green);border:1px solid rgba(74,222,128,0.2)}
 .imp-info{background:rgba(120,120,160,0.10);color:var(--t2);border:1px solid rgba(120,120,160,0.2)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{display:inline-block;width:11px;height:11px;border:2px solid rgba(251,191,36,0.25);border-top-color:var(--amber);border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px}
+@keyframes rowFlash{0%{background:rgba(74,222,128,0.18)}100%{background:transparent}}
+.err-row.row-fixed-flash td{animation:rowFlash 1.2s ease-out}
+.chip.c-fixing{background:rgba(251,191,36,0.12);color:var(--amber);border:1px solid rgba(251,191,36,0.25)}
+@keyframes chipPop{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+.chip-pop{animation:chipPop .35s ease}
 
 ::-webkit-scrollbar{width:3px;height:3px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -686,10 +693,14 @@ tick(); setInterval(tick, 1000);
 
 /* ── Count-up ── */
 function countUp(el){
+  // Stamp this animation so a later write to dataset.target supersedes the in-flight one
+  const animId = (el._animId || 0) + 1;
+  el._animId = animId;
   const target = +el.dataset.target;
   const suffix = el.dataset.suffix || '';
   const dur = 1100, t0 = performance.now();
   function step(ts){
+    if(el._animId !== animId) return;  // newer animation took over
     const p = Math.min((ts-t0)/dur, 1);
     const e = 1 - Math.pow(1-p, 3);
     el.textContent = Math.round(e*target).toLocaleString() + suffix;
@@ -1061,13 +1072,27 @@ function addError({ type, source, message, severity='error', fixable=true, statu
   return e;
 }
 
+/* Apply the fix in two steps so the user SEES it happen:
+   1. status='fixing' → spinner shows, status chip says "fixing…"
+   2. ~700ms later → status='fixed' → green flash + chip pop
+   silent skips toast (used by fix-all). */
 function fixError(id, silent=false){
   const e = STATE.errors.find(x => x.id===id);
-  if(!e || e.status==='fixed') return;
-  e.status = 'fixed';
-  e.fixedAt = new Date();
+  if(!e || e.status==='fixed' || e.status==='fixing') return;
+
+  // Step 1: fixing
+  e.status = 'fixing';
   e.fix_log = [];
   const log = m => e.fix_log.push(`[${now()}] ${m}`);
+  log(`Starting fix for ${e.type} on ${e.source}…`);
+  renderErrors();
+  if(!silent) pushFeed(`Fixing: ${e.type}`, 'warn', e.source);
+
+  // Step 2: fixed (after a short delay so the transition is visible)
+  setTimeout(() => {
+    e.status = 'fixed';
+    e.fixedAt = new Date();
+    e._flash = true;
 
   // Per-source side-effects (cosmetic + state) — match what the page can actually control
   if(e.source==='brain_api'){
@@ -1098,11 +1123,14 @@ function fixError(id, silent=false){
     log(`Acknowledged "${e.type}" — system will retry on next cycle.`);
   }
 
-  if(!silent){
-    toast('Fix applied', `${e.type} on ${e.source}`, 'ok', 2200);
-    pushFeed(`Fix: ${e.type}`, 'ok', e.source);
-  }
-  renderErrors();
+    if(!silent){
+      toast('Fixed ✓', `${e.type} on ${e.source}`, 'ok', 2200);
+      pushFeed(`Fixed: ${e.type}`, 'ok', e.source);
+    }
+    renderErrors();
+    // Clear the flash flag after the animation runs once
+    setTimeout(() => { e._flash = false; }, 1300);
+  }, 700);
 }
 
 function fixAll(){
@@ -1124,15 +1152,19 @@ function fixAll(){
 
 let errFilter = 'all';
 function renderErrors(){
-  const open  = STATE.errors.filter(e => e.status==='open');
+  // 'open' counts include the in-flight 'fixing' state — they're not resolved yet
+  const isOpen = e => e.status==='open' || e.status==='fixing';
+  const open  = STATE.errors.filter(isOpen);
   const fixed = STATE.errors.filter(e => e.status==='fixed');
-  const errs  = STATE.errors.filter(e => e.severity==='error' && e.status==='open');
-  const wrns  = STATE.errors.filter(e => e.severity==='warn' && e.status==='open');
-  const nois  = STATE.errors.filter(e => e.severity==='noise' && e.status==='open');
+  const errs  = STATE.errors.filter(e => e.severity==='error' && isOpen(e));
+  const wrns  = STATE.errors.filter(e => e.severity==='warn' && isOpen(e));
+  const nois  = STATE.errors.filter(e => e.severity==='noise' && isOpen(e));
 
-  $('#err-banner-num').textContent = STATE.errors.length;
+  // Banner big number = OPEN errors (what actually needs your attention)
+  $('#err-banner-num').textContent = open.length;
   $('#err-banner-open').textContent = `${open.length} open`;
   $('#err-banner-fixed').textContent = `${fixed.length} fixed`;
+  $('#err-banner-num').style.color = open.length===0 ? 'var(--green)' : 'var(--red)';
   $('#err-tab-badge').textContent = open.length;
   $('#err-tab-badge').style.background = open.length ? 'var(--red)' : 'var(--green)';
 
@@ -1143,11 +1175,17 @@ function renderErrors(){
   $('#cnt-noise').textContent = nois.length;
   $('#cnt-fixed').textContent = fixed.length;
 
-  // Update sidebar defect flag
+  // Sidebar defect flag — both numbers reflect OPEN
   $('#defect-count').textContent = `${open.length} defect${open.length===1?'':'s'}`;
-  $('#defect-errs').textContent = `${STATE.errors.length} errors`;
-  // Update Scan tab error KPI
-  const ke = $('#kpi-errors'); if(ke){ ke.textContent = STATE.errors.length; ke.dataset.target = STATE.errors.length; }
+  $('#defect-errs').textContent = `${open.length} open · ${fixed.length} fixed`;
+  // Scan tab error KPI — OPEN count. Bump _animId to cancel any in-flight countUp, then write directly.
+  const ke = $('#kpi-errors');
+  if(ke){
+    ke.dataset.target = open.length;
+    ke._animId = (ke._animId||0) + 1;  // cancel any in-flight countUp
+    ke.textContent = open.length;
+  }
+  const keft = $('#kpi-errors-ft'); if(keft) keft.textContent = `${open.length} open · ${fixed.length} fixed`;
 
   // Filter & render
   let rows = STATE.errors;
@@ -1166,13 +1204,18 @@ function renderErrors(){
     const sevChip = e.severity==='error' ? `<span class="chip c-red">error</span>`
                   : e.severity==='warn'  ? `<span class="chip c-amber">warn</span>`
                   : `<span class="chip c-purple">noise</span>`;
-    const statusChip = e.status==='fixed' ? `<span class="chip c-green">fixed</span>` : sevChip;
+    let statusChip;
+    if(e.status==='fixed')      statusChip = `<span class="chip c-green chip-pop">✓ fixed</span>`;
+    else if(e.status==='fixing') statusChip = `<span class="chip c-fixing"><span class="spinner"></span> fixing…</span>`;
+    else                          statusChip = sevChip;
     const imp = e.importance || 'low';
     const impPill = `<span class="imp-pill imp-${imp}">${imp}</span>`;
-    const action = e.status==='fixed'
-      ? `<button class="btn btn-sm" disabled style="opacity:.5">✓ fixed</button> <button class="btn btn-sm" data-detail="${e.id}">…</button>`
-      : `<button class="btn btn-sm btn-green" data-fix="${e.id}">Fix</button> <button class="btn btn-sm" data-detail="${e.id}">…</button>`;
-    return `<tr class="err-row">
+    let action;
+    if(e.status==='fixed')        action = `<button class="btn btn-sm" disabled style="opacity:.55">✓ fixed</button> <button class="btn btn-sm" data-detail="${e.id}">…</button>`;
+    else if(e.status==='fixing')  action = `<button class="btn btn-sm btn-amber" disabled><span class="spinner"></span> fixing</button>`;
+    else                          action = `<button class="btn btn-sm btn-green" data-fix="${e.id}">Fix</button> <button class="btn btn-sm" data-detail="${e.id}">…</button>`;
+    const flashCls = e._flash ? ' row-fixed-flash' : '';
+    return `<tr class="err-row${flashCls}">
       <td><div class="t1 mo" style="font-size:11px">${escapeHtmlSafe(e.type)}</div><div class="mo" style="font-size:10px;color:var(--t3);margin-top:2px">${escapeHtmlSafe(e.source)}</div></td>
       <td>
         <div class="err-msg" title="${escapeHtmlSafe(e.message)}">${escapeHtmlSafe(e.message)}</div>
@@ -1498,7 +1541,7 @@ function boot(){
     { type:'TimeoutError', source:'tavily_search', message:'Query exceeded 5000ms timeout (search: "wellness mena 2026")', severity:'warn', timeLabel:'02:14' },
     { type:'PathNotFound', source:'daily_reflection', message:'/tmp/adam/reflect.json missing — created on retry', severity:'noise', status:'fixed', timeLabel:'01:00' },
     { type:'ToolError', source:'cognify_runner', message:'Embed batch failed (size=512), retried at size=256', severity:'noise', timeLabel:'00:30' },
-    { type:'ExitCode=1', source:'wa_hourly', message:'Subprocess exited with code 1 (network blip)', severity:'noise', status:'old', timeLabel:'23:14' },
+    { type:'ExitCode=1', source:'wa_hourly', message:'Subprocess exited with code 1 (network blip)', severity:'noise', status:'fixed', timeLabel:'23:14' },
     { type:'ToolError', source:'midnight_reflection', message:'Reflection step skipped: previous run not yet committed', severity:'warn', timeLabel:'00:02' },
   ];
   seed.forEach(s => {
