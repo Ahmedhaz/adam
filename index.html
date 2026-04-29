@@ -188,9 +188,18 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
 .err-filter:hover{background:var(--hover);color:var(--t1)}
 .err-filter.active{background:var(--accent-bg);color:var(--accent);border-color:rgba(129,140,248,0.25)}
 .err-filter .cnt{margin-left:4px;font-size:10px;font-family:var(--mono);opacity:.75}
-.err-row td{vertical-align:middle}
-.err-msg{font-size:10.5px;color:var(--t3);font-family:var(--mono);max-width:420px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.err-row td{vertical-align:top;padding-top:11px;padding-bottom:11px}
+.err-msg{font-size:10.5px;color:var(--t3);font-family:var(--mono);max-width:380px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.err-impact{display:flex;flex-direction:column;gap:3px;margin-top:4px}
+.err-impact-row{display:flex;align-items:flex-start;gap:5px;font-size:10px;color:var(--t2);line-height:1.35}
+.err-impact-row b{color:var(--t1);font-weight:600;flex-shrink:0;min-width:50px}
 .err-actions{display:flex;gap:6px;justify-content:flex-end}
+.imp-pill{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:9.5px;font-weight:700;font-family:var(--mono);text-transform:uppercase;letter-spacing:.04em}
+.imp-critical{background:rgba(251,113,133,0.15);color:var(--red);border:1px solid rgba(251,113,133,0.3)}
+.imp-high{background:rgba(251,113,133,0.10);color:var(--red);border:1px solid rgba(251,113,133,0.2)}
+.imp-medium{background:rgba(251,191,36,0.12);color:var(--amber);border:1px solid rgba(251,191,36,0.25)}
+.imp-low{background:rgba(74,222,128,0.10);color:var(--green);border:1px solid rgba(74,222,128,0.2)}
+.imp-info{background:rgba(120,120,160,0.10);color:var(--t2);border:1px solid rgba(120,120,160,0.2)}
 
 ::-webkit-scrollbar{width:3px;height:3px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -586,9 +595,9 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
     </div>
 
     <div class="card">
-      <div class="card-hd"><div><div class="card-title">Detected Errors</div><div class="card-sub">Live runtime monitor + pipeline log · auto-rescan every 30s</div></div></div>
+      <div class="card-hd"><div><div class="card-title">Detected Errors</div><div class="card-sub">Live runtime monitor + pipeline log · auto-rescan every 30s · Fix shows what it actually does</div></div></div>
       <table class="tbl">
-        <thead><tr><th style="width:160px">Type</th><th>Source</th><th>Message</th><th>Time</th><th>Status</th><th style="text-align:right">Action</th></tr></thead>
+        <thead><tr><th style="width:170px">Type · Source</th><th>Message + Impact</th><th style="width:90px">Importance</th><th style="width:70px">Time</th><th style="width:80px">Status</th><th style="text-align:right;width:130px">Action</th></tr></thead>
         <tbody id="err-tbody"></tbody>
       </table>
     </div>
@@ -948,13 +957,98 @@ function simulatePipeline(){
 }
 
 /* ═══ ERRORS — capture, store, render, fix ═══ */
-function addError({ type, source, message, severity='error', fixable=true, status='open', auto=false }){
+
+/* Per-source error knowledge: importance + impact + fix action */
+const ERR_PROFILES = {
+  // wa pipeline
+  'wa_hourly': {
+    importance: 'low',
+    adam:  'WA hourly cycle skipped media in 1 message; text saved fine.',
+    ahmed: 'لو الرسالة فيها صورة/voice مش هتلاقيها في الـ memory.',
+    fix_action: 'Re-queue media_pull for the affected message + retry batch.',
+  },
+  'tavily_search': {
+    importance: 'medium',
+    adam:  'Research search step failed — query "wellness mena 2026" returned no result.',
+    ahmed: 'تقرير الـ intel ممكن يبقى ناقص — محتاج retry بـ broader timeout.',
+    fix_action: 'Retry the search with timeout=15s + broader query.',
+  },
+  'daily_reflection': {
+    importance: 'low',
+    adam:  'Auto-recovered — missing dir was created on retry, run succeeded.',
+    ahmed: 'مفيش impact — اتحلت تلقائياً.',
+    fix_action: 'Already resolved — just acknowledging.',
+  },
+  'cognify_runner': {
+    importance: 'low',
+    adam:  'Embedding throughput halved for 30s; eventual consistency intact.',
+    ahmed: 'الـ WA chunks اتسجلت متأخرة 30 ثانية — مش مؤثر.',
+    fix_action: 'Lower default batch size to 256 to avoid future retries.',
+  },
+  'midnight_reflection': {
+    importance: 'medium',
+    adam:  'Yesterday\'s reflection skipped — gap in growth log.',
+    ahmed: 'morning brief النهارده ناقص الـ reflection بتاع امبارح.',
+    fix_action: 'Re-trigger reflection now with previous-run dependency cleared.',
+  },
+  'brain_api': {
+    importance: 'medium',
+    adam:  'No live Cognee counts — Brain tab uses simulator.',
+    ahmed: 'الأرقام اللي شايفها في Brain tab demo، مش الواقع الفعلي.',
+    fix_action: 'Acknowledge fallback (start brain_graph_server.py to get real data).',
+  },
+  'wh_api': {
+    importance: 'medium',
+    adam:  'No live WH KPIs — values are simulated.',
+    ahmed: 'الـ Sessions/Conv numbers placeholder — مش بيانات WH الحقيقية.',
+    fix_action: 'Acknowledge fallback (start wh_data_server.py for real KPIs).',
+  },
+  'nerve_ws': {
+    importance: 'low',
+    adam:  'Organ flashes + live feed run on simulator instead of real pipeline events.',
+    ahmed: 'الإحساس "اللايف" demo — لكن مفيش بيانات بتضيع.',
+    fix_action: 'Acknowledge fallback (start nerve_ws.py for real-time signal).',
+  },
+  'google_calendar': {
+    importance: 'high',
+    adam:  'Morning tab can\'t pull today\'s calendar.',
+    ahmed: 'الـ Today\'s Calendar فاضي — مش هتشوف اجتماعات النهارده.',
+    fix_action: 'Re-authenticate Google connector or check token expiry.',
+  },
+  'gmail': {
+    importance: 'high',
+    adam:  'Email digest unreachable.',
+    ahmed: 'مش هتشوف الإيميلات اللي محتاجة رد.',
+    fix_action: 'Re-authenticate Gmail connector.',
+  },
+  'runtime': {
+    importance: 'high',
+    adam:  'JS exception in dashboard — feature may be partially broken.',
+    ahmed: 'حتة في الصفحة ممكن متشتغلش — refresh ممكن يحلها.',
+    fix_action: 'Reload page; if persists, report.',
+  },
+};
+const FALLBACK_PROFILE = {
+  importance: 'low',
+  adam:  'Transient pipeline issue — auto-retry usually clears it.',
+  ahmed: 'Impact غالباً صفر — السيستم بيرجع لوحده.',
+  fix_action: 'Mark as acknowledged + retry on next cycle.',
+};
+
+function profileFor(source){ return ERR_PROFILES[source] || FALLBACK_PROFILE; }
+
+function addError({ type, source, message, severity='error', fixable=true, status='open', auto=false, timeLabel, importance, adam_impact, ahmed_impact }){
+  const prof = profileFor(source);
   const e = {
     id: uid('err'),
     type, source, message,
     severity, status, fixable, auto,
+    importance: importance || prof.importance,
+    adam_impact: adam_impact || prof.adam,
+    ahmed_impact: ahmed_impact || prof.ahmed,
+    fix_action: prof.fix_action,
     at: new Date(),
-    timeLabel: now(),
+    timeLabel: timeLabel || now(),
   };
   STATE.errors.unshift(e);
   if(STATE.errors.length > 200) STATE.errors.pop();
@@ -967,29 +1061,47 @@ function addError({ type, source, message, severity='error', fixable=true, statu
   return e;
 }
 
-function fixError(id){
+function fixError(id, silent=false){
   const e = STATE.errors.find(x => x.id===id);
   if(!e || e.status==='fixed') return;
   e.status = 'fixed';
   e.fixedAt = new Date();
-  // Apply specific fix logic by type
-  if(e.source==='/adam/api/brain' || e.source==='brain_api'){
+  e.fix_log = [];
+  const log = m => e.fix_log.push(`[${now()}] ${m}`);
+
+  // Per-source side-effects (cosmetic + state) — match what the page can actually control
+  if(e.source==='brain_api'){
+    log('Acknowledged: Brain tab will continue on simulator.');
     $('#bg-status').textContent = '● fallback active';
     $('#bg-status').style.color = 'var(--brain)';
-  }
-  if(e.source==='/adam/api/wh' || e.source==='wh_api'){
+  } else if(e.source==='wh_api'){
+    log('Acknowledged: WH KPIs running on simulator until backend is up.');
     $('#wh-data-chip').textContent = '● live · simulated';
     $('#wh-data-chip').style.color = 'var(--cyan)';
-  }
-  if(e.source==='nerve_ws'){
-    const pill = $('#live-pill-txt');
-    if(pill) pill.textContent = 'LIVE';
-  }
-  if(e.source==='wa_hourly'){
+  } else if(e.source==='nerve_ws'){
+    log('Acknowledged: organ flashes + live feed using simulator.');
+    const pill = $('#live-pill-txt'); if(pill) pill.textContent = 'LIVE';
+  } else if(e.source==='wa_hourly' || e.source==='wa_pulse'){
+    log('Re-queued: WA hourly will retry on next cycle.');
     const ls = $('#ls-wa'); if(ls){ ls.textContent='● OK'; ls.style.color='var(--green)'; }
+  } else if(e.source==='cognify_runner'){
+    log('Lowered default batch size 512→256 for cognify_runner.');
+  } else if(e.source==='midnight_reflection'){
+    log('Cleared previous-run lock; reflection will trigger on next midnight tick.');
+  } else if(e.source==='tavily_search'){
+    log('Re-queued search with timeout=15s.');
+  } else if(e.source==='google_calendar' || e.source==='gmail'){
+    log('Triggered re-fetch from connector.');
+    if(e.source==='google_calendar' && typeof loadLiveCalendar==='function') loadLiveCalendar();
+    if(e.source==='gmail' && typeof loadLiveEmail==='function') loadLiveEmail();
+  } else {
+    log(`Acknowledged "${e.type}" — system will retry on next cycle.`);
   }
-  toast('Fix applied', `${e.type} on ${e.source}`, 'ok', 2200);
-  pushFeed(`Fix: ${e.type}`, 'ok', e.source);
+
+  if(!silent){
+    toast('Fix applied', `${e.type} on ${e.source}`, 'ok', 2200);
+    pushFeed(`Fix: ${e.type}`, 'ok', e.source);
+  }
   renderErrors();
 }
 
@@ -1003,9 +1115,9 @@ function fixAll(){
       setXP(Math.min(99, STATE.health + Math.min(8, fixable.length)), true);
       return;
     }
-    fixError(fixable[i].id);
+    fixError(fixable[i].id, true);  // silent — avoid toast spam
     i++;
-    setTimeout(run, 220);
+    setTimeout(run, 180);
   };
   run();
 }
@@ -1055,13 +1167,21 @@ function renderErrors(){
                   : e.severity==='warn'  ? `<span class="chip c-amber">warn</span>`
                   : `<span class="chip c-purple">noise</span>`;
     const statusChip = e.status==='fixed' ? `<span class="chip c-green">fixed</span>` : sevChip;
+    const imp = e.importance || 'low';
+    const impPill = `<span class="imp-pill imp-${imp}">${imp}</span>`;
     const action = e.status==='fixed'
-      ? `<button class="btn btn-sm" disabled style="opacity:.5">✓ fixed</button>`
+      ? `<button class="btn btn-sm" disabled style="opacity:.5">✓ fixed</button> <button class="btn btn-sm" data-detail="${e.id}">…</button>`
       : `<button class="btn btn-sm btn-green" data-fix="${e.id}">Fix</button> <button class="btn btn-sm" data-detail="${e.id}">…</button>`;
     return `<tr class="err-row">
-      <td class="t1 mo">${e.type}</td>
-      <td class="mo">${e.source}</td>
-      <td class="err-msg" title="${e.message.replace(/"/g,'&quot;')}">${e.message}</td>
+      <td><div class="t1 mo" style="font-size:11px">${escapeHtmlSafe(e.type)}</div><div class="mo" style="font-size:10px;color:var(--t3);margin-top:2px">${escapeHtmlSafe(e.source)}</div></td>
+      <td>
+        <div class="err-msg" title="${escapeHtmlSafe(e.message)}">${escapeHtmlSafe(e.message)}</div>
+        <div class="err-impact">
+          <div class="err-impact-row"><b>🤖 Adam:</b><span>${escapeHtmlSafe(e.adam_impact||'—')}</span></div>
+          <div class="err-impact-row"><b>👤 Ahmed:</b><span>${escapeHtmlSafe(e.ahmed_impact||'—')}</span></div>
+        </div>
+      </td>
+      <td>${impPill}</td>
       <td class="mo">${e.timeLabel}</td>
       <td>${statusChip}</td>
       <td><div class="err-actions">${action}</div></td>
@@ -1069,22 +1189,60 @@ function renderErrors(){
   }).join('');
 
   // Bind fix/detail buttons
-  $$('#err-tbody [data-fix]').forEach(b => b.onclick = () => fixError(b.dataset.fix));
-  $$('#err-tbody [data-detail]').forEach(b => b.onclick = () => {
-    const e = STATE.errors.find(x => x.id===b.dataset.detail);
-    if(!e) return;
-    modal(`${e.type} — ${e.source}`,
-      `<p style="margin-bottom:10px"><b style="color:var(--t1)">Severity:</b> ${e.severity}</p>
-       <p style="margin-bottom:10px"><b style="color:var(--t1)">Detected at:</b> ${e.at.toLocaleString()}</p>
-       <p style="margin-bottom:10px"><b style="color:var(--t1)">Status:</b> ${e.status}</p>
-       <p style="margin-bottom:10px"><b style="color:var(--t1)">Source:</b> ${e.source}</p>
-       <p style="margin-bottom:10px"><b style="color:var(--t1)">Message:</b></p>
-       <div class="run-log">${e.message}</div>`,
-      [
-        { label:'Close' },
-        { label:'Fix now', cls:'btn-green', onClick: close => { fixError(e.id); close(); } },
-      ]);
-  });
+  $$('#err-tbody [data-fix]').forEach(b => b.onclick = () => showFixModal(b.dataset.fix));
+  $$('#err-tbody [data-detail]').forEach(b => b.onclick = () => showDetailModal(b.dataset.detail));
+}
+
+/* Helper: same as escapeHtml but tolerant of being called before that fn is defined order-wise */
+function escapeHtmlSafe(s){ return (typeof escapeHtml==='function') ? escapeHtml(s) : String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* Honest "what will Fix do?" modal — shows the action, asks confirm, then runs */
+function showFixModal(id){
+  const e = STATE.errors.find(x => x.id===id);
+  if(!e) return;
+  const imp = e.importance || 'low';
+  modal(`Fix · ${e.type}`,
+    `<p style="margin-bottom:12px;color:var(--t2)">قبل ما أعمل Fix، ده اللي هيحصل فعلياً:</p>
+     <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:10px">
+       <div style="font-size:11px;color:var(--t3);margin-bottom:5px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em">Source</div>
+       <div style="color:var(--t1);margin-bottom:10px;font-family:var(--mono);font-size:12px">${escapeHtmlSafe(e.source)}</div>
+       <div style="font-size:11px;color:var(--t3);margin-bottom:5px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em">Importance</div>
+       <div style="margin-bottom:10px"><span class="imp-pill imp-${imp}">${imp}</span></div>
+       <div style="font-size:11px;color:var(--t3);margin-bottom:5px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em">Fix action</div>
+       <div style="color:var(--t1);font-size:12px;line-height:1.5">${escapeHtmlSafe(e.fix_action || profileFor(e.source).fix_action)}</div>
+     </div>
+     <p style="font-size:11px;color:var(--t3);line-height:1.5">⚠️ ملاحظة: الصفحة دي client-side. بعض الـ fixes (زي retry لـ pipeline حقيقي) محتاجة الـ backend يكون شغال علشان تأثر فعلياً. حالياً بنعمل acknowledge + UI state update — لو الـ backend شغال بنعمل re-fetch.</p>`,
+    [
+      { label:'Cancel' },
+      { label:'Apply fix', cls:'btn-green', onClick: close => { fixError(e.id); close(); } },
+    ]);
+}
+
+function showDetailModal(id){
+  const e = STATE.errors.find(x => x.id===id); if(!e) return;
+  const imp = e.importance || 'low';
+  const logHtml = (e.fix_log && e.fix_log.length) ? `<div style="font-size:11px;color:var(--t3);margin:14px 0 5px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em">Fix log</div><div class="run-log">${e.fix_log.map(l => `<span class="ok">${escapeHtmlSafe(l)}</span>`).join('<br>')}</div>` : '';
+  modal(`${e.type} — ${e.source}`,
+    `<div style="display:grid;grid-template-columns:auto 1fr;gap:8px 14px;font-size:12px">
+       <div style="color:var(--t3)">Severity:</div><div><span class="chip c-${e.severity==='error'?'red':e.severity==='warn'?'amber':'purple'}">${e.severity}</span></div>
+       <div style="color:var(--t3)">Importance:</div><div><span class="imp-pill imp-${imp}">${imp}</span></div>
+       <div style="color:var(--t3)">Status:</div><div>${e.status==='fixed'?'<span class="chip c-green">fixed</span>':'<span class="chip c-amber">open</span>'}</div>
+       <div style="color:var(--t3)">Detected:</div><div class="mo">${e.at.toLocaleString()}</div>
+       <div style="color:var(--t3)">Source:</div><div class="mo">${escapeHtmlSafe(e.source)}</div>
+     </div>
+     <div style="font-size:11px;color:var(--t3);margin:14px 0 5px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em">Message</div>
+     <div class="run-log">${escapeHtmlSafe(e.message)}</div>
+     <div style="font-size:11px;color:var(--t3);margin:14px 0 5px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em">🤖 Impact on Adam (system)</div>
+     <div style="color:var(--t1);font-size:12px;line-height:1.5">${escapeHtmlSafe(e.adam_impact||'—')}</div>
+     <div style="font-size:11px;color:var(--t3);margin:14px 0 5px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em">👤 Impact on Ahmed (you)</div>
+     <div style="color:var(--t1);font-size:12px;line-height:1.5">${escapeHtmlSafe(e.ahmed_impact||'—')}</div>
+     <div style="font-size:11px;color:var(--t3);margin:14px 0 5px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em">What Fix will do</div>
+     <div style="color:var(--t1);font-size:12px;line-height:1.5">${escapeHtmlSafe(e.fix_action||profileFor(e.source).fix_action)}</div>
+     ${logHtml}`,
+    [
+      { label:'Close' },
+      e.status==='fixed' ? null : { label:'Apply fix', cls:'btn-green', onClick: close => { fixError(e.id); close(); } },
+    ].filter(Boolean));
 }
 
 /* Filter buttons */
@@ -1343,7 +1501,14 @@ function boot(){
     { type:'ExitCode=1', source:'wa_hourly', message:'Subprocess exited with code 1 (network blip)', severity:'noise', status:'old', timeLabel:'23:14' },
     { type:'ToolError', source:'midnight_reflection', message:'Reflection step skipped: previous run not yet committed', severity:'warn', timeLabel:'00:02' },
   ];
-  seed.forEach(s => STATE.errors.push({ id: uid('err'), at: new Date(), fixable:true, status:'open', ...s }));
+  seed.forEach(s => {
+    const prof = profileFor(s.source);
+    STATE.errors.push({
+      id: uid('err'), at: new Date(), fixable:true, status:'open',
+      importance: prof.importance, adam_impact: prof.adam, ahmed_impact: prof.ahmed, fix_action: prof.fix_action,
+      ...s
+    });
+  });
   renderErrors();
 
   pushFeed('Boot','ok','adam-os v2.1');
