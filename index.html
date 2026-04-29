@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ADAM OS — Living System</title>
+<style>
+:root{
+  --bg:#05050d; --bg2:#09091a; --card:#0e0e20; --hover:#13132a;
+  --border:rgba(120,120,255,0.08); --border2:rgba(120,120,255,0.16);
+  --brain:#c084fc; --brain-bg:rgba(192,132,252,0.1);
+  --cyan:#22d3ee;  --cyan-bg:rgba(34,211,238,0.1);
+  --green:#4ade80; --green-bg:rgba(74,222,128,0.1);
+  --amber:#fbbf24; --amber-bg:rgba(251,191,36,0.1);
+  --red:#fb7185;   --red-bg:rgba(251,113,133,0.1);
+  --accent:#818cf8;--accent-bg:rgba(129,140,248,0.1);
+  --t1:#e8e8f8; --t2:#7878a0; --t3:#3a3a5c;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
+.adam-os{height:100vh;display:grid;grid-template-rows:52px 1fr}
+.hdr{display:flex;align-items:center;padding:0 20px;gap:16px;background:var(--bg2);border-bottom:1px solid var(--border);position:relative;z-index:10}
+.hdr-brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.hdr-icon{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#7c3aed,#c084fc);display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 0 20px rgba(124,58,237,0.5)}
+.hdr-name{font-size:13px;font-weight:700;letter-spacing:-.02em}
+.hdr-ver{font-size:9.5px;color:var(--t3);font-family:var(--mono)}
+.tabs{display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:3px}
+.tab{padding:5px 14px;border-radius:6px;font-size:12px;font-weight:500;color:var(--t2);cursor:pointer;transition:all .15s;white-space:nowrap;border:none;background:transparent;font-family:inherit;position:relative}
+.tab:hover{color:var(--t1)}
+.tab.active{background:var(--accent-bg);color:var(--accent);border:1px solid rgba(129,140,248,0.2)}
+.tab .tab-badge{display:inline-block;margin-left:6px;background:var(--red);color:#fff;font-size:9px;font-weight:700;border-radius:10px;padding:1px 6px;min-width:18px;text-align:center}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.live-pill{display:flex;align-items:center;gap:4px;background:var(--green-bg);border:1px solid rgba(74,222,128,0.2);border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700;color:var(--green)}
+.ldot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:blink 2s ease infinite}
+.clock{font-size:12px;color:var(--t2);font-family:var(--mono)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+.layout{display:grid;grid-template-columns:280px 1fr;overflow:hidden}
+.body-panel{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:16px 14px 12px;overflow-y:auto;gap:12px}
+.body-title{font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.1em;text-transform:uppercase}
+#adam-body{width:200px;flex-shrink:0;display:block}
+
+.xp-wrap{width:100%;display:flex;flex-direction:column;gap:6px}
+.xp-top{display:flex;justify-content:space-between;align-items:baseline}
+.xp-title{font-size:9.5px;font-family:var(--mono);color:var(--t3);letter-spacing:.06em;text-transform:uppercase}
+.xp-value{font-size:22px;font-weight:800;letter-spacing:-.04em;line-height:1;background:linear-gradient(135deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;transition:background .6s ease}
+.xp-denom{font-size:10px;font-weight:500;color:var(--t3);-webkit-text-fill-color:var(--t3)}
+.xp-track{width:100%;height:7px;background:rgba(255,255,255,0.04);border-radius:4px;overflow:hidden;border:1px solid var(--border)}
+.xp-fill{height:100%;border-radius:4px;transition:width 1.2s cubic-bezier(.16,1,.3,1), background 1s ease;background:linear-gradient(90deg,#4ade80,#22d3ee);box-shadow:0 0 8px rgba(74,222,128,0.4)}
+.xp-tier{font-size:9px;font-family:var(--mono);color:var(--green);letter-spacing:.04em;transition:color .4s}
+.xp-tier.degraded{color:var(--amber)}
+.xp-tier.critical{color:var(--red)}
+.ecg-wrap{width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 10px 6px;overflow:hidden}
+.ecg-hd{font-size:9.5px;color:var(--t3);font-family:var(--mono);margin-bottom:4px;display:flex;justify-content:space-between}
+.ecg-hd span{color:var(--green)}
+#ecg{width:100%;display:block;overflow:hidden}
+.sys-legend{width:100%;display:flex;flex-direction:column;gap:3px}
+.legend-row{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;cursor:pointer;transition:background .1s}
+.legend-row:hover{background:var(--hover)}
+.legend-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.legend-name{font-size:11px;color:var(--t2);flex:1}
+.legend-status{font-size:10px;font-family:var(--mono);font-weight:500}
+.defect-flag{width:100%;background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:8px;padding:8px 10px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:background .15s}
+.defect-flag:hover{background:rgba(251,191,36,0.16)}
+.defect-ico{font-size:14px}
+.defect-txt{font-size:11px;color:var(--amber);line-height:1.4}
+.defect-txt b{font-weight:600}
+
+/* Live Feed in sidebar */
+.live-feed-wrap{width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 10px 6px;max-height:170px;display:flex;flex-direction:column;overflow:hidden}
+.lf-hd{font-size:9.5px;color:var(--t3);font-family:var(--mono);margin-bottom:4px;display:flex;justify-content:space-between}
+.lf-hd span:last-child{color:var(--cyan)}
+#live-feed{display:flex;flex-direction:column;overflow-y:auto;max-height:140px}
+
+.panels{overflow-y:auto;min-width:0}
+.panel{display:none;padding:18px 20px;animation:fade-panel .25s ease}
+.panel.active{display:flex;flex-direction:column;gap:14px}
+@keyframes fade-panel{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.card-hd{display:flex;align-items:center;justify-content:space-between;padding:13px 16px 10px;border-bottom:1px solid var(--border)}
+.card-title{font-size:12.5px;font-weight:600}
+.card-sub{font-size:10.5px;color:var(--t3);margin-top:1px}
+.card-bd{padding:14px 16px}
+
+.chip{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700}
+.c-green{background:var(--green-bg);color:var(--green)}
+.c-amber{background:var(--amber-bg);color:var(--amber)}
+.c-red{background:var(--red-bg);color:var(--red)}
+.c-blue{background:var(--cyan-bg);color:var(--cyan)}
+.c-purple{background:var(--brain-bg);color:var(--brain)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:12.5px;font-weight:500;font-family:inherit;cursor:pointer;border:1px solid var(--border);transition:all .14s;background:var(--card);color:var(--t1)}
+.btn:hover{background:var(--hover);border-color:var(--border2)}
+.btn:active{transform:scale(.97)}
+.btn-accent{background:rgba(129,140,248,0.12);color:var(--accent);border-color:rgba(129,140,248,0.2)}
+.btn-accent:hover{background:rgba(129,140,248,0.22)}
+.btn-green{background:var(--green-bg);color:var(--green);border-color:rgba(74,222,128,0.2)}
+.btn-green:hover{background:rgba(74,222,128,0.18)}
+.btn-amber{background:var(--amber-bg);color:var(--amber);border-color:rgba(251,191,36,0.2)}
+.btn-amber:hover{background:rgba(251,191,36,0.18)}
+.btn-red{background:var(--red-bg);color:var(--red);border-color:rgba(251,113,133,0.2)}
+.btn-red:hover{background:rgba(251,113,133,0.18)}
+.btn-sm{padding:5px 10px;font-size:11px;border-radius:6px}
+
+.scan-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.skpi{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 14px 10px;transition:border-color .2s,transform .2s;cursor:default}
+.skpi:hover{border-color:var(--border2);transform:translateY(-1px)}
+.skpi-lbl{font-size:11px;color:var(--t2);font-weight:500;margin-bottom:8px}
+.skpi-val{font-size:28px;font-weight:800;letter-spacing:-.04em;line-height:1;margin-bottom:6px;transition:color .4s}
+.skpi-ft{font-size:10.5px;color:var(--t3)}
+.scan-bottom{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:9.5px;font-weight:700;color:var(--t3);letter-spacing:.07em;text-transform:uppercase;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);background:rgba(9,9,26,0.6)}
+.tbl td{padding:9px 12px;font-size:11.5px;color:var(--t2);border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--hover)}
+.tbl td.t1{color:var(--t1);font-weight:500}
+.tbl td.mo{font-family:var(--mono);font-size:10.5px}
+
+.wh-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.wkpi{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 14px 10px;position:relative;overflow:hidden}
+.wkpi-glow{position:absolute;top:-20px;right:-20px;width:60px;height:60px;border-radius:50%;filter:blur(20px);opacity:.15}
+.wkpi-lbl{font-size:11px;color:var(--t2);font-weight:500;margin-bottom:8px}
+.wkpi-val{font-size:28px;font-weight:800;letter-spacing:-.04em;line-height:1;margin-bottom:5px;transition:color .4s}
+.wkpi-ft{font-size:10.5px;color:var(--t3)}
+
+.action-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.action-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 14px 14px;display:flex;flex-direction:column;gap:6px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+.action-card:hover{border-color:var(--border2);transform:translateY(-2px);background:var(--hover)}
+.ac-icon{font-size:22px;margin-bottom:2px}
+.ac-title{font-size:12.5px;font-weight:600;color:var(--t1)}
+.ac-sub{font-size:11px;color:var(--t3);line-height:1.4}
+.ac-status{display:flex;align-items:center;gap:4px;margin-top:4px;font-size:10.5px;font-weight:500}
+.wh-bottom{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.funnel{display:flex;flex-direction:column;gap:6px;padding:4px 0}
+.funnel-bar{border-radius:6px;transition:width .8s ease;display:flex;align-items:center;justify-content:space-between;padding:0 12px;height:36px;font-size:11.5px;font-weight:600}
+.funnel-lbl{color:rgba(255,255,255,0.85)}
+.funnel-n{color:rgba(255,255,255,0.6);font-family:var(--mono);font-size:10.5px}
+
+.morning-greeting{background:linear-gradient(135deg,rgba(124,58,237,0.12),rgba(34,211,238,0.08));border:1px solid rgba(129,140,248,0.15);border-radius:14px;padding:20px;display:flex;align-items:center;justify-content:space-between}
+.greet-hello{font-size:20px;font-weight:700;letter-spacing:-.02em}
+.greet-sub{font-size:12px;color:var(--t2);margin-top:2px}
+.greet-score{text-align:right;font-size:32px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.greet-score-lbl{font-size:10px;color:var(--t3);text-align:right}
+.morning-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.pulse-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.pc-hd{padding:11px 14px 9px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.pc-title{font-size:12px;font-weight:600}
+.pc-bd{padding:10px 14px}
+.cal-event{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)}
+.cal-event:last-child{border-bottom:none}
+.cal-time{font-size:10px;color:var(--t3);font-family:var(--mono);min-width:42px;margin-top:2px}
+.cal-name{font-size:11.5px;color:var(--t1);font-weight:500}
+.cal-meta{font-size:10px;color:var(--t3);margin-top:1px}
+.wa-msg{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)}
+.wa-msg:last-child{border-bottom:none}
+.wa-from{font-size:10.5px;font-weight:600;color:var(--accent);flex-shrink:0;min-width:80px}
+.wa-text{font-size:10.5px;color:var(--t2);line-height:1.4}
+.action-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+
+.brain-graph-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.brain-graph-hd{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border)}
+.brain-graph-frame{height:360px;position:relative;overflow:hidden}
+.brain-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.mem-stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.mem-num{font-size:26px;font-weight:800;letter-spacing:-.04em;line-height:1;margin-bottom:4px;transition:color .4s}
+.mem-lbl{font-size:10.5px;color:var(--t3)}
+.dataset-row{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--border);transition:background .1s}
+.dataset-row:hover{background:var(--hover)}
+.dataset-row:last-child{border-bottom:none}
+.ds-name{flex:1;font-size:11.5px;font-weight:500}
+.ds-count{font-size:10.5px;font-family:var(--mono);color:var(--t2)}
+.ds-bar-wrap{width:80px;height:4px;background:var(--hover);border-radius:2px;overflow:hidden}
+.ds-bar{height:100%;border-radius:2px;transition:width 1s ease}
+
+/* ── ERRORS TAB ── */
+.err-banner{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,rgba(251,113,133,0.12),rgba(251,191,36,0.06));border:1px solid rgba(251,113,133,0.18);border-radius:14px;padding:16px 20px;justify-content:space-between}
+.err-banner-left{display:flex;align-items:center;gap:14px}
+.err-banner-ico{font-size:26px}
+.err-banner-stat{display:flex;flex-direction:column}
+.err-banner-num{font-size:24px;font-weight:800;color:var(--red);line-height:1}
+.err-banner-lbl{font-size:11px;color:var(--t2);margin-top:2px}
+.err-banner-actions{display:flex;gap:8px}
+.err-filters{display:flex;gap:6px;flex-wrap:wrap}
+.err-filter{padding:4px 11px;border-radius:6px;background:var(--card);border:1px solid var(--border);color:var(--t2);font-size:11px;font-weight:500;cursor:pointer;transition:all .12s;font-family:inherit}
+.err-filter:hover{background:var(--hover);color:var(--t1)}
+.err-filter.active{background:var(--accent-bg);color:var(--accent);border-color:rgba(129,140,248,0.25)}
+.err-filter .cnt{margin-left:4px;font-size:10px;font-family:var(--mono);opacity:.75}
+.err-row td{vertical-align:middle}
+.err-msg{font-size:10.5px;color:var(--t3);font-family:var(--mono);max-width:420px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.err-actions{display:flex;gap:6px;justify-content:flex-end}
+
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--hover);border-radius:2px}
+
+/* Toast */
+#toast-stack{position:fixed;bottom:18px;right:18px;display:flex;flex-direction:column;gap:8px;z-index:1000;pointer-events:none}
+.toast{background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--t1);box-shadow:0 8px 24px rgba(0,0,0,.4);min-width:220px;max-width:360px;animation:toastIn .25s ease;display:flex;align-items:center;gap:10px;pointer-events:auto}
+.toast.ok{border-color:rgba(74,222,128,0.3)}
+.toast.warn{border-color:rgba(251,191,36,0.3)}
+.toast.err{border-color:rgba(251,113,133,0.3)}
+.toast.info{border-color:rgba(129,140,248,0.3)}
+.toast-ico{font-size:14px;flex-shrink:0}
+.toast.ok .toast-ico{color:var(--green)}
+.toast.warn .toast-ico{color:var(--amber)}
+.toast.err .toast-ico{color:var(--red)}
+.toast.info .toast-ico{color:var(--accent)}
+.toast-body{flex:1}
+.toast-title{font-weight:600;font-size:12px}
+.toast-sub{font-size:10.5px;color:var(--t3);margin-top:2px}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+@keyframes toastOut{to{opacity:0;transform:translateX(20px)}}
+
+/* Modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:900;animation:fadeIn .2s ease}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:14px;width:520px;max-width:92vw;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;animation:modalIn .25s ease}
+.modal-hd{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:14px;font-weight:600}
+.modal-close{background:none;border:none;color:var(--t3);cursor:pointer;font-size:18px;padding:0 4px}
+.modal-close:hover{color:var(--t1)}
+.modal-bd{padding:16px 18px;overflow-y:auto;font-size:12px;color:var(--t2);line-height:1.55}
+.modal-ft{padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+.run-log{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:10.5px;color:var(--t2);max-height:240px;overflow-y:auto}
+.run-log .ok{color:var(--green)}
+.run-log .warn{color:var(--amber)}
+.run-log .err{color:var(--red)}
+.run-log .dim{color:var(--t3)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes modalIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+
+/* Body SVG animations */
+@keyframes heartbeat{0%,100%{r:10;opacity:.7}20%{r:13;opacity:1}40%{r:10;opacity:.7}60%{r:12;opacity:.95}80%{r:10;opacity:.7}}
+@keyframes breathe-l{0%,100%{transform:scaleX(1) scaleY(1)}50%{transform:scaleX(.88) scaleY(1.1)}}
+@keyframes breathe-r{0%,100%{transform:scaleX(1) scaleY(1)}50%{transform:scaleX(.88) scaleY(1.1)}}
+@keyframes neuron{0%,100%{opacity:.1}50%{opacity:.9}}
+@keyframes scan{0%{transform:translateY(-10px);opacity:0}5%,95%{opacity:.7}100%{transform:translateY(390px);opacity:0}}
+@keyframes pulse-ring{0%{r:14;opacity:.8}100%{r:26;opacity:0}}
+@keyframes data-flow{0%{stroke-dashoffset:30}100%{stroke-dashoffset:0}}
+@keyframes ecg-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes feedFadeIn{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div class="adam-os">
+
+<header class="hdr">
+  <div class="hdr-brand">
+    <div class="hdr-icon">⚡</div>
+    <div>
+      <div class="hdr-name">ADAM OS</div>
+      <div class="hdr-ver">Living System v2.1 · live</div>
+    </div>
+  </div>
+
+  <nav class="tabs" style="margin-left:24px">
+    <button class="tab active" data-tab="scan">◈ Body Scan</button>
+    <button class="tab" data-tab="wh">🏥 WH Pulse</button>
+    <button class="tab" data-tab="morning">☀ Morning</button>
+    <button class="tab" data-tab="brain">🧠 Brain</button>
+    <button class="tab" data-tab="errors">⚠ Errors <span class="tab-badge" id="err-tab-badge">0</span></button>
+  </nav>
+
+  <div class="hdr-right">
+    <div class="live-pill"><div class="ldot"></div><span id="live-pill-txt">LIVE</span></div>
+    <span class="clock" id="clock">--:--:--</span>
+  </div>
+</header>
+
+<div class="layout">
+
+<aside class="body-panel">
+  <div class="body-title">Adam System Scan</div>
+
+  <svg id="adam-body" viewBox="0 0 200 400" style="width:200px;height:390px">
+    <defs>
+      <filter id="glow-brain"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <filter id="glow-heart"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <filter id="glow-warn"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <pattern id="micro-grid" width="16" height="16" patternUnits="userSpaceOnUse"><path d="M16 0 L0 0 0 16" fill="none" stroke="rgba(130,100,255,0.05)" stroke-width=".5"/></pattern>
+      <radialGradient id="head-fill" cx="50%" cy="50%"><stop offset="0%" stop-color="#7c3aed" stop-opacity=".12"/><stop offset="100%" stop-color="#7c3aed" stop-opacity="0"/></radialGradient>
+      <radialGradient id="torso-fill" cx="50%" cy="30%"><stop offset="0%" stop-color="#3b82f6" stop-opacity=".08"/><stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/></radialGradient>
+      <linearGradient id="scan-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="rgba(34,211,238,0)"/><stop offset="40%" stop-color="rgba(34,211,238,0.7)"/><stop offset="60%" stop-color="rgba(34,211,238,0.7)"/><stop offset="100%" stop-color="rgba(34,211,238,0)"/></linearGradient>
+    </defs>
+    <rect width="200" height="400" fill="url(#micro-grid)" opacity=".6"/>
+    <ellipse cx="100" cy="48" rx="34" ry="36" fill="url(#head-fill)" stroke="rgba(192,132,252,0.2)" stroke-width="1.2"/>
+    <rect x="90" y="82" width="20" height="16" rx="4" fill="rgba(60,80,200,0.06)" stroke="rgba(130,130,255,0.12)" stroke-width="1"/>
+    <path d="M55,98 Q45,100 42,112 L42,105 Q42,96 55,94 L145,94 Q158,96 158,105 L158,112 Q155,100 145,98 Z" fill="rgba(60,80,200,0.05)" stroke="rgba(130,130,255,0.1)" stroke-width="1"/>
+    <rect x="52" y="94" width="96" height="120" rx="6" fill="url(#torso-fill)" stroke="rgba(100,130,255,0.12)" stroke-width="1.2"/>
+    <rect x="55" y="210" width="90" height="30" rx="6" fill="rgba(60,80,200,0.06)" stroke="rgba(100,130,255,0.1)" stroke-width="1"/>
+    <rect x="28" y="96" width="22" height="100" rx="11" fill="rgba(60,80,200,0.05)" stroke="rgba(100,130,255,0.1)" stroke-width="1"/>
+    <rect x="150" y="96" width="22" height="100" rx="11" fill="rgba(60,80,200,0.05)" stroke="rgba(100,130,255,0.1)" stroke-width="1"/>
+    <rect x="30" y="194" width="18" height="70" rx="9" fill="rgba(60,80,200,0.04)" stroke="rgba(100,130,255,0.08)" stroke-width="1"/>
+    <rect x="152" y="194" width="18" height="70" rx="9" fill="rgba(60,80,200,0.04)" stroke="rgba(100,130,255,0.08)" stroke-width="1"/>
+    <rect x="57" y="238" width="34" height="90" rx="12" fill="rgba(60,80,200,0.05)" stroke="rgba(100,130,255,0.1)" stroke-width="1"/>
+    <rect x="109" y="238" width="34" height="90" rx="12" fill="rgba(60,80,200,0.05)" stroke="rgba(100,130,255,0.1)" stroke-width="1"/>
+    <rect x="59" y="326" width="30" height="66" rx="10" fill="rgba(60,80,200,0.04)" stroke="rgba(100,130,255,0.08)" stroke-width="1"/>
+    <rect x="111" y="326" width="30" height="66" rx="10" fill="rgba(60,80,200,0.04)" stroke="rgba(100,130,255,0.08)" stroke-width="1"/>
+    <line x1="100" y1="98" x2="100" y2="236" stroke="rgba(129,140,248,0.2)" stroke-width="1" stroke-dasharray="3 4"/>
+    <line x1="100" y1="82" x2="100" y2="98" stroke="rgba(192,132,252,0.3)" stroke-width="1.5" stroke-dasharray="4 3" style="animation:data-flow 1.5s linear infinite"/>
+    <line x1="84" y1="138" x2="74" y2="148" stroke="rgba(34,211,238,0.2)" stroke-width="1" stroke-dasharray="3 3" style="animation:data-flow 2s linear infinite"/>
+    <line x1="116" y1="138" x2="126" y2="148" stroke="rgba(74,222,128,0.2)" stroke-width="1" stroke-dasharray="3 3" style="animation:data-flow 2.2s linear infinite"/>
+    <ellipse id="brain-core" cx="100" cy="42" rx="22" ry="20" fill="rgba(192,132,252,0.08)" stroke="rgba(192,132,252,0.4)" stroke-width="1.2" filter="url(#glow-brain)"/>
+    <circle cx="92" cy="36" r="2" fill="#c084fc" opacity=".6" style="animation:neuron 1.4s ease infinite;animation-delay:.1s"/>
+    <circle cx="100" cy="32" r="2.5" fill="#c084fc" opacity=".8" style="animation:neuron 1.8s ease infinite;animation-delay:.3s"/>
+    <circle cx="108" cy="36" r="2" fill="#c084fc" opacity=".6" style="animation:neuron 1.6s ease infinite;animation-delay:.5s"/>
+    <circle cx="94" cy="44" r="1.5" fill="#c084fc" opacity=".4" style="animation:neuron 2s ease infinite;animation-delay:.7s"/>
+    <circle cx="106" cy="44" r="1.5" fill="#c084fc" opacity=".4" style="animation:neuron 1.3s ease infinite;animation-delay:.2s"/>
+    <circle cx="100" cy="50" r="2" fill="#c084fc" opacity=".5" style="animation:neuron 1.7s ease infinite;animation-delay:.9s"/>
+    <path d="M92,36 Q100,38 108,36 Q100,46 92,36" fill="none" stroke="rgba(192,132,252,0.15)" stroke-width="1"/>
+    <path d="M100,32 L100,50" fill="none" stroke="rgba(192,132,252,0.12)" stroke-width="1" stroke-dasharray="2 2"/>
+    <circle cx="88" cy="52" r="3.5" fill="none" stroke="rgba(192,132,252,0.5)" stroke-width="1.2"/>
+    <circle cx="112" cy="52" r="3.5" fill="none" stroke="rgba(192,132,252,0.5)" stroke-width="1.2"/>
+    <circle cx="88" cy="52" r="1.5" fill="#c084fc" opacity=".7" style="animation:neuron 3s ease infinite"/>
+    <circle cx="112" cy="52" r="1.5" fill="#c084fc" opacity=".7" style="animation:neuron 3s ease infinite;animation-delay:.5s"/>
+    <circle id="heart-pulse" cx="84" cy="138" r="10" fill="rgba(251,113,133,0.12)" stroke="rgba(251,113,133,0.6)" stroke-width="1.5" filter="url(#glow-heart)" style="animation:heartbeat 1.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center"/>
+    <circle cx="84" cy="138" r="5" fill="rgba(251,113,133,0.3)" style="animation:heartbeat 1.2s ease-in-out infinite .06s;transform-box:fill-box;transform-origin:center"/>
+    <ellipse id="lung-l" cx="72" cy="152" rx="13" ry="18" fill="rgba(251,191,36,0.08)" stroke="rgba(251,191,36,0.35)" stroke-width="1.2" style="animation:breathe-l 3.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center" filter="url(#glow-warn)"/>
+    <circle id="defect-ring" cx="72" cy="152" r="14" fill="none" stroke="rgba(251,191,36,0.5)" stroke-width="1" style="animation:pulse-ring 2.5s ease-out infinite;transform-box:fill-box;transform-origin:center"/>
+    <ellipse id="lung-r" cx="128" cy="152" rx="13" ry="18" fill="rgba(74,222,128,0.08)" stroke="rgba(74,222,128,0.35)" stroke-width="1.2" style="animation:breathe-r 3.2s ease-in-out infinite .2s;transform-box:fill-box;transform-origin:center"/>
+    <ellipse id="gut-organ" cx="100" cy="188" rx="16" ry="12" fill="rgba(34,211,238,0.08)" stroke="rgba(34,211,238,0.3)" stroke-width="1.2" filter="url(#glow-warn)"/>
+    <circle cx="100" cy="188" r="5" fill="rgba(34,211,238,0.15)" style="animation:neuron 2.5s ease infinite"/>
+    <circle cx="33" cy="270" r="9" fill="rgba(129,140,248,0.08)" stroke="rgba(129,140,248,0.25)" stroke-width="1"/>
+    <circle cx="167" cy="270" r="9" fill="rgba(129,140,248,0.08)" stroke="rgba(129,140,248,0.25)" stroke-width="1"/>
+    <text x="116" y="92" font-size="7" fill="rgba(192,132,252,0.5)" font-family="JetBrains Mono,monospace">COGNEE</text>
+    <text x="88" y="133" font-size="7" fill="rgba(251,113,133,0.6)" font-family="JetBrains Mono,monospace">NERVE</text>
+    <text x="47" y="160" font-size="7" fill="rgba(251,191,36,0.6)" font-family="JetBrains Mono,monospace">WA</text>
+    <text x="130" y="148" font-size="7" fill="rgba(74,222,128,0.6)" font-family="JetBrains Mono,monospace">EMAIL</text>
+    <text x="77" y="204" font-size="7" fill="rgba(34,211,238,0.5)" font-family="JetBrains Mono,monospace">COGNIFY</text>
+    <rect id="scan-line" x="0" y="-4" width="200" height="8" fill="url(#scan-grad)" style="animation:scan 4s linear infinite;opacity:.6"/>
+  </svg>
+
+  <div class="xp-wrap">
+    <div class="xp-top">
+      <span class="xp-title">System Health</span>
+      <span class="xp-value" id="xp-val">0<span class="xp-denom">/100</span></span>
+    </div>
+    <div class="xp-track"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+    <div class="xp-tier" id="xp-tier">● HEALTHY</div>
+  </div>
+
+  <div class="ecg-wrap">
+    <div class="ecg-hd"><span>ECG</span><span id="ecg-bpm">♥ 72 bpm</span></div>
+    <svg id="ecg" viewBox="0 0 240 32" height="32" preserveAspectRatio="none">
+      <g style="animation:ecg-scroll 3s linear infinite">
+        <path d="M0,16 L18,16 L22,4 L26,28 L30,16 L42,16 L46,8 L50,16 L62,16 L66,4 L70,28 L74,16 L86,16 L90,8 L94,16 L106,16 L110,4 L114,28 L118,16 L130,16 L134,8 L138,16 L150,16 L154,4 L158,28 L162,16 L174,16 L178,8 L182,16 L194,16 L198,4 L202,28 L206,16 L218,16 L222,8 L226,16 L238,16 L242,4 L246,28 L250,16 L262,16 L266,8 L270,16 L282,16 L286,4 L290,28 L294,16 L306,16 L310,8 L314,16 L326,16 L330,4 L334,28 L338,16 L350,16 L354,8 L358,16 L370,16 L374,4 L378,28 L382,16 L394,16 L398,8 L402,16 L414,16 L418,4 L422,28 L426,16 L438,16 L442,8 L446,16 L458,16 L462,4 L466,28 L470,16 L482,16" fill="none" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="sys-legend">
+    <div class="legend-row"><div class="legend-dot" style="background:var(--brain)"></div><div class="legend-name">Brain / Cognee</div><div class="legend-status" id="ls-cognee" style="color:var(--green)">● OK</div></div>
+    <div class="legend-row"><div class="legend-dot" style="background:var(--red)"></div><div class="legend-name">Heart / NERVE</div><div class="legend-status" id="ls-nerve" style="color:var(--green)">● Live</div></div>
+    <div class="legend-row"><div class="legend-dot" style="background:var(--amber)"></div><div class="legend-name">Left Lung / WA</div><div class="legend-status" id="ls-wa" style="color:var(--amber)">⚠ Warn</div></div>
+    <div class="legend-row"><div class="legend-dot" style="background:var(--green)"></div><div class="legend-name">Right Lung / Email</div><div class="legend-status" id="ls-email" style="color:var(--green)">● OK</div></div>
+    <div class="legend-row"><div class="legend-dot" style="background:var(--cyan)"></div><div class="legend-name">Gut / Cognify</div><div class="legend-status" id="ls-cognify" style="color:var(--green)">● OK</div></div>
+  </div>
+
+  <div class="defect-flag" id="defect-flag" title="Open Errors tab">
+    <div class="defect-ico">⚠</div>
+    <div class="defect-txt"><b id="defect-count">2 defects</b> · WA pipeline + midnight reflection · <span id="defect-errs">19 errors</span></div>
+  </div>
+
+  <div class="live-feed-wrap">
+    <div class="lf-hd"><span>Live Feed</span><span id="lf-count">0</span></div>
+    <div id="live-feed"></div>
+  </div>
+</aside>
+
+<div class="panels">
+
+  <!-- ── SCAN TAB ── -->
+  <div class="panel active" id="tab-scan">
+    <div class="scan-kpi">
+      <div class="skpi"><div class="skpi-lbl">Task Runs</div><div class="skpi-val" id="kpi-runs" style="color:var(--cyan)" data-target="14" data-suffix="">0</div><div class="skpi-ft" id="kpi-runs-ft">↑ 12% vs yesterday</div></div>
+      <div class="skpi"><div class="skpi-lbl">Tool Calls</div><div class="skpi-val" id="kpi-calls" style="color:var(--brain)" data-target="333" data-suffix="">0</div><div class="skpi-ft" id="kpi-calls-ft">↑ 8% vs yesterday</div></div>
+      <div class="skpi"><div class="skpi-lbl">Errors</div><div class="skpi-val" id="kpi-errors" style="color:var(--red)" data-target="19" data-suffix="">0</div><div class="skpi-ft" id="kpi-errors-ft">3 new · 16 historical</div></div>
+      <div class="skpi"><div class="skpi-lbl">Pipeline Health</div><div class="skpi-val" id="kpi-health" style="color:var(--green)" data-target="94" data-suffix="%">0</div><div class="skpi-ft" id="kpi-health-ft">4 of 5 running OK</div></div>
+    </div>
+
+    <div class="scan-bottom">
+      <div class="card">
+        <div class="card-hd">
+          <div><div class="card-title">Recent Errors</div><div class="card-sub" id="recent-err-sub">Last 24h · 19 total</div></div>
+          <button class="btn btn-sm btn-amber" onclick="activateTab('errors')">Open Errors →</button>
+        </div>
+        <table class="tbl">
+          <thead><tr><th>Type</th><th>Script</th><th>Time</th><th>Status</th></tr></thead>
+          <tbody id="recent-err-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div><div class="card-title">Task Sessions</div><div class="card-sub" id="task-sub">Today · 14 runs</div></div>
+          <span class="chip c-green" id="task-okchip">94% OK</span>
+        </div>
+        <table class="tbl">
+          <thead><tr><th>Task</th><th>Duration</th><th>Calls</th><th>Result</th></tr></thead>
+          <tbody id="task-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── WH TAB ── -->
+  <div class="panel" id="tab-wh">
+    <div class="wh-kpi" id="wh-kpi-grid">
+      <div class="wkpi"><div class="wkpi-glow" style="background:var(--cyan)"></div><div class="wkpi-lbl">Sessions Today</div><div id="wh-sessions-val" class="wkpi-val" style="color:var(--cyan)" data-target="24" data-suffix="">0</div><div id="wh-sessions-ft" class="wkpi-ft">↑ 3 vs last Tuesday</div></div>
+      <div class="wkpi"><div class="wkpi-glow" style="background:var(--brain)"></div><div class="wkpi-lbl">S1→S2 Conv.</div><div id="wh-conv-val" class="wkpi-val" style="color:var(--brain)" data-target="38" data-suffix="%">0</div><div id="wh-conv-ft" class="wkpi-ft">Target 50% · ↓ needs work</div></div>
+      <div class="wkpi"><div class="wkpi-glow" style="background:var(--green)"></div><div class="wkpi-lbl">Active Therapists</div><div id="wh-therapists-val" class="wkpi-val" style="color:var(--green)" data-target="18" data-suffix="">0</div><div id="wh-therapists-ft" class="wkpi-ft">2 onboarding</div></div>
+      <div class="wkpi"><div class="wkpi-glow" style="background:var(--amber)"></div><div class="wkpi-lbl">New Patients</div><div id="wh-patients-val" class="wkpi-val" style="color:var(--amber)" data-target="7" data-suffix="">0</div><div id="wh-patients-ft" class="wkpi-ft">This week · ↑ 2</div></div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;margin-top:-4px;margin-bottom:2px">
+      <span id="wh-data-chip" style="font-size:10px;font-family:var(--mono);background:rgba(34,211,238,0.08);border:1px solid rgba(34,211,238,0.15);border-radius:20px;padding:2px 9px;color:var(--cyan)">● live · simulated</span>
+      <span id="wh-data-ts" style="font-size:9.5px;color:var(--t3);font-family:var(--mono)"></span>
+    </div>
+
+    <div class="card">
+      <div class="card-hd"><div><div class="card-title">Quick Actions</div><div class="card-sub">One-click ops for Wellness House</div></div></div>
+      <div class="card-bd">
+        <div class="action-grid">
+          <div class="action-card" data-action="morning_mentor" style="border-color:rgba(192,132,252,0.2)">
+            <div class="ac-icon">☀</div>
+            <div class="ac-title">Morning Mentor</div>
+            <div class="ac-sub">Run today's briefing, calendar, WA, business pulse</div>
+            <div class="ac-status" style="color:var(--brain)">▶ Run Now</div>
+          </div>
+          <div class="action-card" data-action="wa_pulse" style="border-color:rgba(74,222,128,0.2)">
+            <div class="ac-icon">📱</div>
+            <div class="ac-title">WA Pulse</div>
+            <div class="ac-sub">Last hour WhatsApp digest, flagged messages</div>
+            <div class="ac-status" style="color:var(--green)">● 3 new msgs</div>
+          </div>
+          <div class="action-card" data-action="wh_report" style="border-color:rgba(34,211,238,0.2)">
+            <div class="ac-icon">📊</div>
+            <div class="ac-title">WH Report</div>
+            <div class="ac-sub">Weekly session + revenue + therapist report</div>
+            <div class="ac-status" style="color:var(--cyan)">Last: Sunday</div>
+          </div>
+          <div class="action-card" data-action="funnel" style="border-color:rgba(251,191,36,0.2)">
+            <div class="ac-icon">🎯</div>
+            <div class="ac-title">Funnel Analysis</div>
+            <div class="ac-sub">S1→S2 drop-off, therapist match quality</div>
+            <div class="ac-status" style="color:var(--amber)">⚠ 38% conv.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wh-bottom">
+      <div class="card">
+        <div class="card-hd"><div><div class="card-title">Patient Funnel</div><div class="card-sub">This month · Egypt + MENA</div></div></div>
+        <div class="card-bd">
+          <div class="funnel" id="wh-funnel">
+            <div class="funnel-bar" style="background:rgba(34,211,238,0.2);width:100%"><span class="funnel-lbl">Signups</span><span class="funnel-n" data-fn="signups">248</span></div>
+            <div class="funnel-bar" style="background:rgba(129,140,248,0.2);width:72%"><span class="funnel-lbl">Session 1</span><span class="funnel-n" data-fn="s1">178</span></div>
+            <div class="funnel-bar" style="background:rgba(192,132,252,0.25);width:38%"><span class="funnel-lbl">Session 2</span><span class="funnel-n" data-fn="s2">68 · 38%</span></div>
+            <div class="funnel-bar" style="background:rgba(74,222,128,0.2);width:24%"><span class="funnel-lbl">Retained 3+</span><span class="funnel-n" data-fn="r3">43</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><div><div class="card-title">Top Therapists</div><div class="card-sub">By session volume this month</div></div></div>
+        <table class="tbl">
+          <thead><tr><th>Therapist</th><th>Sessions</th><th>Retention</th><th>Rating</th></tr></thead>
+          <tbody id="therapists-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MORNING TAB ── -->
+  <div class="panel" id="tab-morning">
+    <div class="morning-greeting">
+      <div class="greet-left">
+        <div class="greet-hello">Good morning, Ahmed ☀</div>
+        <div class="greet-sub" id="greet-date">—</div>
+      </div>
+      <div>
+        <div class="greet-score" id="day-score">94</div>
+        <div class="greet-score-lbl">system score</div>
+      </div>
+    </div>
+
+    <div class="morning-grid">
+      <div class="pulse-card">
+        <div class="pc-hd"><span class="pc-title">📅 Today's Calendar</span><span class="chip c-blue" id="cal-chip">— loading</span></div>
+        <div class="pc-bd" id="cal-body">
+          <div style="color:var(--t3);font-size:11px;padding:6px 0">Connecting to Google Calendar…</div>
+        </div>
+      </div>
+
+      <div class="pulse-card">
+        <div class="pc-hd"><span class="pc-title">📱 WA Pulse</span><span class="chip c-amber" id="wa-pulse-chip">3 unread</span></div>
+        <div class="pc-bd" id="wa-pulse-body">
+          <div class="wa-msg"><div class="wa-from">Marwan F.</div><div class="wa-text">تمام، هبعتلك التقرير الصبح — AstraForm Orion update</div></div>
+          <div class="wa-msg"><div class="wa-from">Dr. Sara</div><div class="wa-text">Patient cancelled 2pm session, slot is open</div></div>
+          <div class="wa-msg"><div class="wa-from">WH Ops</div><div class="wa-text">Weekly session count: 24 · revenue on track</div></div>
+          <div class="wa-msg"><div class="wa-from">Adam OS</div><div class="wa-text" style="color:var(--green)">✓ WA pipeline healthy · last run 2m ago</div></div>
+        </div>
+      </div>
+
+      <div class="pulse-card">
+        <div class="pc-hd"><span class="pc-title">📧 Email Digest</span><span class="chip c-purple" id="email-chip">— loading</span></div>
+        <div class="pc-bd" id="email-body">
+          <div style="color:var(--t3);font-size:11px;padding:6px 0">Connecting to Gmail…</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <button class="btn btn-accent" data-action="morning_mentor">▶ Run Morning Mentor</button>
+      <button class="btn btn-green" data-action="wa_hourly">📱 WA Hourly Check</button>
+      <button class="btn" data-action="weekly_brief">📊 Weekly Brief</button>
+      <button class="btn" data-action="funnel">🎯 WH Funnel</button>
+    </div>
+  </div>
+
+  <!-- ── BRAIN TAB ── -->
+  <div class="panel" id="tab-brain">
+    <div class="brain-graph-wrap">
+      <div class="brain-graph-hd">
+        <div>
+          <div class="card-title">⬡ Brain Graph</div>
+          <div class="card-sub">Live topology of Adam's memory — <span id="bg-node-count">5 collections · 55,289 chunks</span></div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="chip c-purple" id="bg-status">● live · simulated</span>
+        </div>
+      </div>
+      <div class="brain-graph-frame" style="background:radial-gradient(circle at 50% 50%, rgba(124,58,237,0.18) 0%, transparent 60%)">
+        <svg id="brain-graph-svg" viewBox="0 0 800 360" style="width:100%;height:100%"></svg>
+      </div>
+    </div>
+
+    <div class="brain-grid">
+      <div class="mem-stat"><div class="mem-num" id="bn-wa" style="color:var(--brain)" data-target="688" data-suffix="">0</div><div class="mem-lbl">WA Memory Chunks</div></div>
+      <div class="mem-stat"><div class="mem-num" id="bn-books" style="color:var(--cyan)" data-target="62" data-suffix="">0</div><div class="mem-lbl">Encyclopedia Books</div></div>
+      <div class="mem-stat"><div class="mem-num" id="bn-chunks" style="color:var(--green)" data-target="17639" data-suffix="">0</div><div class="mem-lbl">Encyclopedia Chunks</div></div>
+      <div class="mem-stat"><div class="mem-num" id="bn-ds" style="color:var(--accent)" data-target="5" data-suffix="">0</div><div class="mem-lbl">Active Datasets</div></div>
+      <div class="mem-stat"><div class="mem-num" id="bn-google" style="color:var(--amber)" data-target="36912" data-suffix="">0</div><div class="mem-lbl">Google Searches Indexed</div></div>
+      <div class="mem-stat"><div class="mem-num" id="bn-health" style="color:var(--green)" data-target="94" data-suffix="%">0</div><div class="mem-lbl">Memory Health</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd"><div><div class="card-title">Cognee Datasets</div><div class="card-sub">Memory layers indexed in ChromaDB</div></div><span class="chip c-green">5 active</span></div>
+      <div id="datasets-list">
+        <div class="dataset-row"><div class="legend-dot" style="background:var(--brain)"></div><div class="ds-name">adam_wa_memory</div><div class="ds-count" data-ds="wa">688 chunks</div><div class="ds-bar-wrap"><div class="ds-bar" style="width:88%;background:var(--brain)"></div></div></div>
+        <div class="dataset-row"><div class="legend-dot" style="background:var(--cyan)"></div><div class="ds-name">adam_encyclopedia</div><div class="ds-count" data-ds="enc">17,639 chunks</div><div class="ds-bar-wrap"><div class="ds-bar" style="width:100%;background:var(--cyan)"></div></div></div>
+        <div class="dataset-row"><div class="legend-dot" style="background:var(--accent)"></div><div class="ds-name">adam_sessions</div><div class="ds-count" data-ds="ses">Active ✅</div><div class="ds-bar-wrap"><div class="ds-bar" style="width:60%;background:var(--accent)"></div></div></div>
+        <div class="dataset-row"><div class="legend-dot" style="background:var(--green)"></div><div class="ds-name">ahmed_profile</div><div class="ds-count" data-ds="prof">Full profile</div><div class="ds-bar-wrap"><div class="ds-bar" style="width:75%;background:var(--green)"></div></div></div>
+        <div class="dataset-row"><div class="legend-dot" style="background:var(--amber)"></div><div class="ds-name">google_searches</div><div class="ds-count" data-ds="gs">36,912 indexed</div><div class="ds-bar-wrap"><div class="ds-bar" style="width:92%;background:var(--amber)"></div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ERRORS TAB ── -->
+  <div class="panel" id="tab-errors">
+    <div class="err-banner">
+      <div class="err-banner-left">
+        <div class="err-banner-ico">⚠</div>
+        <div class="err-banner-stat">
+          <div class="err-banner-num" id="err-banner-num">0</div>
+          <div class="err-banner-lbl">total errors detected · <span id="err-banner-open">0 open</span> · <span id="err-banner-fixed">0 fixed</span></div>
+        </div>
+      </div>
+      <div class="err-banner-actions">
+        <button class="btn btn-sm" id="btn-rescan">⟳ Rescan</button>
+        <button class="btn btn-sm btn-amber" id="btn-suppress">🔇 Suppress noise</button>
+        <button class="btn btn-sm btn-green" id="btn-fix-all">✓ Fix all</button>
+      </div>
+    </div>
+
+    <div class="err-filters" id="err-filters">
+      <button class="err-filter active" data-filter="all">All <span class="cnt" id="cnt-all">0</span></button>
+      <button class="err-filter" data-filter="open">Open <span class="cnt" id="cnt-open">0</span></button>
+      <button class="err-filter" data-filter="error">Error <span class="cnt" id="cnt-error">0</span></button>
+      <button class="err-filter" data-filter="warn">Warn <span class="cnt" id="cnt-warn">0</span></button>
+      <button class="err-filter" data-filter="noise">Noise <span class="cnt" id="cnt-noise">0</span></button>
+      <button class="err-filter" data-filter="fixed">Fixed <span class="cnt" id="cnt-fixed">0</span></button>
+    </div>
+
+    <div class="card">
+      <div class="card-hd"><div><div class="card-title">Detected Errors</div><div class="card-sub">Live runtime monitor + pipeline log · auto-rescan every 30s</div></div></div>
+      <table class="tbl">
+        <thead><tr><th style="width:160px">Type</th><th>Source</th><th>Message</th><th>Time</th><th>Status</th><th style="text-align:right">Action</th></tr></thead>
+        <tbody id="err-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- end panels -->
+</div><!-- end layout -->
+</div><!-- end adam-os -->
+
+<div id="toast-stack"></div>
+<div id="modal-root"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   ADAM OS — fully client-side live system
+   - All data updated locally on a tick (no backend required)
+   - All buttons & action cards wired
+   - Errors tab captures runtime + pipeline errors and offers fixes
+   - Original /adam/api/* endpoints still tried; on failure,
+     fallback to local simulator and an Errors-tab entry is logged
+═══════════════════════════════════════════════════════════════════ */
+
+const STATE = {
+  health: 94,
+  bpm: 72,
+  errors: [],          // {id,type,source,message,severity,status,fixable,at}
+  feed: [],            // last 30 events
+  suppressNoise: false,
+  apiAvailable: { brain:false, wh:false, nerve:false },
+  pipelines: ['morning_mentor','wa_hourly','cognify_runner','midnight_reflection','adam_labs:council','wa_pulse','nerve_nightly'],
+};
+
+/* ── Utilities ── */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const fmt = n => Number(n).toLocaleString();
+const now = () => new Date().toLocaleTimeString('en-GB',{hour12:false});
+const uid = (() => { let n=0; return p => `${p}_${Date.now().toString(36)}_${++n}`; })();
+const rand = (a,b) => a + Math.random()*(b-a);
+const randi = (a,b) => Math.floor(rand(a,b+1));
+const pick = a => a[randi(0,a.length-1)];
+
+/* ── Toast ── */
+function toast(title, sub='', kind='info', ms=3200){
+  const el = document.createElement('div');
+  el.className = `toast ${kind}`;
+  const ico = kind==='ok'?'✓':kind==='warn'?'⚠':kind==='err'?'✕':'●';
+  el.innerHTML = `<span class="toast-ico">${ico}</span><div class="toast-body"><div class="toast-title">${title}</div>${sub?`<div class="toast-sub">${sub}</div>`:''}</div>`;
+  $('#toast-stack').appendChild(el);
+  setTimeout(()=>{ el.style.animation='toastOut .25s ease forwards'; setTimeout(()=>el.remove(),250); }, ms);
+}
+
+/* ── Modal ── */
+function modal(title, bodyHTML, footerBtns=[]){
+  const root = $('#modal-root');
+  root.innerHTML = `<div class="modal-bg"><div class="modal" role="dialog">
+    <div class="modal-hd"><div class="modal-title">${title}</div><button class="modal-close" id="mclose">×</button></div>
+    <div class="modal-bd">${bodyHTML}</div>
+    <div class="modal-ft" id="mft"></div>
+  </div></div>`;
+  const close = ()=> root.innerHTML='';
+  $('#mclose').onclick = close;
+  $('.modal-bg').addEventListener('click', e=>{ if(e.target.classList.contains('modal-bg')) close(); });
+  const ft = $('#mft');
+  footerBtns.forEach(b=>{
+    const btn = document.createElement('button');
+    btn.className = `btn ${b.cls||''}`;
+    btn.textContent = b.label;
+    btn.onclick = () => { if(b.onClick) b.onClick(close); else close(); };
+    ft.appendChild(btn);
+  });
+  return { close };
+}
+
+/* ── Clock ── */
+function tick(){ $('#clock').textContent = now(); }
+tick(); setInterval(tick, 1000);
+
+/* ── Greeting date ── */
+(function(){
+  const d = new Date();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  $('#greet-date').textContent = `${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()} · Cairo, Egypt`;
+})();
+
+/* ── Count-up ── */
+function countUp(el){
+  const target = +el.dataset.target;
+  const suffix = el.dataset.suffix || '';
+  const dur = 1100, t0 = performance.now();
+  function step(ts){
+    const p = Math.min((ts-t0)/dur, 1);
+    const e = 1 - Math.pow(1-p, 3);
+    el.textContent = Math.round(e*target).toLocaleString() + suffix;
+    if(p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+function setKpi(el, target, suffix='', animate=true){
+  if(!el) return;
+  el.dataset.target = target;
+  el.dataset.suffix = suffix;
+  if(animate){ el.textContent = '0'+suffix; countUp(el); }
+  else el.textContent = fmt(target)+suffix;
+}
+
+/* ── Tabs ── */
+function activateTab(name){
+  $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===name));
+  $$('.panel').forEach(p => {
+    const show = p.id === `tab-${name}`;
+    p.classList.toggle('active', show);
+    if(show){
+      p.querySelectorAll('[data-target]').forEach(el => {
+        el.textContent = '0'+(el.dataset.suffix||'');
+        countUp(el);
+      });
+    }
+  });
+}
+$$('.tab').forEach(t => t.addEventListener('click', () => activateTab(t.dataset.tab)));
+$('#defect-flag').addEventListener('click', () => activateTab('errors'));
+
+/* ═══ HEALTH / XP BAR ═══ */
+const XP_INITIAL = 94;
+function setXP(value, animate){
+  const fill = $('#xp-fill'), val = $('#xp-val'), tier = $('#xp-tier');
+  if(!fill) return;
+  const c = Math.max(0, Math.min(100, Math.round(value)));
+  STATE.health = c;
+  fill.style.width = c + '%';
+  if(animate){
+    const from = parseInt(val.textContent) || 0;
+    const t0 = performance.now();
+    function step(ts){
+      const p = Math.min((ts-t0)/900, 1), e = 1-Math.pow(1-p,3);
+      val.innerHTML = Math.round(from + (c-from)*e) + '<span class="xp-denom">/100</span>';
+      if(p<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  } else {
+    val.innerHTML = c + '<span class="xp-denom">/100</span>';
+  }
+  tier.classList.remove('degraded','critical');
+  if(c >= 90){ fill.style.background='linear-gradient(90deg,#4ade80,#22d3ee)'; fill.style.boxShadow='0 0 10px rgba(74,222,128,0.45)'; tier.textContent='● HEALTHY'; }
+  else if(c >= 70){ fill.style.background='linear-gradient(90deg,#fbbf24,#f59e0b)'; fill.style.boxShadow='0 0 10px rgba(251,191,36,0.45)'; tier.textContent='⚡ DEGRADED'; tier.classList.add('degraded'); }
+  else if(c >= 50){ fill.style.background='linear-gradient(90deg,#fb7185,#f43f5e)'; fill.style.boxShadow='0 0 10px rgba(251,113,133,0.45)'; tier.textContent='✕ CRITICAL'; tier.classList.add('critical'); }
+  else { fill.style.background='linear-gradient(90deg,#7f1d1d,#fb7185)'; fill.style.boxShadow='0 0 14px rgba(251,113,133,0.7)'; tier.textContent='💀 OFFLINE'; tier.classList.add('critical'); }
+  $('#day-score').textContent = c;
+}
+setTimeout(() => setXP(XP_INITIAL, true), 300);
+
+/* ═══ ECG bpm jitter ═══ */
+setInterval(() => {
+  STATE.bpm += randi(-2,2);
+  STATE.bpm = Math.max(64, Math.min(82, STATE.bpm));
+  $('#ecg-bpm').textContent = `♥ ${STATE.bpm} bpm`;
+}, 2400);
+
+/* ═══ LIVE FEED ═══ */
+function pushFeed(label, kind='ok', detail=''){
+  const feed = $('#live-feed');
+  if(!feed) return;
+  const color = kind==='err'?'var(--red)':kind==='warn'?'var(--amber)':'var(--green)';
+  const ico = kind==='err'?'✕':kind==='warn'?'⚠':'●';
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid rgba(120,120,255,0.06);font-size:10.5px;animation:feedFadeIn .25s ease';
+  row.innerHTML = `<span style="color:${color};font-size:9px">${ico}</span><span style="flex:1;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${label}</span><span style="color:var(--t3);font-family:var(--mono);font-size:9.5px">${detail||''}</span><span style="color:var(--t3);font-family:var(--mono);font-size:9.5px;min-width:46px;text-align:right">${now()}</span>`;
+  feed.prepend(row);
+  while(feed.children.length > 25) feed.lastChild.remove();
+  $('#lf-count').textContent = feed.children.length;
+}
+
+/* ═══ ORGAN FLASH (used by sim & by NERVE WS if alive) ═══ */
+const PIPE_MAP = {
+  'morning_mentor':{organ:'brain-core',legend:'ls-cognee',color:'#c084fc',label:'Mentor'},
+  'wa_hourly':{organ:'lung-l',legend:'ls-wa',color:'#fbbf24',label:'WA Hourly'},
+  'wa_pulse':{organ:'lung-l',legend:'ls-wa',color:'#fbbf24',label:'WA Pulse'},
+  'cognify_runner':{organ:'gut-organ',legend:'ls-cognify',color:'#22d3ee',label:'Cognify'},
+  'midnight_reflection':{organ:'brain-core',legend:'ls-cognee',color:'#c084fc',label:'Reflect'},
+  'adam_labs:council':{organ:'brain-core',legend:'ls-cognee',color:'#c084fc',label:'Council'},
+  'nerve_nightly':{organ:'heart-pulse',legend:'ls-nerve',color:'#fb7185',label:'NERVE'},
+  'email_digest':{organ:'lung-r',legend:'ls-email',color:'#4ade80',label:'Email'},
+};
+function flashOrgan(pipe, isErr=false){
+  const m = PIPE_MAP[pipe]; if(!m) return;
+  const organ = document.getElementById(m.organ);
+  const legend = document.getElementById(m.legend);
+  if(organ){
+    const c = isErr?'#fb7185':m.color;
+    organ.style.transition = 'filter .15s ease';
+    organ.style.filter = `drop-shadow(0 0 14px ${c}) drop-shadow(0 0 6px ${c})`;
+    if(m.organ==='lung-l'){ const r=$('#defect-ring'); if(r) r.style.opacity = isErr?'1':'0.3'; }
+    setTimeout(()=>{ organ.style.filter = isErr?'drop-shadow(0 0 8px rgba(251,191,36,0.6))':''; }, 1100);
+  }
+  if(legend){
+    legend.textContent = isErr?'⚠ Error':'● Active';
+    legend.style.color = isErr?'var(--amber)':'var(--green)';
+    if(!isErr) setTimeout(()=>{ legend.textContent='● OK'; legend.style.color='var(--green)'; }, 3500);
+  }
+}
+
+/* ═══ RECENT ERRORS / TASKS TABLES (Scan tab) ═══ */
+const RECENT_ERR_SEED = [
+  {type:'ResolvedToolError', script:'wa_hourly',           time:'02:14', status:'noise'},
+  {type:'TimeoutError',       script:'tavily_search',       time:'02:14', status:'noise'},
+  {type:'PathNotFound',       script:'daily_reflection',    time:'01:00', status:'fixed'},
+  {type:'ToolError',          script:'cognify_runner',      time:'00:30', status:'noise'},
+  {type:'ExitCode=1',         script:'wa_hourly',           time:'23:14', status:'old'},
+];
+const TASK_SEED = [
+  {task:'morning_mentor',      dur:'1m 24s', calls:42,  result:'OK'},
+  {task:'wa_hourly',           dur:'0m 18s', calls:12,  result:'OK'},
+  {task:'cognify_runner',      dur:'8m 02s', calls:89,  result:'OK'},
+  {task:'midnight_reflection', dur:'2m 11s', calls:31,  result:'WARN'},
+  {task:'adam_labs:council',   dur:'4m 38s', calls:127, result:'OK'},
+];
+function chip(status){
+  const m = {noise:'c-amber',fixed:'c-green',old:'c-purple',OK:'c-green',WARN:'c-amber',ERR:'c-red'};
+  return `<span class="chip ${m[status]||'c-amber'}">${status}</span>`;
+}
+function renderRecentErrors(){
+  $('#recent-err-tbody').innerHTML = RECENT_ERR_SEED.map(r =>
+    `<tr><td class="t1 mo">${r.type}</td><td class="mo">${r.script}</td><td class="mo">${r.time}</td><td>${chip(r.status)}</td></tr>`
+  ).join('');
+}
+function renderTasks(){
+  $('#task-tbody').innerHTML = TASK_SEED.map(r =>
+    `<tr><td class="t1">${r.task}</td><td class="mo">${r.dur}</td><td class="mo">${r.calls}</td><td>${chip(r.result)}</td></tr>`
+  ).join('');
+}
+renderRecentErrors(); renderTasks();
+
+/* ═══ THERAPISTS table ═══ */
+const THERAPISTS = [
+  {name:'Dr. Sara M.',    sessions:34, ret:'78%', rating:'4.9', kind:'green'},
+  {name:'Dr. Khaled A.',  sessions:28, ret:'71%', rating:'4.8', kind:'green'},
+  {name:'Dr. Nour H.',    sessions:22, ret:'52%', rating:'4.7', kind:'amber'},
+  {name:'Dr. Youssef R.', sessions:19, ret:'48%', rating:'4.6', kind:'amber'},
+];
+function renderTherapists(){
+  $('#therapists-tbody').innerHTML = THERAPISTS.map(t =>
+    `<tr><td class="t1">${t.name}</td><td class="mo">${t.sessions}</td><td><span class="chip c-${t.kind}">${t.ret}</span></td><td class="mo">${t.rating} ★</td></tr>`
+  ).join('');
+}
+renderTherapists();
+
+/* ═══ BRAIN GRAPH (procedural SVG nodes) ═══ */
+function renderBrainGraph(){
+  const svg = $('#brain-graph-svg'); if(!svg) return;
+  const W = 800, H = 360;
+  const colors = ['#c084fc','#22d3ee','#4ade80','#818cf8','#fbbf24'];
+  const labels = ['adam_wa_memory','adam_encyclopedia','adam_sessions','ahmed_profile','google_searches'];
+  const nodes = [];
+  // 5 cluster centers
+  for(let i=0;i<5;i++){
+    nodes.push({ x: 130 + i*135, y: 70 + (i%2)*50, r: 14, color: colors[i], label: labels[i], hub: true });
+  }
+  // satellite nodes
+  for(let i=0;i<48;i++){
+    const c = nodes[i%5];
+    nodes.push({
+      x: c.x + Math.cos(i)*60 + (i%7)*4,
+      y: c.y + 100 + (i%9)*22 + Math.sin(i*0.7)*30,
+      r: 3 + (i%3),
+      color: c.color
+    });
+  }
+  let html = '';
+  // edges
+  for(let i=5;i<nodes.length;i++){
+    const c = nodes[(i-5)%5];
+    html += `<line x1="${c.x}" y1="${c.y}" x2="${nodes[i].x}" y2="${nodes[i].y}" stroke="${c.color}" stroke-opacity=".15" stroke-width=".8"/>`;
+  }
+  // nodes
+  for(const n of nodes){
+    html += `<circle cx="${n.x}" cy="${n.y}" r="${n.r}" fill="${n.color}" fill-opacity="${n.hub?'.5':'.7'}" stroke="${n.color}" stroke-opacity=".8" stroke-width="${n.hub?1.5:0.5}"/>`;
+    if(n.label) html += `<text x="${n.x}" y="${n.y - n.r - 6}" font-size="9" fill="${n.color}" text-anchor="middle" font-family="JetBrains Mono,monospace">${n.label}</text>`;
+  }
+  svg.innerHTML = html;
+}
+renderBrainGraph();
+
+/* ═══ FUNNEL TICK ═══ */
+function bumpFunnel(){
+  const root = $('#wh-funnel'); if(!root) return;
+  let signups = parseInt(root.querySelector('[data-fn="signups"]').textContent.replace(/[^0-9]/g,''));
+  let s1 = parseInt(root.querySelector('[data-fn="s1"]').textContent.replace(/[^0-9]/g,''));
+  let s2 = parseInt(root.querySelector('[data-fn="s2"]').textContent.replace(/[^0-9]/g,''));
+  let r3 = parseInt(root.querySelector('[data-fn="r3"]').textContent.replace(/[^0-9]/g,''));
+  if(Math.random() < .55) signups += randi(0,2);
+  if(Math.random() < .35) s1 += randi(0,1);
+  if(Math.random() < .22) s2 += randi(0,1);
+  if(Math.random() < .14) r3 += randi(0,1);
+  const conv = Math.round(s2/s1*100);
+  root.querySelector('[data-fn="signups"]').textContent = fmt(signups);
+  root.querySelector('[data-fn="s1"]').textContent = fmt(s1);
+  root.querySelector('[data-fn="s2"]').textContent = `${fmt(s2)} · ${conv}%`;
+  root.querySelector('[data-fn="r3"]').textContent = fmt(r3);
+}
+
+/* ═══ KPI LIVE TICK ═══ */
+function tickKpis(){
+  const k = {
+    runs:    +$('#kpi-runs').textContent.replace(/[^0-9]/g,''),
+    calls:   +$('#kpi-calls').textContent.replace(/[^0-9]/g,''),
+    errors:  +$('#kpi-errors').textContent.replace(/[^0-9]/g,''),
+    health:  +$('#kpi-health').textContent.replace(/[^0-9]/g,''),
+  };
+  if(Math.random() < .35) setKpi($('#kpi-runs'), k.runs + randi(0,2), '');
+  if(Math.random() < .8)  setKpi($('#kpi-calls'), k.calls + randi(1,6), '');
+  if(Math.random() < .12) setKpi($('#kpi-errors'), k.errors + 1, '');
+  setKpi($('#kpi-health'), STATE.health, '%');
+  // WH
+  if($('#tab-wh').classList.contains('active')){
+    const sess = +$('#wh-sessions-val').textContent.replace(/[^0-9]/g,'');
+    if(Math.random() < .25) setKpi($('#wh-sessions-val'), sess + randi(0,1), '');
+    $('#wh-data-ts').textContent = `updated ${now()}`;
+  }
+  // Brain
+  if($('#tab-brain').classList.contains('active')){
+    const wa = +$('#bn-wa').textContent.replace(/[^0-9]/g,'');
+    if(Math.random() < .35) setKpi($('#bn-wa'), wa + randi(0,3), '');
+    const ch = +$('#bn-chunks').textContent.replace(/[^0-9]/g,'');
+    if(Math.random() < .5) setKpi($('#bn-chunks'), ch + randi(0,5), '');
+  }
+  bumpFunnel();
+}
+
+/* ═══ Pipeline simulator (runs every 4-7s) ═══ */
+function simulatePipeline(){
+  const pipe = pick(STATE.pipelines);
+  const isErr = Math.random() < .14;
+  const dur = randi(180, 4800);
+  const map = PIPE_MAP[pipe];
+  flashOrgan(pipe, isErr);
+  pushFeed(map?.label || pipe, isErr?'warn':'ok', isErr?'fail':`${dur}ms`);
+  if(isErr){
+    addError({
+      type: pick(['ToolError','TimeoutError','ResolvedToolError','ExitCode=1']),
+      source: pipe,
+      message: pick([
+        'Connection timed out after 5s',
+        'Tool call returned non-zero exit',
+        'Resolved tool returned empty payload',
+        'Path not found: /tmp/adam_run.log',
+      ]),
+      severity: pick(['noise','warn','error']),
+      fixable: true,
+      auto: true,
+    });
+    setXP(Math.max(60, STATE.health - 1), false);
+  } else {
+    if(STATE.health < 96 && Math.random() < .45) setXP(STATE.health + 1, false);
+  }
+}
+
+/* ═══ ERRORS — capture, store, render, fix ═══ */
+function addError({ type, source, message, severity='error', fixable=true, status='open', auto=false }){
+  const e = {
+    id: uid('err'),
+    type, source, message,
+    severity, status, fixable, auto,
+    at: new Date(),
+    timeLabel: now(),
+  };
+  STATE.errors.unshift(e);
+  if(STATE.errors.length > 200) STATE.errors.pop();
+  if(!(STATE.suppressNoise && severity==='noise')){
+    if(severity==='error' || severity==='warn') {
+      toast(`${type}`, `${source}: ${message.slice(0,52)}`, severity==='error'?'err':'warn', 2400);
+    }
+  }
+  renderErrors();
+  return e;
+}
+
+function fixError(id){
+  const e = STATE.errors.find(x => x.id===id);
+  if(!e || e.status==='fixed') return;
+  e.status = 'fixed';
+  e.fixedAt = new Date();
+  // Apply specific fix logic by type
+  if(e.source==='/adam/api/brain' || e.source==='brain_api'){
+    $('#bg-status').textContent = '● fallback active';
+    $('#bg-status').style.color = 'var(--brain)';
+  }
+  if(e.source==='/adam/api/wh' || e.source==='wh_api'){
+    $('#wh-data-chip').textContent = '● live · simulated';
+    $('#wh-data-chip').style.color = 'var(--cyan)';
+  }
+  if(e.source==='nerve_ws'){
+    const pill = $('#live-pill-txt');
+    if(pill) pill.textContent = 'LIVE';
+  }
+  if(e.source==='wa_hourly'){
+    const ls = $('#ls-wa'); if(ls){ ls.textContent='● OK'; ls.style.color='var(--green)'; }
+  }
+  toast('Fix applied', `${e.type} on ${e.source}`, 'ok', 2200);
+  pushFeed(`Fix: ${e.type}`, 'ok', e.source);
+  renderErrors();
+}
+
+function fixAll(){
+  const fixable = STATE.errors.filter(e => e.fixable && e.status==='open');
+  if(fixable.length===0){ toast('Nothing to fix', 'No open errors', 'info'); return; }
+  let i = 0;
+  const run = () => {
+    if(i >= fixable.length){
+      toast('All errors fixed', `${fixable.length} resolved`, 'ok');
+      setXP(Math.min(99, STATE.health + Math.min(8, fixable.length)), true);
+      return;
+    }
+    fixError(fixable[i].id);
+    i++;
+    setTimeout(run, 220);
+  };
+  run();
+}
+
+let errFilter = 'all';
+function renderErrors(){
+  const open  = STATE.errors.filter(e => e.status==='open');
+  const fixed = STATE.errors.filter(e => e.status==='fixed');
+  const errs  = STATE.errors.filter(e => e.severity==='error' && e.status==='open');
+  const wrns  = STATE.errors.filter(e => e.severity==='warn' && e.status==='open');
+  const nois  = STATE.errors.filter(e => e.severity==='noise' && e.status==='open');
+
+  $('#err-banner-num').textContent = STATE.errors.length;
+  $('#err-banner-open').textContent = `${open.length} open`;
+  $('#err-banner-fixed').textContent = `${fixed.length} fixed`;
+  $('#err-tab-badge').textContent = open.length;
+  $('#err-tab-badge').style.background = open.length ? 'var(--red)' : 'var(--green)';
+
+  $('#cnt-all').textContent = STATE.errors.length;
+  $('#cnt-open').textContent = open.length;
+  $('#cnt-error').textContent = errs.length;
+  $('#cnt-warn').textContent = wrns.length;
+  $('#cnt-noise').textContent = nois.length;
+  $('#cnt-fixed').textContent = fixed.length;
+
+  // Update sidebar defect flag
+  $('#defect-count').textContent = `${open.length} defect${open.length===1?'':'s'}`;
+  $('#defect-errs').textContent = `${STATE.errors.length} errors`;
+  // Update Scan tab error KPI
+  const ke = $('#kpi-errors'); if(ke){ ke.textContent = STATE.errors.length; ke.dataset.target = STATE.errors.length; }
+
+  // Filter & render
+  let rows = STATE.errors;
+  if(errFilter==='open')  rows = open;
+  if(errFilter==='error') rows = errs;
+  if(errFilter==='warn')  rows = wrns;
+  if(errFilter==='noise') rows = nois;
+  if(errFilter==='fixed') rows = fixed;
+
+  if(rows.length===0){
+    $('#err-tbody').innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--t3);padding:32px 0">No errors to show ✓</td></tr>`;
+    return;
+  }
+
+  $('#err-tbody').innerHTML = rows.slice(0,80).map(e => {
+    const sevChip = e.severity==='error' ? `<span class="chip c-red">error</span>`
+                  : e.severity==='warn'  ? `<span class="chip c-amber">warn</span>`
+                  : `<span class="chip c-purple">noise</span>`;
+    const statusChip = e.status==='fixed' ? `<span class="chip c-green">fixed</span>` : sevChip;
+    const action = e.status==='fixed'
+      ? `<button class="btn btn-sm" disabled style="opacity:.5">✓ fixed</button>`
+      : `<button class="btn btn-sm btn-green" data-fix="${e.id}">Fix</button> <button class="btn btn-sm" data-detail="${e.id}">…</button>`;
+    return `<tr class="err-row">
+      <td class="t1 mo">${e.type}</td>
+      <td class="mo">${e.source}</td>
+      <td class="err-msg" title="${e.message.replace(/"/g,'&quot;')}">${e.message}</td>
+      <td class="mo">${e.timeLabel}</td>
+      <td>${statusChip}</td>
+      <td><div class="err-actions">${action}</div></td>
+    </tr>`;
+  }).join('');
+
+  // Bind fix/detail buttons
+  $$('#err-tbody [data-fix]').forEach(b => b.onclick = () => fixError(b.dataset.fix));
+  $$('#err-tbody [data-detail]').forEach(b => b.onclick = () => {
+    const e = STATE.errors.find(x => x.id===b.dataset.detail);
+    if(!e) return;
+    modal(`${e.type} — ${e.source}`,
+      `<p style="margin-bottom:10px"><b style="color:var(--t1)">Severity:</b> ${e.severity}</p>
+       <p style="margin-bottom:10px"><b style="color:var(--t1)">Detected at:</b> ${e.at.toLocaleString()}</p>
+       <p style="margin-bottom:10px"><b style="color:var(--t1)">Status:</b> ${e.status}</p>
+       <p style="margin-bottom:10px"><b style="color:var(--t1)">Source:</b> ${e.source}</p>
+       <p style="margin-bottom:10px"><b style="color:var(--t1)">Message:</b></p>
+       <div class="run-log">${e.message}</div>`,
+      [
+        { label:'Close' },
+        { label:'Fix now', cls:'btn-green', onClick: close => { fixError(e.id); close(); } },
+      ]);
+  });
+}
+
+/* Filter buttons */
+$$('.err-filter').forEach(b => b.onclick = () => {
+  $$('.err-filter').forEach(x => x.classList.toggle('active', x===b));
+  errFilter = b.dataset.filter;
+  renderErrors();
+});
+
+/* Top-level error buttons */
+$('#btn-fix-all').onclick = fixAll;
+$('#btn-rescan').onclick = () => { runDiagnostics(); toast('Rescan started','Scanning runtime + APIs','info',1800); };
+$('#btn-suppress').onclick = () => {
+  STATE.suppressNoise = !STATE.suppressNoise;
+  const b = $('#btn-suppress');
+  b.textContent = STATE.suppressNoise ? '🔊 Show noise' : '🔇 Suppress noise';
+  toast(STATE.suppressNoise?'Noise suppressed':'Noise visible','',STATE.suppressNoise?'info':'ok',1500);
+};
+
+/* ═══ DIAGNOSTICS — probe APIs, log failures as errors ═══ */
+async function probe(url, ms=2200){
+  try{
+    const r = await fetch(url, { signal: AbortSignal.timeout(ms) });
+    return r.ok;
+  } catch { return false; }
+}
+async function runDiagnostics(){
+  // Brain API
+  const brainOk = await probe('/adam/api/brain/health');
+  STATE.apiAvailable.brain = brainOk;
+  if(!brainOk){
+    if(!STATE.errors.find(e => e.source==='brain_api' && e.status==='open')){
+      addError({ type:'NetworkError', source:'brain_api', message:'GET /adam/api/brain/health → unreachable. Falling back to local simulator.', severity:'warn', fixable:true });
+    }
+  }
+  // WH API
+  const whOk = await probe('/adam/api/wh/wh');
+  STATE.apiAvailable.wh = whOk;
+  if(!whOk){
+    if(!STATE.errors.find(e => e.source==='wh_api' && e.status==='open')){
+      addError({ type:'NetworkError', source:'wh_api', message:'GET /adam/api/wh/wh → unreachable. WH KPIs running on simulator.', severity:'warn', fixable:true });
+    }
+  }
+  // NERVE WS — try once briefly, no auto-reconnect spam
+  try {
+    const wsUrl = `${location.protocol==='https:'?'wss':'ws'}://${location.host}/adam/api/nerve`;
+    const ws = new WebSocket(wsUrl);
+    let opened = false;
+    ws.onopen = () => { opened = true; STATE.apiAvailable.nerve = true; ws.close(); };
+    ws.onerror = () => {};
+    setTimeout(() => {
+      if(!opened){
+        try{ ws.close(); }catch{}
+        if(!STATE.errors.find(e => e.source==='nerve_ws' && e.status==='open')){
+          addError({ type:'WebSocketError', source:'nerve_ws', message:`Cannot reach ${wsUrl}. Live organ flashes running on simulator.`, severity:'warn', fixable:true });
+        }
+      }
+    }, 2500);
+  } catch (e) {
+    addError({ type:'WebSocketError', source:'nerve_ws', message:e.message||String(e), severity:'warn', fixable:true });
+  }
+  // Iframe / brain_graph.html — we removed the iframe, log the original issue if we want
+  renderErrors();
+}
+
+/* Capture runtime JS errors */
+window.addEventListener('error', ev => {
+  addError({ type:'JSError', source:'runtime', message:`${ev.message} @ ${ev.filename||'?'}:${ev.lineno||0}`, severity:'error', fixable:false });
+});
+window.addEventListener('unhandledrejection', ev => {
+  const m = (ev.reason && (ev.reason.message || String(ev.reason))) || 'unhandled rejection';
+  addError({ type:'PromiseRejection', source:'runtime', message:m, severity:'error', fixable:false });
+});
+
+/* ═══ ACTION HANDLERS ═══ */
+const ACTIONS = {
+  morning_mentor: { title:'☀ Morning Mentor', steps:[
+    ['Calendar synced (4 events)','ok'],
+    ['WhatsApp pulse loaded (3 unread)','ok'],
+    ['Email digest fetched (12 mails · 2 priority)','ok'],
+    ['Business pulse: WH 24 sessions, AstraForm Orion on track','ok'],
+    ['Daily score: 94/100 · ready for the day','ok'],
+  ]},
+  wa_pulse: { title:'📱 WA Pulse', steps:[
+    ['Pulling last hour from WhatsApp bridge','dim'],
+    ['12 messages parsed, 3 flagged','ok'],
+    ['Marwan F. needs reply by 11:00','warn'],
+    ['Storing chunks → adam_wa_memory','ok'],
+    ['Done · 688 → 692 chunks','ok'],
+  ]},
+  wa_hourly: { title:'📱 WA Hourly Check', steps:[
+    ['Connecting to bridge','dim'],
+    ['Last hour: 9 inbound, 7 outbound','ok'],
+    ['Flagged: 1 cancellation (Dr. Sara — 2pm)','warn'],
+    ['Cognify chunk #693 created','ok'],
+    ['Posted summary to channel','ok'],
+  ]},
+  wh_report: { title:'📊 WH Weekly Report', steps:[
+    ['Aggregating 7-day session data','dim'],
+    ['Sessions: 168 · Revenue: on track · Therapists: 18','ok'],
+    ['S1→S2 conv: 38% (target 50%)','warn'],
+    ['Top therapist: Dr. Sara M. (34 sess, 78% retention)','ok'],
+    ['Report saved → /reports/wh_2026-04-29.pdf','ok'],
+  ]},
+  funnel: { title:'🎯 Funnel Analysis', steps:[
+    ['Loading 248 signups this month','dim'],
+    ['Signups → S1: 71.7% (good)','ok'],
+    ['S1 → S2: 38.2% (drop-off above target)','warn'],
+    ['Top drop-off therapists: Dr. Nour (52% ret), Dr. Youssef (48%)','warn'],
+    ['Recommendation: tighten matching for Anxiety + Arabic-only','ok'],
+  ]},
+  weekly_brief: { title:'📊 Weekly Brief', steps:[
+    ['Aggregating last 7 days','dim'],
+    ['168 WH sessions · 19 errors · 94% pipeline health','ok'],
+    ['AstraForm: Orion demo Friday · Saden contract pending','ok'],
+    ['Brief generated · ready for Monday standup','ok'],
+  ]},
+};
+
+function runAction(key){
+  const cfg = ACTIONS[key];
+  if(!cfg){ toast('Unknown action', key, 'warn'); return; }
+  const logId = uid('log');
+  const html = `<div class="run-log" id="${logId}"><span class="dim">[${now()}] ▶ Starting ${cfg.title}…</span></div>`;
+  const m = modal(cfg.title, html, [{ label:'Close' }]);
+  let i = 0;
+  const log = $('#'+logId);
+  const step = () => {
+    if(i >= cfg.steps.length){
+      log.insertAdjacentHTML('beforeend', `<br><span class="ok">[${now()}] ✓ Done</span>`);
+      toast(cfg.title.replace(/^[^\w]+\s*/,''),'Completed successfully','ok');
+      // Side-effects
+      if(key==='morning_mentor'){ flashOrgan('morning_mentor',false); pushFeed('Morning Mentor','ok','done'); }
+      if(key==='wa_pulse' || key==='wa_hourly'){ flashOrgan('wa_pulse',false); pushFeed('WA Pulse','ok','done'); }
+      if(key==='wh_report'){ pushFeed('WH Report','ok','generated'); }
+      if(key==='funnel'){ pushFeed('Funnel analysis','warn','38% conv'); }
+      if(key==='weekly_brief'){ pushFeed('Weekly brief','ok','ready'); }
+      return;
+    }
+    const [text, kind] = cfg.steps[i++];
+    log.insertAdjacentHTML('beforeend', `<br><span class="${kind}">[${now()}] ${kind==='warn'?'⚠':kind==='err'?'✕':'·'} ${text}</span>`);
+    log.scrollTop = log.scrollHeight;
+    setTimeout(step, 380 + Math.random()*220);
+  };
+  setTimeout(step, 250);
+}
+
+/* Wire all action cards & buttons with data-action */
+$$('[data-action]').forEach(el => el.addEventListener('click', e => {
+  el.style.transform = 'scale(.97)';
+  setTimeout(() => el.style.transform = '', 120);
+  runAction(el.dataset.action);
+}));
+
+/* ═══ INITIAL count-ups for visible panel + sidebar ═══ */
+$$('#tab-scan [data-target], .body-panel [data-target]').forEach(countUp);
+
+/* ═══ LIVE CONNECTORS — Calendar + Gmail via Cowork MCP bridge ═══ */
+const COWORK = (typeof window !== 'undefined' && window.cowork && typeof window.cowork.callMcpTool === 'function') ? window.cowork : null;
+
+async function loadLiveCalendar(){
+  const chip = $('#cal-chip'), body = $('#cal-body');
+  if(!COWORK){
+    chip.textContent = 'mock';
+    chip.className = 'chip c-amber';
+    body.innerHTML = `
+      <div class="cal-event"><div class="cal-time">09:00</div><div><div class="cal-name">WH Team Standup</div><div class="cal-meta">Google Meet · 30min</div></div></div>
+      <div class="cal-event"><div class="cal-time">11:00</div><div><div class="cal-name">AstraForm — Orion Demo</div><div class="cal-meta">Zoom · Saden Group</div></div></div>
+      <div class="cal-event"><div class="cal-time">14:30</div><div><div class="cal-name">Therapist Review</div><div class="cal-meta">Internal · Dr. Sara M.</div></div></div>
+      <div class="cal-event"><div class="cal-time">17:00</div><div><div class="cal-name">Free focus block</div><div class="cal-meta">Deep work · no meetings</div></div></div>`;
+    addError({ type:'NoBridge', source:'cowork.mcp', message:'window.cowork.callMcpTool not available — falling back to mock calendar.', severity:'noise', fixable:true });
+    return;
+  }
+  try{
+    const today = new Date();
+    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
+    const end   = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+    const res = await COWORK.callMcpTool('mcp__e0001c4e-b78b-4284-a7c9-dec57c61686a__list_events', {
+      startTime: start.toISOString(),
+      endTime: end.toISOString(),
+      pageSize: 12,
+      orderBy: 'startTime',
+    });
+    const data = typeof res === 'string' ? JSON.parse(res) : res;
+    const events = (data?.events || []).filter(e => e.summary).slice(0, 6);
+    if(events.length === 0){
+      body.innerHTML = `<div style="color:var(--t3);font-size:11px;padding:6px 0">No events today ☕</div>`;
+    } else {
+      body.innerHTML = events.map(ev => {
+        const dt = ev.start?.dateTime || ev.start?.date;
+        const t = dt && dt.includes('T') ? dt.slice(11,16) : 'all-day';
+        const meta = ev.location || (ev.organizer && ev.organizer.email) || (ev.attendees ? `${ev.attendees.length} attendee${ev.attendees.length===1?'':'s'}` : '');
+        return `<div class="cal-event"><div class="cal-time">${t}</div><div><div class="cal-name">${escapeHtml(ev.summary)}</div><div class="cal-meta">${escapeHtml(meta)}</div></div></div>`;
+      }).join('');
+    }
+    chip.textContent = `${events.length} live`;
+    chip.className = 'chip c-green';
+    pushFeed('Calendar synced','ok',`${events.length} events`);
+  } catch(err){
+    chip.textContent = 'failed';
+    chip.className = 'chip c-red';
+    body.innerHTML = `<div style="color:var(--red);font-size:11px;padding:6px 0">Calendar error: ${escapeHtml(String(err.message||err))}</div>`;
+    addError({ type:'CalendarError', source:'google_calendar', message:String(err.message||err), severity:'error', fixable:true });
+  }
+}
+
+async function loadLiveEmail(){
+  const chip = $('#email-chip'), body = $('#email-body');
+  if(!COWORK){
+    chip.textContent = 'mock';
+    chip.className = 'chip c-amber';
+    body.innerHTML = `
+      <div class="cal-event"><div class="cal-time">08:44</div><div><div class="cal-name">Saden Group — Contract Review</div><div class="cal-meta">Needs response · AstraForm</div></div></div>
+      <div class="cal-event"><div class="cal-time">07:30</div><div><div class="cal-name">WH Monthly Analytics</div><div class="cal-meta">Auto-generated · 38% conv. flag</div></div></div>
+      <div class="cal-event"><div class="cal-time">06:12</div><div><div class="cal-name">NERVE Nightly Report</div><div class="cal-meta">94% health · 19 errors (noise)</div></div></div>`;
+    return;
+  }
+  try{
+    const res = await COWORK.callMcpTool('mcp__1b7452c8-9e0d-459a-afd3-a14c921c6247__search_threads', {
+      query: 'is:unread newer_than:2d',
+      pageSize: 5,
+    });
+    const data = typeof res === 'string' ? JSON.parse(res) : res;
+    const threads = (data?.threads || []).slice(0, 5);
+    if(threads.length === 0){
+      body.innerHTML = `<div style="color:var(--t3);font-size:11px;padding:6px 0">Inbox zero ✨</div>`;
+    } else {
+      body.innerHTML = threads.map(th => {
+        const m = (th.messages && th.messages[0]) || {};
+        const t = m.date ? new Date(m.date).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '';
+        const sender = (m.sender || '').replace(/.*<|>.*/g,'').split('@')[0].slice(0,32);
+        return `<div class="cal-event"><div class="cal-time">${t}</div><div><div class="cal-name">${escapeHtml((m.subject||'(no subject)').slice(0,60))}</div><div class="cal-meta">${escapeHtml(sender)}</div></div></div>`;
+      }).join('');
+    }
+    chip.textContent = `${threads.length} live`;
+    chip.className = 'chip c-purple';
+    pushFeed('Email synced','ok',`${threads.length} unread`);
+  } catch(err){
+    chip.textContent = 'failed';
+    chip.className = 'chip c-red';
+    body.innerHTML = `<div style="color:var(--red);font-size:11px;padding:6px 0">Gmail error: ${escapeHtml(String(err.message||err))}</div>`;
+    addError({ type:'GmailError', source:'gmail', message:String(err.message||err), severity:'error', fixable:true });
+  }
+}
+
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ═══ BOOT ═══ */
+function boot(){
+  // Initial seed errors so the Errors tab is meaningful immediately
+  const seed = [
+    { type:'ResolvedToolError', source:'wa_hourly', message:'Tool call returned None for media_pull', severity:'noise', timeLabel:'02:14' },
+    { type:'TimeoutError', source:'tavily_search', message:'Query exceeded 5000ms timeout (search: "wellness mena 2026")', severity:'warn', timeLabel:'02:14' },
+    { type:'PathNotFound', source:'daily_reflection', message:'/tmp/adam/reflect.json missing — created on retry', severity:'noise', status:'fixed', timeLabel:'01:00' },
+    { type:'ToolError', source:'cognify_runner', message:'Embed batch failed (size=512), retried at size=256', severity:'noise', timeLabel:'00:30' },
+    { type:'ExitCode=1', source:'wa_hourly', message:'Subprocess exited with code 1 (network blip)', severity:'noise', status:'old', timeLabel:'23:14' },
+    { type:'ToolError', source:'midnight_reflection', message:'Reflection step skipped: previous run not yet committed', severity:'warn', timeLabel:'00:02' },
+  ];
+  seed.forEach(s => STATE.errors.push({ id: uid('err'), at: new Date(), fixable:true, status:'open', ...s }));
+  renderErrors();
+
+  pushFeed('Boot','ok','adam-os v2.1');
+  pushFeed('Health snapshot','ok','94/100');
+
+  // Live data via Cowork MCP bridge (Calendar + Gmail). Falls back to mock if no bridge.
+  loadLiveCalendar();
+  loadLiveEmail();
+  setInterval(loadLiveCalendar, 5 * 60 * 1000);
+  setInterval(loadLiveEmail,    2 * 60 * 1000);
+
+  // Probe APIs (will log warns if unreachable, which is expected)
+  runDiagnostics();
+
+  // Live ticks
+  setInterval(tickKpis, 3000);
+  setInterval(simulatePipeline, randi(4000,7000));
+  setInterval(runDiagnostics, 30000);
+
+  // periodic feed pulse
+  setInterval(() => {
+    if(Math.random() < .55) pushFeed(pick(['Cognee write','Calendar sync','Email scan','WA chunk','Council eval']), 'ok', `${randi(40,1200)}ms`);
+  }, 5500);
+}
+boot();
+</script>
+</body>
+</html>
