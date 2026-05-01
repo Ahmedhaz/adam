@@ -678,6 +678,16 @@
       const txt = (btn.textContent || '').trim().toLowerCase();
       if (!txt) return;
 
+      // ─── Sidebar tools (Memory / Intel / Comms) → body.html with organ pre-selected ───
+      if (/^today/.test(txt))    { window.location.href = 'index.html'; return; }
+      if (/^memory$/.test(txt))  { window.location.href = 'body.html#brain'; return; }
+      if (/^intel$/.test(txt))   { window.location.href = 'body.html#eye'; return; }
+      if (/^comms/.test(txt))    { window.location.href = 'body.html#ear'; return; }
+      if (/^settings$/.test(txt)){ showToast('Settings panel · coming Saturday', 'info'); return; }
+      if (/^adam body$/.test(txt) && location.pathname.includes('body')) { showToast('Already here', 'info'); return; }
+      if (/^wellness house$/.test(txt) && location.pathname.includes('wellness')) { showToast('Already here', 'info'); return; }
+      if (/^astraform$/.test(txt) && location.pathname.includes('astraform')) { showToast('Already here', 'info'); return; }
+
       // ─── Specific routes ───
       if (/open trello/.test(txt))         { window.open('https://trello.com/', '_blank'); showToast('Opening Trello'); return; }
       if (/open gmail|open email/.test(txt)) { window.open('https://mail.google.com/', '_blank'); showToast('Opening Gmail'); return; }

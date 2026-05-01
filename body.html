@@ -200,7 +200,7 @@
   </main>
 </div>
 
-<script src="shared/adam-os.js?v=5"></script>
+<script src="shared/adam-os.js?v=6"></script>
 <script>
   const ORGANS = {
     ear: {
@@ -564,8 +564,15 @@
     return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
-  // Initial render with dummy
-  showOrgan('ear');
+  // Initial render — honor hash if present (e.g. body.html#brain)
+  const initialOrgan = (location.hash || '').replace('#','') || 'ear';
+  if (ORGANS[initialOrgan]) {
+    document.querySelectorAll('.body-organ-btn').forEach(x => x.classList.remove('active'));
+    document.querySelector(`[data-organ="${initialOrgan}"]`)?.classList.add('active');
+    showOrgan(initialOrgan);
+  } else {
+    showOrgan('ear');
+  }
 
   // Once adam-os.js loads data.json, swap in real Plaud
   function tryInject() {
