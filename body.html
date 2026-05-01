@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adam OS — Body</title>
+<link rel="stylesheet" href="shared/adam-os.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">A</div>
+      <div class="brand-name">Adam <em>OS</em></div>
+    </div>
+
+    <div class="nav-section-label">Workspace</div>
+
+    <button class="nav-item" onclick="window.location.href='index.html'">
+      <span class="nav-icon"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Sun/3D/sun_3d.png"></span>
+      Today
+    </button>
+    <button class="nav-item active">
+      <span class="nav-icon"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Person/3D/person_3d_default.png"></span>
+      Adam Body
+    </button>
+    <button class="nav-item" onclick="window.location.href='wellness-house.html'">
+      <span class="nav-icon"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Lotus/3D/lotus_3d.png"></span>
+      Wellness House
+    </button>
+    <button class="nav-item" onclick="window.location.href='astraform.html'">
+      <span class="nav-icon"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Rocket/3D/rocket_3d.png"></span>
+      AstraForm
+    </button>
+
+    <div class="nav-section-label">Tools</div>
+    <button class="nav-item">
+      <span class="nav-icon"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Brain/3D/brain_3d.png"></span>
+      Memory
+    </button>
+    <button class="nav-item">
+      <span class="nav-icon"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Telescope/3D/telescope_3d.png"></span>
+      Intel
+    </button>
+    <button class="nav-item">
+      <span class="nav-icon"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Speech%20balloon/3D/speech_balloon_3d.png"></span>
+      Comms
+      <span class="nav-badge">3</span>
+    </button>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="user-card">
+      <div class="user-avatar">A</div>
+      <div class="user-info">
+        <div class="user-name">Ahmed</div>
+        <div class="user-meta">Body view · live</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="workspace">
+
+      <div class="topbar">
+        <div class="topbar-greeting">Adam Body, <span>your senses, live</span></div>
+        <div class="topbar-spacer"></div>
+        <div class="search">
+          <span style="color:var(--muted);font-size:14px;">⌕</span>
+          <input type="text" placeholder="Search messages, signals, memories…" />
+          <span class="kbd">⌘K</span>
+        </div>
+        <button class="btn-pill btn-lime">Refresh now</button>
+      </div>
+
+      <div class="body-page">
+
+        <!-- ───────── BODY STAGE ───────── -->
+        <div class="body-stage">
+          <div class="body-stage-head">
+            <h2>Adam · listening to all eight</h2>
+            <p>Each organ is a sense. Click one to drill in. Colors track health — green = clear, amber = check, red = needs attention.</p>
+          </div>
+
+          <div class="body-figure">
+            <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Robot/3D/robot_3d.png" alt="Adam">
+          </div>
+
+          <div class="body-organs-ring">
+            <button class="body-organ-btn active" data-organ="ear">
+              <div class="body-organ-row">
+                <img class="body-organ-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Ear/3D/ear_3d_default.png">
+                <div>
+                  <div class="body-organ-label">Ear · comms</div>
+                </div>
+                <span class="body-organ-status red"></span>
+              </div>
+              <div class="body-organ-value">3 unread · WA backlog 12</div>
+            </button>
+
+            <button class="body-organ-btn" data-organ="eye">
+              <div class="body-organ-row">
+                <img class="body-organ-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Eye/3D/eye_3d.png">
+                <div>
+                  <div class="body-organ-label">Eye · intel</div>
+                </div>
+                <span class="body-organ-status amber"></span>
+              </div>
+              <div class="body-organ-value">2 new signals · 1 high</div>
+            </button>
+
+            <button class="body-organ-btn" data-organ="brain">
+              <div class="body-organ-row">
+                <img class="body-organ-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Brain/3D/brain_3d.png">
+                <div>
+                  <div class="body-organ-label">Brain · memory</div>
+                </div>
+                <span class="body-organ-status amber"></span>
+              </div>
+              <div class="body-organ-value">2 days stale · re-index queued</div>
+            </button>
+
+            <button class="body-organ-btn" data-organ="heart">
+              <div class="body-organ-row">
+                <img class="body-organ-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Red%20heart/3D/red_heart_3d.png">
+                <div>
+                  <div class="body-organ-label">Heart · WH</div>
+                </div>
+                <span class="body-organ-status green"></span>
+              </div>
+              <div class="body-organ-value">MRR +12% wk · S1→S2 41%</div>
+            </button>
+
+            <button class="body-organ-btn" data-organ="stomach">
+              <div class="body-organ-row">
+                <img class="body-organ-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Rocket/3D/rocket_3d.png">
+                <div>
+                  <div class="body-organ-label">Stomach · AF</div>
+                </div>
+                <span class="body-organ-status green"></span>
+              </div>
+              <div class="body-organ-value">3 hot deals · Orion 78%</div>
+            </button>
+
+            <button class="body-organ-btn" data-organ="hands">
+              <div class="body-organ-row">
+                <img class="body-organ-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Waving%20hand/3D/waving_hand_3d_default.png">
+                <div>
+                  <div class="body-organ-label">Hands · actions</div>
+                </div>
+                <span class="body-organ-status green"></span>
+              </div>
+              <div class="body-organ-value">12 sent today · 3 drafted</div>
+            </button>
+
+            <button class="body-organ-btn" data-organ="legs">
+              <div class="body-organ-row">
+                <img class="body-organ-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Calendar/3D/calendar_3d.png">
+                <div>
+                  <div class="body-organ-label">Legs · calendar</div>
+                </div>
+                <span class="body-organ-status green"></span>
+              </div>
+              <div class="body-organ-value">3 meetings today · 2 free blocks</div>
+            </button>
+
+            <button class="body-organ-btn" data-organ="spine">
+              <div class="body-organ-row">
+                <img class="body-organ-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Bone/3D/bone_3d.png">
+                <div>
+                  <div class="body-organ-label">Spine · focus</div>
+                </div>
+                <span class="body-organ-status green"></span>
+              </div>
+              <div class="body-organ-value">Deep work · 2h streak</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- ───────── DRILLDOWN PANEL (rendered by JS) ───────── -->
+        <div class="drilldown" id="drilldown">
+          <div class="drilldown-head">
+            <img id="dd-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Ear/3D/ear_3d_default.png">
+            <div>
+              <h3 id="dd-title">Ear · comms</h3>
+              <div class="sub" id="dd-sub">12 unread across WhatsApp · 3 priority</div>
+            </div>
+          </div>
+          <div id="dd-content"></div>
+          <div id="dd-actions" style="display:flex;gap:8px;margin-top:18px;"></div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="shared/adam-os.js"></script>
+<script>
+  const ORGANS = {
+    ear: {
+      img: 'Ear/3D/ear_3d_default.png',
+      title: 'Ear · comms',
+      sub: '12 unread WA · 4 Plaud · 3 Meet · 3 priority',
+      content: `
+        <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
+          <button class="btn-action primary" data-ear-tab="wa">WhatsApp</button>
+          <button class="btn-action" data-ear-tab="plaud">
+            <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Microphone/3D/microphone_3d.png" style="width:14px;height:14px;">
+            Plaud
+          </button>
+          <button class="btn-action" data-ear-tab="meet">
+            <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Movie%20camera/3D/movie_camera_3d.png" style="width:14px;height:14px;">
+            Meet
+          </button>
+          <button class="btn-action" data-ear-tab="calls">Phone</button>
+        </div>
+
+        <div data-ear-pane="wa">
+          <div class="drilldown-day">Today</div>
+          <div class="wa-list">
+            <div class="wa-row unread"><div class="wa-avatar" style="background:var(--peach-soft)">HS</div><div><div class="wa-name">Hagar Selim · Samsung</div><div class="wa-msg">Looking forward to the deck before Sunday's review.</div></div><div class="wa-time">14h</div></div>
+            <div class="wa-row"><div class="wa-avatar" style="background:rgba(184,160,255,0.4)">MF</div><div><div class="wa-name">Marwan Fekry</div><div class="wa-msg">Sarah locked the SKU at 20K EGP.</div></div><div class="wa-time">2h</div></div>
+            <div class="wa-row unread"><div class="wa-avatar" style="background:rgba(160,232,200,0.45)">HZ</div><div><div class="wa-name">Hazem · CTO</div><div class="wa-msg">Free this afternoon for the priority call.</div></div><div class="wa-time">35m</div></div>
+          </div>
+          <div class="drilldown-day">Yesterday</div>
+          <div class="wa-list">
+            <div class="wa-row"><div class="wa-avatar" style="background:rgba(255,163,199,0.4)">SR</div><div><div class="wa-name">Sara · Ops</div><div class="wa-msg">Wellness Box review confirmed 14:00.</div></div><div class="wa-time">22:14</div></div>
+            <div class="wa-row"><div class="wa-avatar" style="background:rgba(160,208,255,0.45)">NF</div><div><div class="wa-name">Nour · Marketing</div><div class="wa-msg">Wellness day teaser hit 1.2K reactions.</div></div><div class="wa-time">19:02</div></div>
+          </div>
+        </div>
+
+        <div data-ear-pane="plaud" style="display:none;">
+          <div class="drilldown-day">Today's recordings</div>
+          <div class="wa-list">
+            <div class="wa-row">
+              <div class="wa-avatar" style="background:var(--peach-soft);"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Microphone/3D/microphone_3d.png" style="width:22px;height:22px;"></div>
+              <div>
+                <div class="wa-name">Hazem · Orion sync</div>
+                <div class="wa-msg">28 min · UAT passed Wed, production cutover plan locked. Hazem owns delivery, Marwan handles client comms. Action: send sandbox link.</div>
+              </div>
+              <div class="wa-time">10:42</div>
+            </div>
+            <div class="wa-row">
+              <div class="wa-avatar" style="background:rgba(184,160,255,0.4);"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Microphone/3D/microphone_3d.png" style="width:22px;height:22px;"></div>
+              <div>
+                <div class="wa-name">Sara · Wellness Box</div>
+                <div class="wa-msg">42 min · SKU locked at 20K EGP, contents finalized with Alia, packaging next via Shibl. Decision: real estate channel before retail.</div>
+              </div>
+              <div class="wa-time">14:00</div>
+            </div>
+          </div>
+          <div class="drilldown-day">Yesterday</div>
+          <div class="wa-list">
+            <div class="wa-row">
+              <div class="wa-avatar" style="background:rgba(160,232,200,0.45);"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Microphone/3D/microphone_3d.png" style="width:22px;height:22px;"></div>
+              <div>
+                <div class="wa-name">Hagar Selim · Samsung intro</div>
+                <div class="wa-msg">52 min · 270 employees, 3-month MBS pilot, budget cleared by HR. She wants the deck Sunday before her internal review.</div>
+              </div>
+              <div class="wa-time">Apr 28</div>
+            </div>
+            <div class="wa-row">
+              <div class="wa-avatar" style="background:rgba(255,163,199,0.4);"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Microphone/3D/microphone_3d.png" style="width:22px;height:22px;"></div>
+              <div>
+                <div class="wa-name">Maged · M Empire investor sync</div>
+                <div class="wa-msg">35 min · Pre-seed closed, agreed performance-triggered Series A. Asked about Wellness+ traction signals before next quarter.</div>
+              </div>
+              <div class="wa-time">Apr 28</div>
+            </div>
+          </div>
+          <div style="background:var(--card-soft);border-radius:var(--r-md);padding:10px 14px;margin-top:12px;font-size:11px;color:var(--muted);">
+            Plaud Note device · auto-uploads to Cognee · 4 of 12 today are flagged high-signal
+          </div>
+        </div>
+
+        <div data-ear-pane="meet" style="display:none;">
+          <div class="drilldown-day">This week's meetings</div>
+          <div class="wa-list">
+            <div class="wa-row">
+              <div class="wa-avatar" style="background:rgba(160,232,200,0.45);"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Movie%20camera/3D/movie_camera_3d.png" style="width:22px;height:22px;"></div>
+              <div>
+                <div class="wa-name">WH Weekly Ops · 6 attendees</div>
+                <div class="wa-msg">47 min · Sara, Marwan, Nour, Mustafa, Omar, you. S1→S2 gap, Wellness Box pricing, Foundever next steps. 3 AI-extracted action items waiting.</div>
+              </div>
+              <div class="wa-time">Wed</div>
+            </div>
+            <div class="wa-row">
+              <div class="wa-avatar" style="background:var(--peach-soft);"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Movie%20camera/3D/movie_camera_3d.png" style="width:22px;height:22px;"></div>
+              <div>
+                <div class="wa-name">Samsung × WH · 4 attendees</div>
+                <div class="wa-msg">52 min · Hagar Selim, HR director, you, Marwan. Confirmed 270 employees, 3-month MBS pilot, deck due Sunday. Decision: ship the deck Friday.</div>
+              </div>
+              <div class="wa-time">Mon</div>
+            </div>
+            <div class="wa-row">
+              <div class="wa-avatar" style="background:rgba(184,160,255,0.4);"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Movie%20camera/3D/movie_camera_3d.png" style="width:22px;height:22px;"></div>
+              <div>
+                <div class="wa-name">AstraForm Dev Standup · 5 attendees</div>
+                <div class="wa-msg">22 min · Hazem, 3 devs, you. Orion sandbox UAT passed, blocker on Saden contract resolved, Halwan scoping next Tuesday.</div>
+              </div>
+              <div class="wa-time">Mon</div>
+            </div>
+          </div>
+          <div class="drilldown-day">Last week</div>
+          <div class="wa-list">
+            <div class="wa-row">
+              <div class="wa-avatar" style="background:rgba(255,163,199,0.4);"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Movie%20camera/3D/movie_camera_3d.png" style="width:22px;height:22px;"></div>
+              <div>
+                <div class="wa-name">Maged · investor sync · 2 attendees</div>
+                <div class="wa-msg">31 min · pre-seed close, milestones for Series A trigger, asked about Wellness+ traction signals.</div>
+              </div>
+              <div class="wa-time">Apr 26</div>
+            </div>
+            <div class="wa-row">
+              <div class="wa-avatar" style="background:rgba(160,208,255,0.45);"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Movie%20camera/3D/movie_camera_3d.png" style="width:22px;height:22px;"></div>
+              <div>
+                <div class="wa-name">Foundever intro · 3 attendees</div>
+                <div class="wa-msg">38 min · Asma, Bassant Soliman, you. Wellness program scoping, B2B logo terms, 30-day deal target.</div>
+              </div>
+              <div class="wa-time">Apr 24</div>
+            </div>
+          </div>
+          <div style="background:var(--card-soft);border-radius:var(--r-md);padding:10px 14px;margin-top:12px;font-size:11px;color:var(--muted);">
+            Google Meet · auto-recorded, AI summaries via Gemini, transcripts indexed in Cognee
+          </div>
+        </div>
+
+        <div data-ear-pane="calls" style="display:none;">
+          <div class="drilldown-day">Today's calls</div>
+          <div class="wa-list">
+            <div class="wa-row"><div class="wa-avatar" style="background:rgba(160,232,200,0.45)">↗</div><div><div class="wa-name">Hazem · outbound</div><div class="wa-msg">12 min · captured by Plaud · transcript ready</div></div><div class="wa-time">10:30</div></div>
+            <div class="wa-row"><div class="wa-avatar" style="background:rgba(184,160,255,0.4)">↘</div><div><div class="wa-name">Marwan · inbound</div><div class="wa-msg">7 min · pipeline standup follow-up</div></div><div class="wa-time">09:14</div></div>
+            <div class="wa-row"><div class="wa-avatar" style="background:rgba(248,113,113,0.18);color:#B91C1C;">×</div><div><div class="wa-name">Unknown · missed</div><div class="wa-msg">Cairo number · 06:48 · no Plaud capture</div></div><div class="wa-time">06:48</div></div>
+          </div>
+        </div>
+      `,
+      actions: '<button class="btn-action primary">Reply to top 3</button><button class="btn-action">Open Plaud library</button><button class="btn-action">Open Meet recordings</button><button class="btn-action">Mark all read</button>'
+    },
+    eye: {
+      img: 'Eye/3D/eye_3d.png',
+      title: 'Eye · intel',
+      sub: '2 new signals this morning · 1 high-priority',
+      content: `
+        <div class="drilldown-day">Today's signals</div>
+        <div class="wa-list">
+          <div class="wa-row"><div class="wa-avatar" style="background:rgba(248,113,113,0.2);color:#B91C1C;">!</div><div><div class="wa-name">O7 Therapy launch in KSA</div><div class="wa-msg">Competitor expanded into Riyadh. Press release and 3 LinkedIn posts in 24h.</div></div><div class="wa-time">06:42</div></div>
+          <div class="wa-row"><div class="wa-avatar" style="background:rgba(251,191,36,0.25);color:#92400E;">~</div><div><div class="wa-name">Foundever wellness RFP</div><div class="wa-msg">New tender posted. Closes May 14. Worth pursuing via Bassant?</div></div><div class="wa-time">04:18</div></div>
+          <div class="wa-row"><div class="wa-avatar" style="background:rgba(74,222,128,0.25);color:#166534;">↑</div><div><div class="wa-name">MENA mental health spend</div><div class="wa-msg">Wamda piece on corporate mental health spend +28% YoY. Tailwind for WH B2B.</div></div><div class="wa-time">02:55</div></div>
+        </div>`,
+      actions: '<button class="btn-action primary">Open full intel digest</button><button class="btn-action">Run scan now</button>'
+    },
+    brain: {
+      img: 'Brain/3D/brain_3d.png',
+      title: 'Brain · memory',
+      sub: 'Cognee 2 days stale · 23,677 nodes · 108 encyclopedia files',
+      content: `
+        <div class="drilldown-day">Memory health</div>
+        <div style="background:var(--card-soft);border-radius:var(--r-md);padding:14px;margin-bottom:12px;">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">Synapse nodes</div>
+          <div style="font-family:var(--font-display);font-size:24px;font-weight:600;">23,677</div>
+          <div style="font-size:12px;color:#166534;margin-top:4px;">↑ 312 added since last sync</div>
+        </div>
+        <div style="background:var(--card-soft);border-radius:var(--r-md);padding:14px;margin-bottom:12px;">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">Encyclopedia files</div>
+          <div style="font-family:var(--font-display);font-size:24px;font-weight:600;">108</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px;">44 frameworks distilled · last update Wed</div>
+        </div>
+        <div style="background:rgba(251,191,36,0.12);border-radius:var(--r-md);padding:14px;">
+          <div style="font-size:12px;color:#92400E;margin-bottom:4px;font-weight:600;">⚠ Re-index queued for tonight</div>
+          <div style="font-size:13px;color:var(--ink-soft);line-height:1.5;">WhatsApp bridge has been stale 46h. Tonight's job will catch up the missing window and refresh insights.</div>
+        </div>`,
+      actions: '<button class="btn-action primary">Re-index now</button><button class="btn-action">Open audit</button>'
+    },
+    heart: {
+      img: 'Red%20heart/3D/red_heart_3d.png',
+      title: 'Heart · Wellness House',
+      sub: 'MRR +12% wk · S1→S2 41% (the gap) · 68 active therapists',
+      content: `
+        <div class="drilldown-day">This week's pulse</div>
+        <div class="kpi-row" style="grid-template-columns:1fr 1fr;">
+          <div class="kpi"><div class="kpi-label">MRR</div><div class="kpi-value">EGP 1.2M</div><div class="kpi-delta up">↑ 12% wk</div></div>
+          <div class="kpi"><div class="kpi-label">Sessions</div><div class="kpi-value">1,847</div><div class="kpi-delta up">↑ 8% wk</div></div>
+        </div>
+        <div class="kpi-row" style="grid-template-columns:1fr 1fr;margin-top:12px;">
+          <div class="kpi"><div class="kpi-label">S1→S2 conv</div><div class="kpi-value">41%</div><div class="kpi-delta down">↓ 3pts · the gap</div></div>
+          <div class="kpi"><div class="kpi-label">Therapists</div><div class="kpi-value">68</div><div class="kpi-delta flat">stable</div></div>
+        </div>`,
+      actions: '<button class="btn-action primary">Open WH dashboard</button><button class="btn-action">Cohort view</button>'
+    },
+    stomach: {
+      img: 'Rocket/3D/rocket_3d.png',
+      title: 'Stomach · AstraForm',
+      sub: '3 hot deals · Orion 78% delivered · pipeline $420K',
+      content: `
+        <div class="drilldown-day">Pipeline snapshot</div>
+        <div class="wa-list">
+          <div class="wa-row"><div class="wa-avatar" style="background:rgba(74,222,128,0.25);color:#166534;">●</div><div><div class="wa-name">Orion · Odoo ERP</div><div class="wa-msg">In delivery · 78% · UAT passed Wed</div></div><div class="wa-time">hot</div></div>
+          <div class="wa-row"><div class="wa-avatar" style="background:rgba(251,191,36,0.25);color:#92400E;">●</div><div><div class="wa-name">Saden Group</div><div class="wa-msg">Annex B confirmed · ready Monday</div></div><div class="wa-time">hot</div></div>
+          <div class="wa-row"><div class="wa-avatar" style="background:rgba(184,160,255,0.4)">●</div><div><div class="wa-name">Halwan Design</div><div class="wa-msg">Awaiting next touch this week</div></div><div class="wa-time">warm</div></div>
+          <div class="wa-row"><div class="wa-avatar" style="background:rgba(184,160,255,0.4)">●</div><div><div class="wa-name">Fornax</div><div class="wa-msg">Pricing model questions in flight</div></div><div class="wa-time">warm</div></div>
+        </div>`,
+      actions: '<button class="btn-action primary">Open AstraForm dashboard</button>'
+    },
+    hands: {
+      img: 'Waving%20hand/3D/waving_hand_3d_default.png',
+      title: 'Hands · actions',
+      sub: '12 sent today · 3 drafts pending · 4 scheduled',
+      content: `
+        <div class="drilldown-day">Sent today</div>
+        <div class="wa-list">
+          <div class="wa-row"><div class="wa-avatar" style="background:var(--lime-soft)">✓</div><div><div class="wa-name">WA → Marwan</div><div class="wa-msg">Confirmed Wellness Box pricing</div></div><div class="wa-time">06:42</div></div>
+          <div class="wa-row"><div class="wa-avatar" style="background:var(--lime-soft)">✓</div><div><div class="wa-name">Email → Maged</div><div class="wa-msg">Pre-seed milestones update</div></div><div class="wa-time">07:15</div></div>
+          <div class="wa-row"><div class="wa-avatar" style="background:var(--lime-soft)">✓</div><div><div class="wa-name">Cal → Sara</div><div class="wa-msg">Wellness Box review 14:00</div></div><div class="wa-time">07:22</div></div>
+        </div>
+        <div class="drilldown-day">Drafts pending</div>
+        <div class="wa-list">
+          <div class="wa-row"><div class="wa-avatar" style="background:rgba(251,191,36,0.25);color:#92400E;">~</div><div><div class="wa-name">Email → Hagar</div><div class="wa-msg">Samsung deck v2 + playbook</div></div><div class="wa-time">draft</div></div>
+          <div class="wa-row"><div class="wa-avatar" style="background:rgba(251,191,36,0.25);color:#92400E;">~</div><div><div class="wa-name">WA → Hazem</div><div class="wa-msg">Priority split call this PM</div></div><div class="wa-time">draft</div></div>
+        </div>`,
+      actions: '<button class="btn-action primary">Open all drafts</button>'
+    },
+    legs: {
+      img: 'Calendar/3D/calendar_3d.png',
+      title: 'Legs · calendar',
+      sub: '3 meetings today · 2 free 90-min blocks · Saturday locked',
+      content: `
+        <div class="drilldown-day">Today · Friday</div>
+        <div class="wa-list">
+          <div class="wa-row"><div class="wa-avatar" style="background:rgba(160,232,200,0.45)">10</div><div><div class="wa-name">Hazem · Orion sync</div><div class="wa-msg">Priority call · 30 min</div></div><div class="wa-time">10:30</div></div>
+          <div class="wa-row"><div class="wa-avatar" style="background:rgba(255,163,199,0.4)">14</div><div><div class="wa-name">Sara · Wellness Box review</div><div class="wa-msg">SKU lock + cost breakdown</div></div><div class="wa-time">14:00</div></div>
+          <div class="wa-row"><div class="wa-avatar" style="background:rgba(184,160,255,0.4)">16</div><div><div class="wa-name">Marwan · pipeline standup</div><div class="wa-msg">Samsung + Foundever + Saden</div></div><div class="wa-time">16:30</div></div>
+        </div>
+        <div class="drilldown-day">Tomorrow · Saturday</div>
+        <div class="wa-list">
+          <div class="wa-row"><div class="wa-avatar" style="background:var(--lime-soft)">9</div><div><div class="wa-name">Adam Core build</div><div class="wa-msg">9am–4pm · auto-decline non-critical</div></div><div class="wa-time">all-day</div></div>
+        </div>`,
+      actions: '<button class="btn-action primary">Open calendar</button><button class="btn-action">Block focus time</button>'
+    },
+    spine: {
+      img: 'Bone/3D/bone_3d.png',
+      title: 'Spine · focus',
+      sub: 'Deep work · 2h streak · Adam OS rebuild',
+      content: `
+        <div class="drilldown-day">Active project</div>
+        <div style="background:var(--card-soft);border-radius:var(--r-md);padding:18px;margin-bottom:12px;">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">In flow</div>
+          <div style="font-family:var(--font-display);font-size:18px;font-weight:600;">Adam OS · home rebuild</div>
+          <div style="font-size:13px;color:var(--muted-soft);margin-top:6px;line-height:1.5;">F2AI faithful skin · all 4 pages · action chrome wired today</div>
+          <div style="margin-top:12px;height:6px;background:var(--bg-warm);border-radius:3px;overflow:hidden;">
+            <div style="height:100%;background:var(--ink);width:72%;"></div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px;">72% · Saturday hard stop</div>
+        </div>
+        <div class="drilldown-day">Recent sessions</div>
+        <div class="wa-list">
+          <div class="wa-row"><div class="wa-avatar" style="background:var(--lime-soft)">2h</div><div><div class="wa-name">Adam OS build · current</div><div class="wa-msg">Active focus block</div></div><div class="wa-time">now</div></div>
+          <div class="wa-row"><div class="wa-avatar" style="background:rgba(160,232,200,0.45)">3h</div><div><div class="wa-name">Samsung deck v2</div><div class="wa-msg">Yesterday morning</div></div><div class="wa-time">Thu</div></div>
+          <div class="wa-row"><div class="wa-avatar" style="background:rgba(160,208,255,0.45)">2h</div><div><div class="wa-name">The One · Phase 1.2.1</div><div class="wa-msg">Resilient chain ship</div></div><div class="wa-time">Thu</div></div>
+        </div>`,
+      actions: '<button class="btn-action primary">Enter invisible mode</button><button class="btn-action">Open focus log</button>'
+    },
+  };
+
+  const CDN = 'https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/';
+
+  function showOrgan(key) {
+    const o = ORGANS[key];
+    if (!o) return;
+    document.getElementById('dd-img').src = CDN + o.img;
+    document.getElementById('dd-title').textContent = o.title;
+    document.getElementById('dd-sub').textContent = o.sub;
+    document.getElementById('dd-content').innerHTML = o.content;
+    document.getElementById('dd-actions').innerHTML = o.actions;
+
+    // Wire ear sub-tabs (WA / Plaud / Phone)
+    document.querySelectorAll('[data-ear-tab]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        const tab = btn.dataset.earTab;
+        document.querySelectorAll('[data-ear-tab]').forEach(b => b.classList.remove('primary'));
+        btn.classList.add('primary');
+        document.querySelectorAll('[data-ear-pane]').forEach(p => {
+          p.style.display = p.dataset.earPane === tab ? '' : 'none';
+        });
+      });
+    });
+  }
+
+  document.querySelectorAll('.body-organ-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.body-organ-btn').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      showOrgan(b.dataset.organ);
+    });
+  });
+
+  // Initial render
+  showOrgan('ear');
+</script>
+
+</body>
+</html>

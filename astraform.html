@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en" data-brand="af">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adam OS — AstraForm</title>
+<link rel="stylesheet" href="shared/adam-os.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">A</div>
+      <div class="brand-name">Adam <em>OS</em></div>
+    </div>
+
+    <div class="nav-section-label">Workspace</div>
+    <button class="nav-item" onclick="window.location.href='index.html'">
+      <span class="nav-icon"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Sun/3D/sun_3d.png"></span>
+      Today
+    </button>
+    <button class="nav-item" onclick="window.location.href='body.html'">
+      <span class="nav-icon"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Person/3D/person_3d_default.png"></span>
+      Adam Body
+    </button>
+    <button class="nav-item" onclick="window.location.href='wellness-house.html'">
+      <span class="nav-icon"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Lotus/3D/lotus_3d.png"></span>
+      Wellness House
+    </button>
+    <button class="nav-item active">
+      <span class="nav-icon"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Rocket/3D/rocket_3d.png"></span>
+      AstraForm
+    </button>
+
+    <div class="nav-section-label">Tools</div>
+    <button class="nav-item">
+      <span class="nav-icon"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Brain/3D/brain_3d.png"></span>
+      Memory
+    </button>
+    <button class="nav-item">
+      <span class="nav-icon"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Telescope/3D/telescope_3d.png"></span>
+      Intel
+    </button>
+    <button class="nav-item">
+      <span class="nav-icon"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Speech%20balloon/3D/speech_balloon_3d.png"></span>
+      Comms
+    </button>
+
+    <div class="sidebar-spacer"></div>
+    <div class="user-card">
+      <div class="user-avatar">A</div>
+      <div class="user-info">
+        <div class="user-name">Ahmed</div>
+        <div class="user-meta">Founder · AstraForm</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="workspace">
+
+      <div class="topbar">
+        <div class="topbar-greeting">AstraForm, <span>delivery + pipeline</span></div>
+        <div class="topbar-spacer"></div>
+        <div class="search">
+          <span style="color:var(--muted);font-size:14px;">⌕</span>
+          <input type="text" placeholder="Search Orion · Saden · Halwan…" />
+          <span class="kbd">⌘K</span>
+        </div>
+        <button class="btn-pill" style="background:#0040FF;color:white;">+ New action</button>
+      </div>
+
+      <!-- Hero -->
+      <div class="page-hero">
+        <div>
+          <div class="page-hero-pre">AstraForm Technologies · Founder view</div>
+          <h1 class="page-hero-title">Orion ships. Saden signs. Halwan onboards.</h1>
+          <p class="page-hero-sub">Three big bets in one quarter. Hazem owns delivery while you own commercial. Three weeks of focus turns AstraForm from a project shop into an Odoo ERP factory.</p>
+          <div style="display:flex;gap:8px;margin-top:18px;">
+            <button class="btn-pill" style="background:#D5FF1E;color:#0A1A35;">Open Orion →</button>
+            <button class="btn-pill" style="background:transparent;color:white;border:1px solid rgba(255,255,255,0.18);">Pipeline view</button>
+          </div>
+        </div>
+        <img class="page-hero-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Rocket/3D/rocket_3d.png" alt="AstraForm">
+      </div>
+
+      <!-- KPI tower -->
+      <div class="kpi-row">
+        <div class="kpi">
+          <div class="kpi-label">Active deals</div>
+          <div class="kpi-value">5</div>
+          <div class="kpi-delta up">↑ 2 added wk</div>
+          <img class="kpi-icon" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Briefcase/3D/briefcase_3d.png">
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Orion · Odoo progress</div>
+          <div class="kpi-value">78%</div>
+          <div class="kpi-delta up">↑ 6pts wk</div>
+          <img class="kpi-icon" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Construction/3D/construction_3d.png">
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Pipeline value</div>
+          <div class="kpi-value">$420K</div>
+          <div class="kpi-delta up">↑ Saden joining</div>
+          <img class="kpi-icon" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Money%20bag/3D/money_bag_3d.png">
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Delivery team</div>
+          <div class="kpi-value">4</div>
+          <div class="kpi-delta flat">Hazem + 3 devs</div>
+          <img class="kpi-icon" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Technologist/3D/technologist_3d_default.png">
+        </div>
+      </div>
+
+      <!-- Pipeline + Calendar -->
+      <div class="cols-2">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Pipeline · this week</h3>
+            <span class="meta">5 deals tracked</span>
+          </div>
+          <div class="kanban">
+            <div class="kanban-col hot">
+              <div class="kanban-col-head">Hot <span class="kanban-col-count">2</span></div>
+              <div class="deal">
+                <div class="deal-name"><img class="deal-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Construction/3D/construction_3d.png">Orion · Odoo ERP</div>
+                <div class="deal-meta">In delivery · 78% · Hazem</div>
+                <div class="deal-bar"><div class="deal-bar-fill" style="width:78%;"></div></div>
+              </div>
+              <div class="deal">
+                <div class="deal-name"><img class="deal-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Handshake/3D/handshake_3d_default.png">Saden Group</div>
+                <div class="deal-meta">Contract draft · Marwan owns</div>
+                <div class="deal-bar"><div class="deal-bar-fill" style="width:62%;"></div></div>
+              </div>
+            </div>
+
+            <div class="kanban-col warm">
+              <div class="kanban-col-head">Warm <span class="kanban-col-count">2</span></div>
+              <div class="deal">
+                <div class="deal-name"><img class="deal-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Artist%20palette/3D/artist_palette_3d.png">Halwan Design</div>
+                <div class="deal-meta">Design + ERP · awaiting next touch</div>
+                <div class="deal-bar"><div class="deal-bar-fill" style="width:35%;"></div></div>
+              </div>
+              <div class="deal">
+                <div class="deal-name"><img class="deal-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Star/3D/star_3d.png">Fornax</div>
+                <div class="deal-meta">Scope confirmed · pricing next</div>
+                <div class="deal-bar"><div class="deal-bar-fill" style="width:28%;"></div></div>
+              </div>
+            </div>
+
+            <div class="kanban-col cold">
+              <div class="kanban-col-head">Cold/Strategic <span class="kanban-col-count">1</span></div>
+              <div class="deal">
+                <div class="deal-name"><img class="deal-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Robot/3D/robot_3d.png">AI automation product</div>
+                <div class="deal-meta">Internal · Q3 thesis · build vs partner</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>This week · calendar</h3>
+            <span class="meta">May 1 → 7</span>
+          </div>
+          <div class="weekcal">
+            <div class="weekcal-day today">
+              <div class="weekcal-dow">Fri</div>
+              <div class="weekcal-date">1</div>
+              <div class="weekcal-meet priority">10:30 Hazem · Orion</div>
+              <div class="weekcal-meet">15:00 Saden draft</div>
+            </div>
+            <div class="weekcal-day">
+              <div class="weekcal-dow">Sat</div>
+              <div class="weekcal-date">2</div>
+              <div class="weekcal-meet priority">Adam Core build</div>
+            </div>
+            <div class="weekcal-day">
+              <div class="weekcal-dow">Sun</div>
+              <div class="weekcal-date">3</div>
+              <div class="weekcal-meet">Samsung deck day</div>
+            </div>
+            <div class="weekcal-day">
+              <div class="weekcal-dow">Mon</div>
+              <div class="weekcal-date">4</div>
+              <div class="weekcal-meet priority">11:00 Saden sign</div>
+              <div class="weekcal-meet">14:00 dev sync</div>
+            </div>
+            <div class="weekcal-day">
+              <div class="weekcal-dow">Tue</div>
+              <div class="weekcal-date">5</div>
+              <div class="weekcal-meet">15:00 Halwan call</div>
+            </div>
+            <div class="weekcal-day">
+              <div class="weekcal-dow">Wed</div>
+              <div class="weekcal-date">6</div>
+              <div class="weekcal-meet">10:00 Orion review</div>
+            </div>
+            <div class="weekcal-day">
+              <div class="weekcal-dow">Thu</div>
+              <div class="weekcal-date">7</div>
+              <div class="weekcal-meet">13:00 Fornax pricing</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Emails + WhatsApp -->
+      <div class="cols-2">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Top emails · this week</h3>
+            <button class="btn-action">Open Gmail →</button>
+          </div>
+          <div class="email-list">
+            <div class="email-row">
+              <div class="email-priority hot"></div>
+              <div>
+                <div class="email-from">Saden Group · Procurement</div>
+                <div class="email-subject">Contract draft v3 — please confirm Annex B by EOD</div>
+              </div>
+              <div class="email-time">2h</div>
+            </div>
+            <div class="email-row">
+              <div class="email-priority hot"></div>
+              <div>
+                <div class="email-from">Hazem · CTO</div>
+                <div class="email-subject">Orion · sandbox UAT passed, ready for production cutover</div>
+              </div>
+              <div class="email-time">5h</div>
+            </div>
+            <div class="email-row">
+              <div class="email-priority warm"></div>
+              <div>
+                <div class="email-from">Halwan Design · Office</div>
+                <div class="email-subject">Following up on the design + ERP scoping doc</div>
+              </div>
+              <div class="email-time">1d</div>
+            </div>
+            <div class="email-row">
+              <div class="email-priority warm"></div>
+              <div>
+                <div class="email-from">Fornax · CFO</div>
+                <div class="email-subject">Pricing model questions — can we hop on a call?</div>
+              </div>
+              <div class="email-time">1d</div>
+            </div>
+            <div class="email-row">
+              <div class="email-priority"></div>
+              <div>
+                <div class="email-from">Odoo Partner Network</div>
+                <div class="email-subject">Q2 partner tier benefits + new modules</div>
+              </div>
+              <div class="email-time">2d</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>WhatsApp · AstraForm-related</h3>
+            <button class="btn-action">Open Comms →</button>
+          </div>
+          <div class="wa-list">
+            <div class="wa-row unread">
+              <div class="wa-avatar" style="background:rgba(160,232,200,0.45)">HZ</div>
+              <div>
+                <div class="wa-name">Hazem · CTO</div>
+                <div class="wa-msg">Pushed Orion checkpoint. Free this afternoon for the priority call.</div>
+              </div>
+              <div class="wa-time">35m</div>
+            </div>
+            <div class="wa-row unread">
+              <div class="wa-avatar" style="background:rgba(184,160,255,0.4)">MF</div>
+              <div>
+                <div class="wa-name">Marwan · Commercial</div>
+                <div class="wa-msg">Saden ready to sign Monday. Just confirm pricing on Annex B.</div>
+              </div>
+              <div class="wa-time">1h</div>
+            </div>
+            <div class="wa-row">
+              <div class="wa-avatar" style="background:rgba(160,208,255,0.45)">SD</div>
+              <div>
+                <div class="wa-name">Saden Group · Procurement</div>
+                <div class="wa-msg">Reviewing v3. Will revert by EOD with comments.</div>
+              </div>
+              <div class="wa-time">3h</div>
+            </div>
+            <div class="wa-row">
+              <div class="wa-avatar" style="background:rgba(255,163,199,0.4)">HW</div>
+              <div>
+                <div class="wa-name">Halwan · Office Manager</div>
+                <div class="wa-msg">Can we move our call to Tuesday instead of Wednesday?</div>
+              </div>
+              <div class="wa-time">8h</div>
+            </div>
+            <div class="wa-row">
+              <div class="wa-avatar" style="background:var(--peach-soft)">AF</div>
+              <div>
+                <div class="wa-name">AstraForm Devs Group</div>
+                <div class="wa-msg">3 active threads · Hazem on production cutover plan.</div>
+              </div>
+              <div class="wa-time">11h</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Team -->
+      <div class="panel" style="margin-bottom:24px;">
+        <div class="panel-head">
+          <h3>Team · this week</h3>
+          <span class="meta">4 active · Hazem leads delivery, Marwan leads commercial</span>
+        </div>
+        <div class="team-list">
+          <div class="team-row">
+            <div class="team-avatar" style="background:rgba(160,232,200,0.45)">HZ</div>
+            <div>
+              <div class="team-name">Hazem · CTO</div>
+              <div class="team-role">Orion · Wellness+ · technical lead</div>
+            </div>
+            <div class="team-stats">
+              <span class="team-stat">11 done</span>
+              <span class="team-stat">4 in flight</span>
+            </div>
+            <button class="btn-action">1:1</button>
+          </div>
+          <div class="team-row">
+            <div class="team-avatar" style="background:rgba(184,160,255,0.4)">MF</div>
+            <div>
+              <div class="team-name">Marwan · Commercial</div>
+              <div class="team-role">Saden · Halwan · Fornax</div>
+            </div>
+            <div class="team-stats">
+              <span class="team-stat">6 done</span>
+              <span class="team-stat">3 in flight</span>
+            </div>
+            <button class="btn-action">1:1</button>
+          </div>
+          <div class="team-row">
+            <div class="team-avatar" style="background:var(--peach-soft)">DV</div>
+            <div>
+              <div class="team-name">Dev team · 3 contractors</div>
+              <div class="team-role">Odoo customizations · QA · DevOps</div>
+            </div>
+            <div class="team-stats">
+              <span class="team-stat">14 PRs</span>
+              <span class="team-stat alert">1 blocker</span>
+            </div>
+            <button class="btn-action">Standup</button>
+          </div>
+          <div class="team-row">
+            <div class="team-avatar" style="background:rgba(160,208,255,0.45)">OM</div>
+            <div>
+              <div class="team-name">Omar M. · shared accountant</div>
+              <div class="team-role">AstraForm books · vendor pay · invoicing</div>
+            </div>
+            <div class="team-stats">
+              <span class="team-stat">5 done</span>
+              <span class="team-stat">0 stuck</span>
+            </div>
+            <button class="btn-action">1:1</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="shared/adam-os.js"></script>
+</body>
+</html>

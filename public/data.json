@@ -1,0 +1,285 @@
+{
+  "snapshot_at": "2026-05-01T11:13:25",
+  "priority": {
+    "text": "Ship the Samsung deck. Everything else is <em>noise</em> until that lands.",
+    "when": "TODAY"
+  },
+  "pipeline": [
+    {
+      "name": "Samsung × WH",
+      "stage": "hot",
+      "status": "acting",
+      "meta": "Hagar Selim · 270 employees · 3-month MBS pilot · deck due this week.",
+      "prompt": "Adam research Samsung × WH deal status — what's left before the deck lands?"
+    },
+    {
+      "name": "Wellness Box · Gates",
+      "stage": "hot",
+      "status": "acting",
+      "meta": "Real estate channel. 1K subs × 20K EGP = 20M EGP TAM.",
+      "prompt": "Adam research Wellness Box · Gates Development — what's the next concrete step?"
+    },
+    {
+      "name": "Orion · AstraForm",
+      "stage": "hot",
+      "status": "acting",
+      "meta": "Odoo implementation in flight. Hazem CTO · Marwan commercial.",
+      "prompt": "Adam Orion project status — where are we in implementation?"
+    },
+    {
+      "name": "Saden Group",
+      "stage": "warm",
+      "status": "nudging",
+      "meta": "AstraForm pipeline. Awaiting next touch.",
+      "prompt": "Adam research Saden Group AstraForm deal — what's the next nudge?"
+    },
+    {
+      "name": "Halwan Design",
+      "stage": "warm",
+      "status": "nudging",
+      "meta": "AstraForm. Design + ERP.",
+      "prompt": "Adam research Halwan Design AstraForm pipeline state."
+    },
+    {
+      "name": "Fornax",
+      "stage": "warm",
+      "status": "nudging",
+      "meta": "AstraForm pipeline.",
+      "prompt": "Adam Fornax project — current state and next move."
+    },
+    {
+      "name": "O7 Therapy",
+      "stage": "cold",
+      "status": "watch",
+      "meta": "Competitor watch. Sunday weekly intel cycle.",
+      "prompt": "Adam intel on O7 — what changed this week?"
+    },
+    {
+      "name": "KSA expansion",
+      "stage": "cold",
+      "status": "strategic",
+      "meta": "WH · Q3 target. Strategic.",
+      "prompt": "Adam KSA expansion — what would it take to make Q3 real?"
+    }
+  ],
+  "signal": {
+    "time": "11:09",
+    "headline": "0 signals · 0 critical · 0 watch",
+    "detail": "Last scan 11:09 Cairo — scanner healthy.",
+    "critical": 0,
+    "watch": 0,
+    "total": 0
+  },
+  "wa": {
+    "last_timestamp": "2026-04-29 11:18:28+03:00",
+    "last_run": "2026-04-29 11:22:29",
+    "total_chats_processed": 417
+  },
+  "dream": {
+    "date": "",
+    "generated": "",
+    "mode": "LIVE",
+    "scanned": 0,
+    "committed": 0,
+    "flagged": 0,
+    "concepts": [
+      {
+        "name": "Crazy 8-agent dispatch",
+        "verdict": "PASS",
+        "confidence": "HIGH",
+        "insight": "",
+        "applies": ""
+      },
+      {
+        "name": "Digest Deep canonical grounding",
+        "verdict": "PASS",
+        "confidence": "HIGH",
+        "insight": "",
+        "applies": ""
+      },
+      {
+        "name": "Cross-pollination",
+        "verdict": "PASS",
+        "confidence": "HIGH",
+        "insight": "",
+        "applies": ""
+      },
+      {
+        "name": "Enriched verdict",
+        "verdict": "PASS",
+        "confidence": "HIGH",
+        "insight": "",
+        "applies": ""
+      },
+      {
+        "name": "Crazy 8-agent dispatch",
+        "verdict": "PASS",
+        "confidence": "HIGH",
+        "insight": "",
+        "applies": ""
+      },
+      {
+        "name": "Digest Deep canonical grounding",
+        "verdict": "PASS",
+        "confidence": "HIGH",
+        "insight": "",
+        "applies": ""
+      },
+      {
+        "name": "Cross-pollination",
+        "verdict": "PASS",
+        "confidence": "HIGH",
+        "insight": "",
+        "applies": ""
+      },
+      {
+        "name": "Enriched verdict",
+        "verdict": "PASS",
+        "confidence": "HIGH",
+        "insight": "",
+        "applies": ""
+      }
+    ],
+    "prose": "",
+    "summary": "8 mental models committed at 03:01."
+  },
+  "synapse": 23677,
+  "concerns": [
+    {
+      "concern": "WH therapist retention after funding round launch",
+      "priority": "HIGH",
+      "domains": [
+        "therapist retention online platforms",
+        "mental health platform growth MENA",
+        "therapy stigma Egypt",
+        "corporate B2B wellness"
+      ],
+      "notes": "100K USD raised. Launch ~1 month after Eid Al-Adha 2026. S1→S2 conversion is the core problem."
+    },
+    {
+      "concern": "AstraForm client trust during long ERP implementation cycles",
+      "priority": "HIGH",
+      "domains": [
+        "ERP implementation psychology",
+        "B2B professional services trust",
+        "Odoo adoption SME",
+        "long cycle project management MENA"
+      ],
+      "notes": "Orion + Fornax projects active. Asabiyyah breaks when delivery stretches. Need frameworks for trust maintenance."
+    },
+    {
+      "concern": "Ahmed managing bandwidth across 2 active businesses simultaneously",
+      "priority": "MEDIUM",
+      "domains": [
+        "dual CEO performance",
+        "cognitive bandwidth management",
+        "decision fatigue entrepreneur",
+        "focus under pressure"
+      ],
+      "notes": "Ahmed's self-identified biggest challenge. Gym + dental + launch prep + personal life all concurrent."
+    },
+    {
+      "concern": "MENA mental health market dynamics and competitive intelligence",
+      "priority": "MEDIUM",
+      "domains": [
+        "mental health market MENA",
+        "telehealth adoption Arab world",
+        "O7 therapy competitors",
+        "KSA mental health expansion"
+      ],
+      "notes": "Competitive signals needed. O7 is the main competitor. KSA expansion is WH next horizon."
+    },
+    {
+      "concern": "ARIS research pipeline efficiency and academic novelty detection",
+      "priority": "LOW",
+      "domains": [
+        "automated research pipeline",
+        "novelty detection academic papers",
+        "AI research automation",
+        "arXiv trend detection"
+      ],
+      "notes": "Adam Labs ARIS pipeline. Papers → experiments → submission. Needs academic sources."
+    },
+    {
+      "concern": "WH therapist retention and patient S1→S2 conversion",
+      "priority": "HIGH",
+      "domains": [
+        "therapist retention",
+        "mental health platform growth",
+        "patient return rate",
+        "MENA therapy market"
+      ],
+      "notes": ""
+    },
+    {
+      "concern": "Ahmed managing bandwidth across two businesses simultaneously",
+      "priority": "MEDIUM",
+      "domains": [
+        "dual CEO performance",
+        "cognitive bandwidth",
+        "decision fatigue",
+        "prioritization frameworks"
+      ],
+      "notes": ""
+    },
+    {
+      "concern": "Wellness House launch preparation (~July 2026, ~10 weeks)",
+      "priority": "HIGH",
+      "domains": [
+        "platform launch strategy",
+        "MENA digital health",
+        "therapist onboarding",
+        "patient acquisition"
+      ],
+      "notes": ""
+    },
+    {
+      "concern": "ARIS research pipeline efficiency and paper quality",
+      "priority": "MEDIUM",
+      "domains": [
+        "academic writing systems",
+        "AI research pipelines",
+        "novelty detection",
+        "peer review"
+      ],
+      "notes": ""
+    },
+    {
+      "concern": "Zapier fix**: change Notion→Gmail for Adam Ear pipeline (subject: ADAM_EAR:)",
+      "priority": "MEDIUM",
+      "domains": [],
+      "notes": ""
+    },
+    {
+      "concern": "Reachy Mini**: pre-order opens early May 2026 — $299 Lite / $449 Wireless (Pollen Robotics)",
+      "priority": "MEDIUM",
+      "domains": [],
+      "notes": ""
+    },
+    {
+      "concern": "The One Vision discussion**: scheduled 2026-05-01. Don't write the-one.md until after.",
+      "priority": "MEDIUM",
+      "domains": [],
+      "notes": ""
+    },
+    {
+      "concern": "Kadry reconnect**: Ahmed Kadry silent 30+ days — top network priority",
+      "priority": "MEDIUM",
+      "domains": [],
+      "notes": ""
+    },
+    {
+      "concern": "Mongy + Ziad Mokhtar + Mai Medhat**: also silent 30+ days — flag in next network check",
+      "priority": "MEDIUM",
+      "domains": [],
+      "notes": ""
+    }
+  ],
+  "lab_sessions": 31,
+  "encyclopedia": {
+    "files": 127,
+    "frameworks": 44
+  },
+  "mirsad": 6,
+  "calendar": []
+}

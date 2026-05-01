@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en" data-brand="wh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adam OS — Wellness House</title>
+<link rel="stylesheet" href="shared/adam-os.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">A</div>
+      <div class="brand-name">Adam <em>OS</em></div>
+    </div>
+
+    <div class="nav-section-label">Workspace</div>
+    <button class="nav-item" onclick="window.location.href='index.html'">
+      <span class="nav-icon"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Sun/3D/sun_3d.png"></span>
+      Today
+    </button>
+    <button class="nav-item" onclick="window.location.href='body.html'">
+      <span class="nav-icon"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Person/3D/person_3d_default.png"></span>
+      Adam Body
+    </button>
+    <button class="nav-item active">
+      <span class="nav-icon"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Lotus/3D/lotus_3d.png"></span>
+      Wellness House
+    </button>
+    <button class="nav-item" onclick="window.location.href='astraform.html'">
+      <span class="nav-icon"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Rocket/3D/rocket_3d.png"></span>
+      AstraForm
+    </button>
+
+    <div class="nav-section-label">Tools</div>
+    <button class="nav-item">
+      <span class="nav-icon"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Brain/3D/brain_3d.png"></span>
+      Memory
+    </button>
+    <button class="nav-item">
+      <span class="nav-icon"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Telescope/3D/telescope_3d.png"></span>
+      Intel
+    </button>
+    <button class="nav-item">
+      <span class="nav-icon"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Speech%20balloon/3D/speech_balloon_3d.png"></span>
+      Comms
+    </button>
+
+    <div class="sidebar-spacer"></div>
+    <div class="user-card">
+      <div class="user-avatar">A</div>
+      <div class="user-info">
+        <div class="user-name">Ahmed</div>
+        <div class="user-meta">CEO · Wellness House</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="workspace">
+
+      <div class="topbar">
+        <div class="topbar-greeting">Wellness House, <span>this week's pulse</span></div>
+        <div class="topbar-spacer"></div>
+        <div class="search">
+          <span style="color:var(--muted);font-size:14px;">⌕</span>
+          <input type="text" placeholder="Search WH everything…" />
+          <span class="kbd">⌘K</span>
+        </div>
+        <button class="btn-pill" style="background:#0A4448;color:white;">+ New action</button>
+      </div>
+
+      <!-- Hero -->
+      <div class="page-hero">
+        <div>
+          <div class="page-hero-pre">Wellness House · CEO view</div>
+          <h1 class="page-hero-title">Samsung is the lever. Wellness Box is the wheel.</h1>
+          <p class="page-hero-sub">270-employee Mind-Body-Soul pilot is the fastest path to corporate revenue. Wellness Box turns customer lifetime value into a productized 20K EGP package. Both ship this month if you stay focused.</p>
+          <div style="display:flex;gap:8px;margin-top:18px;">
+            <button class="btn-pill btn-lime" style="background:#98E4D8;color:#0A4448;">Open Samsung deal →</button>
+            <button class="btn-pill" style="background:transparent;color:white;border:1px solid rgba(255,255,255,0.18);">See full pipeline</button>
+          </div>
+        </div>
+        <img class="page-hero-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Lotus/3D/lotus_3d.png" alt="WH">
+      </div>
+
+      <!-- KPI tower -->
+      <div class="kpi-row">
+        <div class="kpi">
+          <div class="kpi-label">MRR (this month)</div>
+          <div class="kpi-value">EGP 1.2M</div>
+          <div class="kpi-delta up">↑ 12% vs last month</div>
+          <img class="kpi-icon" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Money%20bag/3D/money_bag_3d.png">
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Sessions delivered</div>
+          <div class="kpi-value">1,847</div>
+          <div class="kpi-delta up">↑ 8% wk-on-wk</div>
+          <img class="kpi-icon" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Bullseye/3D/bullseye_3d.png">
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">S1 → S2 conversion</div>
+          <div class="kpi-value">41%</div>
+          <div class="kpi-delta down">↓ 3pts · the gap</div>
+          <img class="kpi-icon" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Chart%20decreasing/3D/chart_decreasing_3d.png">
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Active therapists</div>
+          <div class="kpi-value">68</div>
+          <div class="kpi-delta flat">— stable</div>
+          <img class="kpi-icon" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Health%20worker/3D/health_worker_3d_default.png">
+        </div>
+      </div>
+
+      <!-- Pipeline + Calendar -->
+      <div class="cols-2">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Pipeline · this week</h3>
+            <span class="meta">From Trello · 8 deals tracked</span>
+          </div>
+          <div class="kanban">
+            <div class="kanban-col hot">
+              <div class="kanban-col-head">Hot <span class="kanban-col-count">3</span></div>
+              <div class="deal">
+                <div class="deal-name"><img class="deal-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Briefcase/3D/briefcase_3d.png">Samsung × WH</div>
+                <div class="deal-meta">Hagar Selim · 270 emp · 3-mo MBS</div>
+                <div class="deal-bar"><div class="deal-bar-fill" style="width:78%;"></div></div>
+              </div>
+              <div class="deal">
+                <div class="deal-name"><img class="deal-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Wrapped%20gift/3D/wrapped_gift_3d.png">Wellness Box · Gates</div>
+                <div class="deal-meta">Real estate · 1K subs · 20M EGP TAM</div>
+                <div class="deal-bar"><div class="deal-bar-fill" style="width:55%;"></div></div>
+              </div>
+              <div class="deal">
+                <div class="deal-name"><img class="deal-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Office%20building/3D/office_building_3d.png">Foundever B2B</div>
+                <div class="deal-meta">Via Nasco · Asma · Bassant</div>
+                <div class="deal-bar"><div class="deal-bar-fill" style="width:42%;"></div></div>
+              </div>
+            </div>
+
+            <div class="kanban-col warm">
+              <div class="kanban-col-head">Warm <span class="kanban-col-count">2</span></div>
+              <div class="deal">
+                <div class="deal-name"><img class="deal-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Hospital/3D/hospital_3d.png">Vodafone Egypt</div>
+                <div class="deal-meta">EAP RFP · awaiting next touch</div>
+                <div class="deal-bar"><div class="deal-bar-fill" style="width:30%;"></div></div>
+              </div>
+              <div class="deal">
+                <div class="deal-name"><img class="deal-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Bank/3D/bank_3d.png">CIB Wellness Track</div>
+                <div class="deal-meta">HR exec call done · waiting</div>
+                <div class="deal-bar"><div class="deal-bar-fill" style="width:22%;"></div></div>
+              </div>
+            </div>
+
+            <div class="kanban-col cold">
+              <div class="kanban-col-head">Cold/Strategic <span class="kanban-col-count">3</span></div>
+              <div class="deal">
+                <div class="deal-name"><img class="deal-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Globe%20showing%20Europe-Africa/3D/globe_showing_europe-africa_3d.png">KSA Expansion</div>
+                <div class="deal-meta">Q3 target · strategic only</div>
+              </div>
+              <div class="deal">
+                <div class="deal-name"><img class="deal-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Eye/3D/eye_3d.png">O7 Therapy</div>
+                <div class="deal-meta">Competitor watch · weekly</div>
+              </div>
+              <div class="deal">
+                <div class="deal-name"><img class="deal-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Handshake/3D/handshake_3d_default.png">M Empire follow-up</div>
+                <div class="deal-meta">Pre-seed closed · keep warm</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>This week · calendar</h3>
+            <span class="meta">May 1 → 7</span>
+          </div>
+          <div class="weekcal">
+            <div class="weekcal-day today">
+              <div class="weekcal-dow">Fri</div>
+              <div class="weekcal-date">1</div>
+              <div class="weekcal-meet priority">10:30 Hazem · Orion</div>
+              <div class="weekcal-meet">14:00 Sara · WBox</div>
+              <div class="weekcal-meet">16:30 Marwan</div>
+            </div>
+            <div class="weekcal-day">
+              <div class="weekcal-dow">Sat</div>
+              <div class="weekcal-date">2</div>
+              <div class="weekcal-meet priority">Adam Core · 9–4</div>
+            </div>
+            <div class="weekcal-day">
+              <div class="weekcal-dow">Sun</div>
+              <div class="weekcal-date">3</div>
+              <div class="weekcal-meet priority">Samsung deck day</div>
+              <div class="weekcal-meet">17:00 Maged</div>
+            </div>
+            <div class="weekcal-day">
+              <div class="weekcal-dow">Mon</div>
+              <div class="weekcal-date">4</div>
+              <div class="weekcal-meet priority">11:00 Hagar · WH</div>
+              <div class="weekcal-meet">14:00 team standup</div>
+            </div>
+            <div class="weekcal-day">
+              <div class="weekcal-dow">Tue</div>
+              <div class="weekcal-date">5</div>
+              <div class="weekcal-meet">15:00 Foundever intro</div>
+            </div>
+            <div class="weekcal-day">
+              <div class="weekcal-dow">Wed</div>
+              <div class="weekcal-date">6</div>
+              <div class="weekcal-meet">10:00 therapist sync</div>
+              <div class="weekcal-meet">19:00 family</div>
+            </div>
+            <div class="weekcal-day">
+              <div class="weekcal-dow">Thu</div>
+              <div class="weekcal-date">7</div>
+              <div class="weekcal-meet">All-day · KSA scoping</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Emails + WhatsApp threads -->
+      <div class="cols-2">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Top emails · this week</h3>
+            <button class="btn-action">Open Gmail →</button>
+          </div>
+          <div class="email-list">
+            <div class="email-row">
+              <div class="email-priority hot"></div>
+              <div>
+                <div class="email-from">Hagar Selim · Samsung Egypt</div>
+                <div class="email-subject">RE: Wellness Day pilot — sending the deck Sunday morning?</div>
+              </div>
+              <div class="email-time">3h</div>
+            </div>
+            <div class="email-row">
+              <div class="email-priority hot"></div>
+              <div>
+                <div class="email-from">Maged · M Empire</div>
+                <div class="email-subject">Pre-seed closed · next milestones to watch</div>
+              </div>
+              <div class="email-time">11h</div>
+            </div>
+            <div class="email-row">
+              <div class="email-priority warm"></div>
+              <div>
+                <div class="email-from">Asma · Nasco</div>
+                <div class="email-subject">Foundever — Bassant wants to schedule a 30 min</div>
+              </div>
+              <div class="email-time">1d</div>
+            </div>
+            <div class="email-row">
+              <div class="email-priority warm"></div>
+              <div>
+                <div class="email-from">Dr. Yara · Clinical Lead</div>
+                <div class="email-subject">Therapist retention guide v2 — need your eyes</div>
+              </div>
+              <div class="email-time">1d</div>
+            </div>
+            <div class="email-row">
+              <div class="email-priority"></div>
+              <div>
+                <div class="email-from">Mustafa · Performance Mkt</div>
+                <div class="email-subject">April spend report + ROAS by channel</div>
+              </div>
+              <div class="email-time">2d</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>WhatsApp · WH-related</h3>
+            <button class="btn-action">Open Comms →</button>
+          </div>
+          <div class="wa-list">
+            <div class="wa-row unread">
+              <div class="wa-avatar" style="background:var(--peach-soft)">HS</div>
+              <div>
+                <div class="wa-name">Hagar Selim · Samsung</div>
+                <div class="wa-msg">Looking forward to the deck before Sunday's review.</div>
+              </div>
+              <div class="wa-time">14h</div>
+            </div>
+            <div class="wa-row unread">
+              <div class="wa-avatar" style="background:rgba(184,160,255,0.4)">MF</div>
+              <div>
+                <div class="wa-name">Marwan Fekry · Commercial</div>
+                <div class="wa-msg">Sarah locked the SKU at 20K EGP. Routing to Alia + Shibl.</div>
+              </div>
+              <div class="wa-time">2h</div>
+            </div>
+            <div class="wa-row">
+              <div class="wa-avatar" style="background:rgba(255,163,199,0.4)">SR</div>
+              <div>
+                <div class="wa-name">Sara · Ops</div>
+                <div class="wa-msg">Wellness Box bundle review confirmed for 14:00.</div>
+              </div>
+              <div class="wa-time">22m</div>
+            </div>
+            <div class="wa-row">
+              <div class="wa-avatar" style="background:rgba(160,208,255,0.45)">NF</div>
+              <div>
+                <div class="wa-name">Nour · Marketing</div>
+                <div class="wa-msg">Wellness day teaser hit 1.2K reactions.</div>
+              </div>
+              <div class="wa-time">5h</div>
+            </div>
+            <div class="wa-row">
+              <div class="wa-avatar" style="background:var(--lime-soft)">WH</div>
+              <div>
+                <div class="wa-name">WH Therapists Group</div>
+                <div class="wa-msg">Dr. Yara on retention guide draft.</div>
+              </div>
+              <div class="wa-time">11h</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Team -->
+      <div class="panel" style="margin-bottom:24px;">
+        <div class="panel-head">
+          <h3>Team · this week</h3>
+          <span class="meta">5 active · 2 receptionists hiring · clinical director GAP</span>
+        </div>
+        <div class="team-list">
+          <div class="team-row">
+            <div class="team-avatar" style="background:var(--peach-soft)">SS</div>
+            <div>
+              <div class="team-name">Sara Sabahi · Ops</div>
+              <div class="team-role">Wellness Box · therapist scheduling</div>
+            </div>
+            <div class="team-stats">
+              <span class="team-stat">7 done</span>
+              <span class="team-stat">3 in flight</span>
+            </div>
+            <button class="btn-action">1:1</button>
+          </div>
+          <div class="team-row">
+            <div class="team-avatar" style="background:rgba(184,160,255,0.4)">MF</div>
+            <div>
+              <div class="team-name">Marwan Fekry · Commercial</div>
+              <div class="team-role">Pipeline · Samsung · Foundever</div>
+            </div>
+            <div class="team-stats">
+              <span class="team-stat">5 done</span>
+              <span class="team-stat alert">2 stuck</span>
+            </div>
+            <button class="btn-action">1:1</button>
+          </div>
+          <div class="team-row">
+            <div class="team-avatar" style="background:rgba(160,208,255,0.45)">NF</div>
+            <div>
+              <div class="team-name">Nour · Marketing & Community</div>
+              <div class="team-role">Content calendar · therapist community</div>
+            </div>
+            <div class="team-stats">
+              <span class="team-stat">9 done</span>
+              <span class="team-stat">2 in flight</span>
+            </div>
+            <button class="btn-action">1:1</button>
+          </div>
+          <div class="team-row">
+            <div class="team-avatar" style="background:rgba(160,232,200,0.45)">MZ</div>
+            <div>
+              <div class="team-name">Mustafa Z. · Performance Marketing</div>
+              <div class="team-role">Meta + Google ads · ROAS</div>
+            </div>
+            <div class="team-stats">
+              <span class="team-stat">4 done</span>
+              <span class="team-stat">1 in flight</span>
+            </div>
+            <button class="btn-action">1:1</button>
+          </div>
+          <div class="team-row">
+            <div class="team-avatar" style="background:rgba(255,163,199,0.4)">OM</div>
+            <div>
+              <div class="team-name">Omar M. · Accountant</div>
+              <div class="team-role">Books · payroll · vendor pay</div>
+            </div>
+            <div class="team-stats">
+              <span class="team-stat">12 done</span>
+              <span class="team-stat">0 stuck</span>
+            </div>
+            <button class="btn-action">1:1</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="shared/adam-os.js"></script>
+</body>
+</html>

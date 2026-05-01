@@ -1,0 +1,2057 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<meta name="theme-color" content="#FAFAFA" media="(prefers-color-scheme: light)"/>
+<meta name="theme-color" content="#0F0F14" media="(prefers-color-scheme: dark)"/>
+<title>Adam · Ahmed's Living System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ════════════════════════════════════════════════════════════════
+   ADAM — Design Tokens
+   Apple-inspired type scale, generous spacing, calm palette.
+   ════════════════════════════════════════════════════════════════ */
+:root{
+  /* Type */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --fs-display: clamp(28px, 4vw, 40px);
+  --fs-h1: clamp(22px, 2.6vw, 30px);
+  --fs-h2: 20px;
+  --fs-lg: 17px;
+  --fs-md: 15px;
+  --fs-sm: 13px;
+  --fs-xs: 12px;
+  --fs-micro: 11px;
+
+  /* Adam brand — kept across themes */
+  --brand-1: #7C3AED;
+  --brand-2: #C084FC;
+  --brand-grad: linear-gradient(135deg, #7C3AED 0%, #C084FC 100%);
+
+  --accent: #6366F1;
+  --cyan:   #06B6D4;
+  --green:  #10B981;
+  --amber:  #F59E0B;
+  --red:    #EF4444;
+  --rose:   #FB7185;
+
+  /* Spacing scale */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-7: 32px;
+  --sp-8: 48px;
+
+  /* Radius */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+  --r-pill: 999px;
+}
+
+/* Light theme (default) */
+:root[data-theme="light"]{
+  --bg:        #F5F5F7;
+  --bg-elev:   #FFFFFF;
+  --card:      #FFFFFF;
+  --card-alt:  #FAFAFA;
+  --hover:     #F2F2F5;
+  --border:    rgba(0,0,0,0.07);
+  --border-strong: rgba(0,0,0,0.12);
+
+  --t1: #1D1D1F;
+  --t2: #515154;
+  --t3: #86868B;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-lg: 0 12px 28px rgba(0,0,0,0.08), 0 4px 8px rgba(0,0,0,0.04);
+
+  --tint-brand: rgba(124,58,237,0.08);
+  --tint-accent: rgba(99,102,241,0.08);
+  --tint-cyan: rgba(6,182,212,0.08);
+  --tint-green: rgba(16,185,129,0.10);
+  --tint-amber: rgba(245,158,11,0.10);
+  --tint-red:   rgba(239,68,68,0.10);
+  --tint-rose:  rgba(251,113,133,0.10);
+}
+
+/* Dark theme — kept as Adam's identity but warmer */
+:root[data-theme="dark"]{
+  --bg:        #0F0F14;
+  --bg-elev:   #16161E;
+  --card:      #1A1A24;
+  --card-alt:  #14141C;
+  --hover:     #20202C;
+  --border:    rgba(255,255,255,0.07);
+  --border-strong: rgba(255,255,255,0.14);
+
+  --t1: #F5F5F7;
+  --t2: #B6B6C2;
+  --t3: #75758A;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md: 0 6px 16px rgba(0,0,0,0.4);
+  --shadow-lg: 0 16px 40px rgba(0,0,0,0.5);
+
+  --tint-brand: rgba(192,132,252,0.10);
+  --tint-accent: rgba(129,140,248,0.10);
+  --tint-cyan: rgba(34,211,238,0.10);
+  --tint-green: rgba(74,222,128,0.10);
+  --tint-amber: rgba(251,191,36,0.10);
+  --tint-red:   rgba(239,68,68,0.12);
+  --tint-rose:  rgba(251,113,133,0.10);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   Reset + Base
+   ════════════════════════════════════════════════════════════════ */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:var(--bg);color:var(--t1);}
+body{
+  font-family:var(--font-sans);
+  font-size:var(--fs-md);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+  font-feature-settings:'cv11','ss01','ss03';
+  letter-spacing:-0.01em;
+  transition:background-color .25s ease, color .25s ease;
+}
+button,input,select{font-family:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+svg{display:block}
+
+/* ════════════════════════════════════════════════════════════════
+   Shell
+   ════════════════════════════════════════════════════════════════ */
+.shell{
+  min-height:100vh;
+  display:grid;
+  grid-template-rows:auto 1fr;
+}
+
+/* ───────── HEADER ───────── */
+.hdr{
+  position:sticky;top:0;z-index:30;
+  display:flex;align-items:center;gap:var(--sp-5);
+  padding:var(--sp-4) var(--sp-6);
+  background:color-mix(in oklab, var(--bg-elev) 92%, transparent);
+  backdrop-filter:saturate(180%) blur(18px);
+  -webkit-backdrop-filter:saturate(180%) blur(18px);
+  border-bottom:1px solid var(--border);
+}
+.brand{display:flex;align-items:center;gap:var(--sp-3);min-width:0}
+.brand-mark{
+  width:36px;height:36px;border-radius:10px;
+  background:var(--brand-grad);
+  display:grid;place-items:center;
+  box-shadow:0 8px 22px rgba(124,58,237,0.30), inset 0 1px 0 rgba(255,255,255,0.18);
+  color:white;
+}
+.brand-mark svg{width:18px;height:18px}
+.brand-text{display:flex;flex-direction:column;line-height:1.1;min-width:0}
+.brand-name{font-size:var(--fs-md);font-weight:700;letter-spacing:-0.02em}
+.brand-sub{font-size:var(--fs-micro);color:var(--t3);font-weight:500}
+
+.hdr-tabs{
+  display:flex;gap:2px;
+  background:var(--card-alt);
+  border:1px solid var(--border);
+  border-radius:var(--r-pill);
+  padding:4px;
+}
+.tab{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:var(--r-pill);
+  font-size:var(--fs-sm);font-weight:500;
+  color:var(--t2);background:transparent;border:none;
+  cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.tab svg{width:15px;height:15px;opacity:.85}
+.tab:hover{color:var(--t1);background:var(--hover)}
+.tab.active{
+  background:var(--bg-elev);color:var(--t1);
+  box-shadow:var(--shadow-sm);
+}
+:root[data-theme="dark"] .tab.active{background:var(--brand-1);color:white}
+:root[data-theme="dark"] .tab.active svg{color:white}
+
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:var(--sp-3)}
+.live-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 12px;border-radius:var(--r-pill);
+  background:var(--tint-green);
+  color:var(--green);
+  font-size:var(--fs-xs);font-weight:600;
+}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s ease infinite}
+.clock{font-size:var(--fs-sm);color:var(--t2);font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+
+.icon-btn{
+  width:36px;height:36px;border-radius:var(--r-pill);
+  border:1px solid var(--border);background:var(--card-alt);
+  display:grid;place-items:center;cursor:pointer;
+  color:var(--t2);transition:all .15s;
+}
+.icon-btn:hover{color:var(--t1);background:var(--hover);border-color:var(--border-strong)}
+.icon-btn svg{width:17px;height:17px}
+
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* ───────── LAYOUT ───────── */
+.layout{
+  display:grid;
+  grid-template-columns:320px 1fr;
+  gap:var(--sp-6);
+  padding:var(--sp-6);
+  max-width:1400px;
+  margin:0 auto;
+  width:100%;
+}
+@media (max-width:1024px){
+  .layout{grid-template-columns:1fr;padding:var(--sp-4)}
+}
+
+/* ════════════════════════════════════════════════════════════════
+   SIDEBAR — System health at a glance
+   ════════════════════════════════════════════════════════════════ */
+.sidebar{
+  display:flex;flex-direction:column;gap:var(--sp-4);
+  position:sticky;top:84px;
+  align-self:start;
+  height:fit-content;
+}
+@media (max-width:1024px){ .sidebar{position:static} }
+
+.s-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  padding:var(--sp-5);
+  box-shadow:var(--shadow-sm);
+}
+
+.s-eyebrow{
+  font-size:var(--fs-micro);font-weight:600;
+  color:var(--t3);
+  letter-spacing:0.04em;text-transform:uppercase;
+  margin-bottom:var(--sp-3);
+}
+
+/* Body silhouette */
+.body-wrap{display:grid;place-items:center;padding:var(--sp-2) 0 var(--sp-4)}
+#adam-body{width:200px;height:auto;max-width:100%}
+
+/* Health */
+.xp-row{display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-3);margin-bottom:var(--sp-3)}
+.xp-label{font-size:var(--fs-sm);font-weight:600;color:var(--t1)}
+.xp-value{
+  font-size:32px;font-weight:800;
+  letter-spacing:-0.04em;line-height:1;
+  font-variant-numeric:tabular-nums;
+  background:linear-gradient(135deg,var(--green),var(--cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.xp-denom{font-size:14px;color:var(--t3);font-weight:600;-webkit-text-fill-color:var(--t3)}
+.xp-track{
+  height:8px;width:100%;border-radius:var(--r-pill);
+  background:var(--hover);
+  overflow:hidden;
+}
+.xp-fill{
+  height:100%;border-radius:var(--r-pill);
+  background:linear-gradient(90deg,var(--green),var(--cyan));
+  box-shadow:0 0 12px rgba(16,185,129,0.35);
+  transition:width 1.2s cubic-bezier(.16,1,.3,1), background .6s, box-shadow .6s;
+}
+.xp-tier{
+  margin-top:var(--sp-3);
+  font-size:var(--fs-xs);font-weight:600;
+  color:var(--green);
+  display:inline-flex;align-items:center;gap:6px;
+}
+.xp-tier.degraded{color:var(--amber)}
+.xp-tier.critical{color:var(--red)}
+
+/* ECG */
+.ecg-card{margin-top:var(--sp-3);padding:var(--sp-3) var(--sp-4)}
+.ecg-hd{display:flex;justify-content:space-between;align-items:center;font-size:var(--fs-xs);color:var(--t3);margin-bottom:6px}
+.ecg-hd .pulse{color:var(--green);font-weight:600;font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+#ecg{width:100%;height:32px;display:block;overflow:hidden}
+
+/* Legend */
+.legend{display:flex;flex-direction:column;gap:2px;margin-top:var(--sp-2)}
+.legend-row{
+  display:flex;align-items:center;gap:var(--sp-3);
+  padding:10px 12px;border-radius:var(--r-md);
+  cursor:pointer;transition:background .12s;
+}
+.legend-row:hover{background:var(--hover)}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 3px rgba(0,0,0,0.04)}
+.legend-name{flex:1;font-size:var(--fs-sm);color:var(--t1);font-weight:500}
+.legend-status{font-size:var(--fs-xs);font-weight:600}
+
+/* Defect alert */
+.alert{
+  display:flex;align-items:flex-start;gap:var(--sp-3);
+  padding:var(--sp-4);border-radius:var(--r-md);
+  background:var(--tint-amber);
+  border:1px solid color-mix(in oklab, var(--amber) 30%, transparent);
+}
+.alert-icon{
+  flex-shrink:0;width:28px;height:28px;border-radius:50%;
+  background:rgba(245,158,11,0.18);color:var(--amber);
+  display:grid;place-items:center;
+}
+.alert-icon svg{width:14px;height:14px}
+.alert-body{font-size:var(--fs-sm);color:var(--t1);line-height:1.45}
+.alert-body strong{font-weight:600}
+
+/* Live feed */
+#live-feed{display:flex;flex-direction:column;gap:2px;max-height:240px;overflow-y:auto}
+.feed-empty{font-size:var(--fs-xs);color:var(--t3);padding:var(--sp-3);text-align:center}
+.feed-item{
+  display:flex;align-items:center;gap:var(--sp-2);
+  padding:8px 10px;border-radius:var(--r-sm);
+  font-size:var(--fs-xs);color:var(--t1);
+  transition:background .12s;
+  animation:fadeIn .25s ease;
+}
+.feed-item:hover{background:var(--hover)}
+.feed-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.feed-label{flex:1;font-weight:500}
+.feed-detail{color:var(--t3);font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:var(--fs-micro)}
+.feed-time{color:var(--t3);font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:var(--fs-micro);min-width:54px;text-align:right}
+
+/* ════════════════════════════════════════════════════════════════
+   PANELS
+   ════════════════════════════════════════════════════════════════ */
+.panels{min-width:0;display:flex;flex-direction:column;gap:var(--sp-5)}
+.panel{display:none;flex-direction:column;gap:var(--sp-5);animation:fadeUp .3s ease}
+.panel.active{display:flex}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* Hero */
+.hero{
+  position:relative;overflow:hidden;
+  border-radius:var(--r-xl);
+  padding:var(--sp-7) var(--sp-7);
+  background:
+    radial-gradient(ellipse at 0% 0%, color-mix(in oklab, var(--brand-1) 14%, transparent), transparent 60%),
+    radial-gradient(ellipse at 100% 100%, color-mix(in oklab, var(--cyan) 12%, transparent), transparent 60%),
+    var(--card);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow-md);
+  display:flex;justify-content:space-between;align-items:center;gap:var(--sp-5);
+  flex-wrap:wrap;
+}
+.hero-eye{
+  font-size:var(--fs-xs);font-weight:600;color:var(--t2);
+  letter-spacing:0.06em;text-transform:uppercase;
+  margin-bottom:var(--sp-2);
+}
+.hero-title{
+  font-size:var(--fs-display);font-weight:800;letter-spacing:-0.03em;line-height:1.1;
+}
+.hero-sub{font-size:var(--fs-lg);color:var(--t2);margin-top:var(--sp-2);max-width:580px}
+.hero-score{
+  text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px;
+}
+.score-num{
+  font-size:64px;font-weight:800;letter-spacing:-0.04em;line-height:1;
+  font-variant-numeric:tabular-nums;
+  background:var(--brand-grad);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.score-lbl{font-size:var(--fs-xs);color:var(--t3);font-weight:600;letter-spacing:0.04em;text-transform:uppercase}
+
+/* KPI grid */
+.kpi-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+  gap:var(--sp-4);
+}
+.kpi{
+  position:relative;overflow:hidden;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  padding:var(--sp-5);
+  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  box-shadow:var(--shadow-sm);
+}
+.kpi:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--border-strong)}
+.kpi-glow{position:absolute;top:-30px;right:-30px;width:80px;height:80px;border-radius:50%;filter:blur(28px);opacity:.16;pointer-events:none}
+.kpi-lbl{font-size:var(--fs-sm);color:var(--t2);font-weight:500;margin-bottom:var(--sp-3)}
+.kpi-val{font-size:36px;font-weight:800;letter-spacing:-0.03em;line-height:1;font-variant-numeric:tabular-nums;margin-bottom:var(--sp-2)}
+.kpi-ft{font-size:var(--fs-xs);color:var(--t3);display:flex;align-items:center;gap:4px}
+.kpi-ft svg{width:13px;height:13px}
+
+/* Card */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  box-shadow:var(--shadow-sm);
+  overflow:hidden;
+}
+.card-hd{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:var(--sp-5) var(--sp-5) var(--sp-3);
+  gap:var(--sp-4);
+}
+.card-hd-l{min-width:0}
+.card-title{font-size:var(--fs-h2);font-weight:700;letter-spacing:-0.02em;color:var(--t1)}
+.card-sub{font-size:var(--fs-sm);color:var(--t3);margin-top:2px}
+.card-bd{padding:var(--sp-2) var(--sp-5) var(--sp-5)}
+.card-bd-flat{padding:0}
+
+/* Chip */
+.chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 11px;border-radius:var(--r-pill);
+  font-size:var(--fs-xs);font-weight:600;
+  white-space:nowrap;
+}
+.chip svg{width:12px;height:12px}
+.chip.green{background:var(--tint-green);color:var(--green)}
+.chip.amber{background:var(--tint-amber);color:var(--amber)}
+.chip.red{background:var(--tint-red);color:var(--red)}
+.chip.cyan{background:var(--tint-cyan);color:var(--cyan)}
+.chip.brand{background:var(--tint-brand);color:var(--brand-1)}
+.chip.accent{background:var(--tint-accent);color:var(--accent)}
+:root[data-theme="dark"] .chip.brand{color:var(--brand-2)}
+
+/* Buttons */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:10px 18px;border-radius:var(--r-md);
+  font-size:var(--fs-sm);font-weight:600;
+  border:1px solid var(--border-strong);background:var(--card);color:var(--t1);
+  cursor:pointer;transition:all .15s;
+  font-family:inherit;
+}
+.btn:hover{background:var(--hover);transform:translateY(-1px);box-shadow:var(--shadow-sm)}
+.btn svg{width:16px;height:16px}
+.btn-primary{background:var(--brand-grad);color:white;border-color:transparent;box-shadow:0 6px 16px rgba(124,58,237,0.25)}
+.btn-primary:hover{background:var(--brand-grad);filter:brightness(1.08);box-shadow:0 10px 22px rgba(124,58,237,0.32)}
+.btn-success{background:var(--tint-green);color:var(--green);border-color:color-mix(in oklab,var(--green) 25%,transparent)}
+.btn-success:hover{background:color-mix(in oklab,var(--green) 18%, transparent)}
+
+/* Action card grid (Today, WH) */
+.actions{
+  display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+  gap:var(--sp-3);
+}
+.action{
+  display:flex;flex-direction:column;gap:var(--sp-2);
+  padding:var(--sp-5);
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  cursor:pointer;
+  transition:all .18s ease;
+  position:relative;overflow:hidden;
+}
+.action:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--border-strong)}
+.action-icon{
+  width:40px;height:40px;border-radius:var(--r-md);
+  display:grid;place-items:center;
+  margin-bottom:var(--sp-2);
+}
+.action-icon svg{width:20px;height:20px}
+.action-icon.brand{background:var(--tint-brand);color:var(--brand-1)}
+.action-icon.green{background:var(--tint-green);color:var(--green)}
+.action-icon.cyan{background:var(--tint-cyan);color:var(--cyan)}
+.action-icon.amber{background:var(--tint-amber);color:var(--amber)}
+.action-icon.accent{background:var(--tint-accent);color:var(--accent)}
+:root[data-theme="dark"] .action-icon.brand{color:var(--brand-2)}
+.action-title{font-size:var(--fs-md);font-weight:600;color:var(--t1)}
+.action-desc{font-size:var(--fs-sm);color:var(--t2);line-height:1.45}
+.action-meta{font-size:var(--fs-xs);color:var(--t3);margin-top:auto;padding-top:var(--sp-2);font-weight:500}
+.action-meta.green{color:var(--green)}
+.action-meta.amber{color:var(--amber)}
+.action-meta.brand{color:var(--brand-1)}
+:root[data-theme="dark"] .action-meta.brand{color:var(--brand-2)}
+
+/* Two-column grid */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4)}
+.three-col{display:grid;grid-template-columns:repeat(3, 1fr);gap:var(--sp-4)}
+@media (max-width:900px){
+  .two-col, .three-col{grid-template-columns:1fr}
+}
+
+/* Table */
+.tbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+.tbl thead th{
+  font-size:var(--fs-micro);font-weight:600;color:var(--t3);
+  letter-spacing:0.04em;text-transform:uppercase;
+  padding:var(--sp-3) var(--sp-5);text-align:left;
+  border-bottom:1px solid var(--border);
+  background:var(--card-alt);
+}
+.tbl tbody td{
+  padding:var(--sp-3) var(--sp-5);
+  color:var(--t2);border-bottom:1px solid var(--border);
+  font-variant-numeric:tabular-nums;
+}
+.tbl tbody tr:last-child td{border-bottom:none}
+.tbl tbody tr:hover td{background:var(--hover)}
+.tbl td.t1{color:var(--t1);font-weight:500}
+.tbl td.mono{font-family:var(--font-mono);font-size:var(--fs-xs);color:var(--t3)}
+
+/* Funnel */
+.funnel{display:flex;flex-direction:column;gap:var(--sp-2);padding:var(--sp-2) 0}
+.funnel-bar{
+  border-radius:var(--r-md);height:44px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 var(--sp-4);font-size:var(--fs-sm);font-weight:600;
+  transition:width .9s ease;
+  position:relative;overflow:hidden;
+}
+.funnel-bar .lbl{color:var(--t1)}
+.funnel-bar .num{color:var(--t2);font-variant-numeric:tabular-nums;font-weight:600}
+.funnel-bar.b1{background:var(--tint-cyan)}
+.funnel-bar.b2{background:var(--tint-accent)}
+.funnel-bar.b3{background:var(--tint-brand)}
+.funnel-bar.b4{background:var(--tint-green)}
+
+/* Cal events */
+.cal-list{display:flex;flex-direction:column}
+.cal-event{
+  display:flex;gap:var(--sp-3);
+  padding:var(--sp-3) 0;
+  border-bottom:1px solid var(--border);
+}
+.cal-event:last-child{border-bottom:none}
+.cal-event:first-child{padding-top:0}
+.cal-time{
+  font-size:var(--fs-xs);color:var(--t3);
+  font-family:var(--font-mono);font-variant-numeric:tabular-nums;
+  min-width:48px;font-weight:500;padding-top:2px;
+}
+.cal-name{font-size:var(--fs-sm);color:var(--t1);font-weight:600}
+.cal-meta{font-size:var(--fs-xs);color:var(--t3);margin-top:2px}
+
+/* WA messages */
+.wa-list{display:flex;flex-direction:column}
+.wa-msg{
+  display:flex;gap:var(--sp-3);
+  padding:var(--sp-3) 0;
+  border-bottom:1px solid var(--border);
+}
+.wa-msg:last-child{border-bottom:none}
+.wa-msg:first-child{padding-top:0}
+.wa-from{
+  font-size:var(--fs-xs);font-weight:600;color:var(--accent);
+  flex-shrink:0;min-width:90px;padding-top:2px;
+}
+.wa-msg.ok .wa-from{color:var(--green)}
+.wa-text{font-size:var(--fs-sm);color:var(--t1);line-height:1.5}
+
+/* Brain section */
+.brain-frame{
+  height:380px;border-radius:var(--r-md);overflow:hidden;
+  border:1px solid var(--border);
+  position:relative;background:var(--card-alt);
+}
+.brain-frame iframe{width:100%;height:100%;border:none;display:block}
+.brain-frame::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(to bottom, transparent 90%, var(--card) 100%);
+}
+
+.mem-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
+  gap:var(--sp-3);
+}
+.mem-stat{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  padding:var(--sp-5);
+  text-align:left;
+  transition:all .2s;
+  box-shadow:var(--shadow-sm);
+}
+.mem-stat:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.mem-num{font-size:30px;font-weight:800;letter-spacing:-0.03em;line-height:1;font-variant-numeric:tabular-nums;margin-bottom:var(--sp-2)}
+.mem-lbl{font-size:var(--fs-xs);color:var(--t3);font-weight:500}
+
+.dataset-row{
+  display:flex;align-items:center;gap:var(--sp-3);
+  padding:var(--sp-3) var(--sp-5);
+  border-bottom:1px solid var(--border);
+  transition:background .12s;
+}
+.dataset-row:hover{background:var(--hover)}
+.dataset-row:last-child{border-bottom:none}
+.ds-name{flex:1;font-size:var(--fs-sm);font-weight:500;color:var(--t1);font-family:var(--font-mono)}
+.ds-count{font-size:var(--fs-xs);color:var(--t3);font-variant-numeric:tabular-nums}
+.ds-bar-wrap{width:96px;height:5px;background:var(--hover);border-radius:var(--r-pill);overflow:hidden}
+.ds-bar{height:100%;border-radius:var(--r-pill);transition:width 1s ease}
+
+/* Tag bar */
+.tagbar{display:inline-flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-xs);color:var(--t3);font-family:var(--font-mono);margin-bottom:var(--sp-3)}
+.tagbar .pill{
+  padding:3px 10px;border-radius:var(--r-pill);
+  background:var(--card-alt);border:1px solid var(--border);
+  color:var(--t2);
+}
+
+/* Section heading */
+.section-title{
+  font-size:var(--fs-h1);font-weight:700;letter-spacing:-0.02em;
+  margin-bottom:var(--sp-2);
+}
+.section-sub{font-size:var(--fs-md);color:var(--t2);margin-bottom:var(--sp-4)}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:8px}
+::-webkit-scrollbar-thumb:hover{background:var(--t3)}
+
+/* ════════════════════════════════════════════════════════════════
+   Body SVG animations (preserved from v1)
+   ════════════════════════════════════════════════════════════════ */
+@keyframes heartbeat{
+  0%,100%{r:10;opacity:.7}
+  20%{r:13;opacity:1}
+  40%{r:10;opacity:.7}
+  60%{r:12;opacity:.95}
+  80%{r:10;opacity:.7}
+}
+@keyframes breathe-l{0%,100%{transform:scaleX(1) scaleY(1)}50%{transform:scaleX(.88) scaleY(1.1)}}
+@keyframes breathe-r{0%,100%{transform:scaleX(1) scaleY(1)}50%{transform:scaleX(.88) scaleY(1.1)}}
+@keyframes neuron{0%,100%{opacity:.1}50%{opacity:.9}}
+@keyframes scan{0%{transform:translateY(-10px);opacity:0}5%,95%{opacity:.7}100%{transform:translateY(390px);opacity:0}}
+@keyframes pulse-ring{0%{r:14;opacity:.8}100%{r:26;opacity:0}}
+@keyframes data-flow{0%{stroke-dashoffset:30}100%{stroke-dashoffset:0}}
+@keyframes ecg-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* Mobile niceties */
+@media (max-width:640px){
+  .hdr{padding:var(--sp-3) var(--sp-4);gap:var(--sp-3);flex-wrap:wrap}
+  .hdr-tabs{order:3;flex-basis:100%;overflow-x:auto;justify-content:flex-start}
+  .hero{padding:var(--sp-5)}
+  .hero-score{align-items:flex-start;text-align:left}
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+
+/* ════════════════════════════════════════════════════════════════
+   KPI Tower — Wellness House
+   ════════════════════════════════════════════════════════════════ */
+.tower{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  box-shadow:var(--shadow-sm);
+  overflow:hidden;
+}
+.tower-head{
+  padding:var(--sp-5) var(--sp-5) var(--sp-3);
+  border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:flex-start;gap:var(--sp-4);flex-wrap:wrap;
+}
+.tower-head .card-title{font-size:var(--fs-h2);font-weight:700;letter-spacing:-0.02em}
+.tower-body{padding:var(--sp-5);display:flex;flex-direction:column;gap:var(--sp-5)}
+
+/* North Star hero */
+.north-star{
+  position:relative;overflow:hidden;
+  padding:var(--sp-6);
+  border-radius:var(--r-lg);
+  background:
+    radial-gradient(ellipse at 0% 0%, color-mix(in oklab, var(--brand-1) 14%, transparent), transparent 60%),
+    radial-gradient(ellipse at 100% 100%, color-mix(in oklab, var(--cyan) 10%, transparent), transparent 60%),
+    var(--card-alt);
+  border:1px solid color-mix(in oklab, var(--brand-1) 18%, var(--border));
+}
+.ns-eyebrow{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:var(--fs-xs);font-weight:700;
+  color:var(--brand-1);letter-spacing:0.08em;text-transform:uppercase;
+  margin-bottom:var(--sp-3);
+}
+:root[data-theme="dark"] .ns-eyebrow{color:var(--brand-2)}
+.ns-text{
+  font-size:var(--fs-lg);
+  color:var(--t1);line-height:1.5;font-weight:500;
+  max-width:740px;
+}
+
+/* Tower layers */
+.tower-layer{
+  position:relative;
+  padding:var(--sp-5);
+  border-radius:var(--r-lg);
+  background:var(--card-alt);
+  border:1px solid var(--border);
+  display:flex;flex-direction:column;gap:var(--sp-4);
+}
+.tower-layer.l1{border-color:color-mix(in oklab, var(--brand-1) 16%, var(--border));background:color-mix(in oklab, var(--brand-1) 3%, var(--card-alt))}
+.tower-layer.l2{border-color:color-mix(in oklab, var(--cyan) 14%, var(--border))}
+.tower-layer.l3{border-color:color-mix(in oklab, var(--amber) 14%, var(--border))}
+.tower-layer.l4{border-color:color-mix(in oklab, var(--rose) 14%, var(--border))}
+
+.layer-eyebrow{
+  display:flex;align-items:center;gap:var(--sp-3);
+  font-size:var(--fs-xs);font-weight:700;
+  color:var(--t2);letter-spacing:0.08em;text-transform:uppercase;
+}
+.layer-num{
+  display:inline-grid;place-items:center;
+  width:22px;height:22px;border-radius:6px;
+  background:var(--bg-elev);border:1px solid var(--border);
+  font-size:11px;font-weight:700;color:var(--t1);
+  font-family:var(--font-mono);
+}
+.layer-title{color:var(--t1);font-size:var(--fs-sm);font-weight:600;letter-spacing:0;text-transform:none}
+
+.layer-stack{display:flex;flex-direction:column;gap:var(--sp-5)}
+.tower-cat-block{display:flex;flex-direction:column;gap:var(--sp-3)}
+.tower-cat{
+  display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-3);
+  font-size:var(--fs-md);font-weight:600;color:var(--t1);
+}
+.cat-meta{font-size:var(--fs-xs);color:var(--t3);font-weight:500}
+
+.cat-kpis{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(168px, 1fr));
+  gap:var(--sp-3);
+}
+
+.mini-kpi{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  padding:var(--sp-4);
+  display:flex;flex-direction:column;gap:6px;
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  position:relative;overflow:hidden;
+}
+.mini-kpi:hover{transform:translateY(-1px);box-shadow:var(--shadow-md);border-color:var(--border-strong)}
+.mk-lbl{
+  font-size:var(--fs-xs);color:var(--t2);font-weight:600;
+  line-height:1.35;
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+}
+.mk-freq{
+  font-size:9.5px;font-weight:700;
+  padding:2px 6px;border-radius:var(--r-pill);
+  background:var(--card-alt);color:var(--t3);
+  letter-spacing:0.04em;text-transform:uppercase;
+  flex-shrink:0;font-family:var(--font-mono);
+}
+.mk-val{
+  font-size:22px;font-weight:800;letter-spacing:-0.03em;line-height:1.1;
+  color:var(--t1);font-variant-numeric:tabular-nums;
+  margin-top:2px;
+}
+.mk-val .unit{font-size:13px;font-weight:600;color:var(--t3);margin-left:2px;letter-spacing:0;-webkit-text-fill-color:var(--t3)}
+.mk-val.brand{background:var(--brand-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.mk-val.green{color:var(--green)}
+.mk-val.amber{color:var(--amber)}
+.mk-val.red{color:var(--red)}
+.mk-val.cyan{color:var(--cyan)}
+.mk-val.accent{color:var(--accent)}
+.mk-val.rose{color:var(--rose)}
+.mk-ft{
+  font-size:var(--fs-xs);color:var(--t3);
+  display:flex;align-items:center;gap:4px;
+  margin-top:auto;
+}
+.mk-ft.up{color:var(--green)}
+.mk-ft.down{color:var(--red)}
+.mk-owner{
+  font-size:10px;color:var(--t3);
+  font-weight:500;letter-spacing:0.02em;
+  margin-top:6px;padding-top:6px;border-top:1px dashed var(--border);
+}
+
+/* Tower side rail (visual hierarchy) */
+.tower-rail{
+  position:absolute;left:8px;top:8px;bottom:8px;width:3px;border-radius:2px;
+  opacity:0.45;
+}
+.tower-layer.l1 .tower-rail{background:linear-gradient(180deg, var(--brand-1), var(--brand-2))}
+.tower-layer.l2 .tower-rail{background:linear-gradient(180deg, var(--cyan), var(--green))}
+.tower-layer.l3 .tower-rail{background:linear-gradient(180deg, var(--amber), var(--accent))}
+.tower-layer.l4 .tower-rail{background:linear-gradient(180deg, var(--rose), var(--brand-2))}
+
+@media (max-width:640px){
+  .tower-head{padding:var(--sp-4)}
+  .tower-body{padding:var(--sp-4);gap:var(--sp-4)}
+  .tower-layer{padding:var(--sp-4)}
+  .cat-kpis{grid-template-columns:repeat(2, 1fr)}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ════════════════════════════════════════════════════════════════
+     HEADER
+     ════════════════════════════════════════════════════════════════ -->
+<header class="hdr">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M13 2L4.5 13.5h7L11 22l8.5-11.5h-7L13 2z"/>
+      </svg>
+    </div>
+    <div class="brand-text">
+      <div class="brand-name">Adam</div>
+      <div class="brand-sub">Ahmed's living system</div>
+    </div>
+  </div>
+
+  <nav class="hdr-tabs" role="tablist" aria-label="Adam sections">
+    <button class="tab active" data-tab="scan" role="tab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      Vitals
+    </button>
+    <button class="tab" data-tab="wh" role="tab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 12H3l9-9 9 9h-8v9h-2z"/><path d="M11 21V12"/></svg>
+      Wellness House
+    </button>
+    <button class="tab" data-tab="morning" role="tab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      Today
+    </button>
+    <button class="tab" data-tab="brain" role="tab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2z"/></svg>
+      Memory
+    </button>
+  </nav>
+
+  <div class="hdr-right">
+    <div class="live-pill" title="System is online">
+      <div class="ldot"></div>Live
+    </div>
+    <span class="clock" id="clock" aria-label="Current time">--:--:--</span>
+    <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme" title="Toggle light / dark">
+      <svg id="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- ════════════════════════════════════════════════════════════════
+     LAYOUT
+     ════════════════════════════════════════════════════════════════ -->
+<div class="layout">
+
+  <!-- ───────── SIDEBAR ───────── -->
+  <aside class="sidebar">
+
+    <div class="s-card">
+      <div class="s-eyebrow">System scan</div>
+
+      <!-- The body silhouette (preserved IDs for live data) -->
+      <div class="body-wrap">
+        <svg id="adam-body" viewBox="0 0 200 400" style="height:380px">
+          <defs>
+            <filter id="glow-brain"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <filter id="glow-heart"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <filter id="glow-warn"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <pattern id="micro-grid" width="16" height="16" patternUnits="userSpaceOnUse">
+              <path d="M16 0 L0 0 0 16" fill="none" stroke="rgba(124,58,237,0.05)" stroke-width=".5"/>
+            </pattern>
+            <radialGradient id="head-fill" cx="50%" cy="50%"><stop offset="0%" stop-color="#7c3aed" stop-opacity=".10"/><stop offset="100%" stop-color="#7c3aed" stop-opacity="0"/></radialGradient>
+            <radialGradient id="torso-fill" cx="50%" cy="30%"><stop offset="0%" stop-color="#3b82f6" stop-opacity=".08"/><stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/></radialGradient>
+            <linearGradient id="scan-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="rgba(34,211,238,0)"/>
+              <stop offset="40%" stop-color="rgba(34,211,238,0.6)"/>
+              <stop offset="60%" stop-color="rgba(34,211,238,0.6)"/>
+              <stop offset="100%" stop-color="rgba(34,211,238,0)"/>
+            </linearGradient>
+          </defs>
+          <rect width="200" height="400" fill="url(#micro-grid)" opacity=".5"/>
+
+          <!-- Body silhouette -->
+          <ellipse cx="100" cy="48" rx="34" ry="36" fill="url(#head-fill)" stroke="rgba(124,58,237,0.22)" stroke-width="1.2"/>
+          <rect x="90" y="82" width="20" height="16" rx="4" fill="rgba(99,102,241,0.06)" stroke="rgba(124,58,237,0.14)" stroke-width="1"/>
+          <path d="M55,98 Q45,100 42,112 L42,105 Q42,96 55,94 L145,94 Q158,96 158,105 L158,112 Q155,100 145,98 Z" fill="rgba(99,102,241,0.05)" stroke="rgba(124,58,237,0.12)" stroke-width="1"/>
+          <rect x="52" y="94" width="96" height="120" rx="6" fill="url(#torso-fill)" stroke="rgba(99,102,241,0.14)" stroke-width="1.2"/>
+          <rect x="55" y="210" width="90" height="30" rx="6" fill="rgba(99,102,241,0.06)" stroke="rgba(124,58,237,0.10)" stroke-width="1"/>
+          <rect x="28" y="96" width="22" height="100" rx="11" fill="rgba(99,102,241,0.05)" stroke="rgba(124,58,237,0.10)" stroke-width="1"/>
+          <rect x="150" y="96" width="22" height="100" rx="11" fill="rgba(99,102,241,0.05)" stroke="rgba(124,58,237,0.10)" stroke-width="1"/>
+          <rect x="30" y="194" width="18" height="70" rx="9" fill="rgba(99,102,241,0.04)" stroke="rgba(124,58,237,0.08)" stroke-width="1"/>
+          <rect x="152" y="194" width="18" height="70" rx="9" fill="rgba(99,102,241,0.04)" stroke="rgba(124,58,237,0.08)" stroke-width="1"/>
+          <rect x="57" y="238" width="34" height="90" rx="12" fill="rgba(99,102,241,0.05)" stroke="rgba(124,58,237,0.10)" stroke-width="1"/>
+          <rect x="109" y="238" width="34" height="90" rx="12" fill="rgba(99,102,241,0.05)" stroke="rgba(124,58,237,0.10)" stroke-width="1"/>
+          <rect x="59" y="326" width="30" height="66" rx="10" fill="rgba(99,102,241,0.04)" stroke="rgba(124,58,237,0.08)" stroke-width="1"/>
+          <rect x="111" y="326" width="30" height="66" rx="10" fill="rgba(99,102,241,0.04)" stroke="rgba(124,58,237,0.08)" stroke-width="1"/>
+          <line x1="100" y1="98" x2="100" y2="236" stroke="rgba(99,102,241,0.20)" stroke-width="1" stroke-dasharray="3 4"/>
+
+          <!-- Data flow lines -->
+          <line x1="100" y1="82" x2="100" y2="98" stroke="rgba(192,132,252,0.30)" stroke-width="1.5" stroke-dasharray="4 3" style="animation:data-flow 1.5s linear infinite"/>
+          <line x1="84" y1="138" x2="74" y2="148" stroke="rgba(34,211,238,0.20)" stroke-width="1" stroke-dasharray="3 3" style="animation:data-flow 2s linear infinite"/>
+          <line x1="116" y1="138" x2="126" y2="148" stroke="rgba(74,222,128,0.20)" stroke-width="1" stroke-dasharray="3 3" style="animation:data-flow 2.2s linear infinite"/>
+
+          <!-- Brain (Cognee — memory) -->
+          <ellipse id="brain-core" cx="100" cy="42" rx="22" ry="20" fill="rgba(192,132,252,0.10)" stroke="rgba(124,58,237,0.45)" stroke-width="1.3" filter="url(#glow-brain)"/>
+          <circle cx="92" cy="36" r="2" fill="#c084fc" opacity=".6" style="animation:neuron 1.4s ease infinite;animation-delay:.1s"/>
+          <circle cx="100" cy="32" r="2.5" fill="#c084fc" opacity=".8" style="animation:neuron 1.8s ease infinite;animation-delay:.3s"/>
+          <circle cx="108" cy="36" r="2" fill="#c084fc" opacity=".6" style="animation:neuron 1.6s ease infinite;animation-delay:.5s"/>
+          <circle cx="94" cy="44" r="1.5" fill="#c084fc" opacity=".4" style="animation:neuron 2s ease infinite;animation-delay:.7s"/>
+          <circle cx="106" cy="44" r="1.5" fill="#c084fc" opacity=".4" style="animation:neuron 1.3s ease infinite;animation-delay:.2s"/>
+          <circle cx="100" cy="50" r="2" fill="#c084fc" opacity=".5" style="animation:neuron 1.7s ease infinite;animation-delay:.9s"/>
+          <path d="M92,36 Q100,38 108,36 Q100,46 92,36" fill="none" stroke="rgba(192,132,252,0.18)" stroke-width="1"/>
+          <path d="M100,32 L100,50" fill="none" stroke="rgba(192,132,252,0.14)" stroke-width="1" stroke-dasharray="2 2"/>
+          <circle cx="88" cy="52" r="3.5" fill="none" stroke="rgba(124,58,237,0.55)" stroke-width="1.2"/>
+          <circle cx="112" cy="52" r="3.5" fill="none" stroke="rgba(124,58,237,0.55)" stroke-width="1.2"/>
+          <circle cx="88" cy="52" r="1.5" fill="#c084fc" opacity=".7" style="animation:neuron 3s ease infinite"/>
+          <circle cx="112" cy="52" r="1.5" fill="#c084fc" opacity=".7" style="animation:neuron 3s ease infinite;animation-delay:.5s"/>
+
+          <!-- Heart (NERVE — tasks pulse) -->
+          <circle id="heart-pulse" cx="84" cy="138" r="10" fill="rgba(251,113,133,0.14)" stroke="rgba(251,113,133,0.65)" stroke-width="1.5" filter="url(#glow-heart)" style="animation:heartbeat 1.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center"/>
+          <circle cx="84" cy="138" r="5" fill="rgba(251,113,133,0.32)" style="animation:heartbeat 1.2s ease-in-out infinite .06s;transform-box:fill-box;transform-origin:center"/>
+
+          <!-- Left lung (WhatsApp — amber warning) -->
+          <ellipse id="lung-l" cx="72" cy="152" rx="13" ry="18" fill="rgba(245,158,11,0.10)" stroke="rgba(245,158,11,0.42)" stroke-width="1.2" style="animation:breathe-l 3.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center" filter="url(#glow-warn)"/>
+          <circle id="defect-ring" cx="72" cy="152" r="14" fill="none" stroke="rgba(245,158,11,0.55)" stroke-width="1" style="animation:pulse-ring 2.5s ease-out infinite;transform-box:fill-box;transform-origin:center"/>
+
+          <!-- Right lung (Email — green) -->
+          <ellipse id="lung-r" cx="128" cy="152" rx="13" ry="18" fill="rgba(16,185,129,0.10)" stroke="rgba(16,185,129,0.42)" stroke-width="1.2" style="animation:breathe-r 3.2s ease-in-out infinite .2s;transform-box:fill-box;transform-origin:center"/>
+
+          <!-- Gut (Cognify — sync) -->
+          <ellipse id="gut-organ" cx="100" cy="188" rx="16" ry="12" fill="rgba(6,182,212,0.10)" stroke="rgba(6,182,212,0.40)" stroke-width="1.2" filter="url(#glow-warn)"/>
+          <circle cx="100" cy="188" r="5" fill="rgba(6,182,212,0.18)" style="animation:neuron 2.5s ease infinite"/>
+
+          <circle cx="33" cy="270" r="9" fill="rgba(99,102,241,0.10)" stroke="rgba(99,102,241,0.30)" stroke-width="1"/>
+          <circle cx="167" cy="270" r="9" fill="rgba(99,102,241,0.10)" stroke="rgba(99,102,241,0.30)" stroke-width="1"/>
+
+          <!-- Organ labels — refined typography -->
+          <text x="116" y="92" font-size="7" fill="rgba(124,58,237,0.7)" font-family="Inter, sans-serif" font-weight="600" letter-spacing=".5">Memory</text>
+          <text x="89" y="133" font-size="7" fill="rgba(251,113,133,0.75)" font-family="Inter, sans-serif" font-weight="600" letter-spacing=".5">Heart</text>
+          <text x="40" y="160" font-size="7" fill="rgba(245,158,11,0.75)" font-family="Inter, sans-serif" font-weight="600" letter-spacing=".5">WhatsApp</text>
+          <text x="129" y="148" font-size="7" fill="rgba(16,185,129,0.75)" font-family="Inter, sans-serif" font-weight="600" letter-spacing=".5">Email</text>
+          <text x="83" y="204" font-size="7" fill="rgba(6,182,212,0.75)" font-family="Inter, sans-serif" font-weight="600" letter-spacing=".5">Sync</text>
+
+          <!-- Scan line -->
+          <rect id="scan-line" x="0" y="-4" width="200" height="8" fill="url(#scan-grad)" style="animation:scan 4s linear infinite;opacity:.55"/>
+        </svg>
+      </div>
+
+      <!-- Health -->
+      <div class="xp-row">
+        <span class="xp-label">System health</span>
+        <span class="xp-value" id="xp-val">0<span class="xp-denom">/100</span></span>
+      </div>
+      <div class="xp-track"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+      <div class="xp-tier" id="xp-tier">● Healthy</div>
+
+      <!-- ECG strip -->
+      <div class="ecg-card s-card" style="margin-top:var(--sp-4);background:var(--card-alt);box-shadow:none;padding:var(--sp-3) var(--sp-4)">
+        <div class="ecg-hd"><span>Heart rhythm</span><span class="pulse">72 bpm</span></div>
+        <svg id="ecg" viewBox="0 0 240 32" preserveAspectRatio="none">
+          <g style="animation:ecg-scroll 3s linear infinite">
+            <path d="M0,16 L18,16 L22,4 L26,28 L30,16 L42,16 L46,8 L50,16 L62,16 L66,4 L70,28 L74,16 L86,16 L90,8 L94,16 L106,16 L110,4 L114,28 L118,16 L130,16 L134,8 L138,16 L150,16 L154,4 L158,28 L162,16 L174,16 L178,8 L182,16 L194,16 L198,4 L202,28 L206,16 L218,16 L222,8 L226,16 L238,16 L242,4 L246,28 L250,16 L262,16 L266,8 L270,16 L282,16 L286,4 L290,28 L294,16 L306,16 L310,8 L314,16 L326,16 L330,4 L334,28 L338,16 L350,16 L354,8 L358,16 L370,16 L374,4 L378,28 L382,16 L394,16 L398,8 L402,16 L414,16 L418,4 L422,28 L426,16 L438,16 L442,8 L446,16 L458,16 L462,4 L466,28 L470,16 L482,16"
+              fill="none" stroke="#10B981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Pipelines status -->
+    <div class="s-card">
+      <div class="s-eyebrow">Pipelines</div>
+      <div class="legend">
+        <div class="legend-row" title="Long-term memory and knowledge graph">
+          <div class="legend-dot" style="background:var(--brand-1)"></div>
+          <div class="legend-name">Memory · Cognee</div>
+          <div class="legend-status" id="ls-cognee" style="color:var(--green)">Healthy</div>
+        </div>
+        <div class="legend-row" title="Live task heart-beat">
+          <div class="legend-dot" style="background:var(--rose)"></div>
+          <div class="legend-name">Heart · NERVE</div>
+          <div class="legend-status" id="ls-nerve" style="color:var(--green)">● Live</div>
+        </div>
+        <div class="legend-row" title="WhatsApp ingestion pipeline">
+          <div class="legend-dot" style="background:var(--amber)"></div>
+          <div class="legend-name">WhatsApp pipeline</div>
+          <div class="legend-status" id="ls-wa" style="color:var(--amber)">⚠ Needs care</div>
+        </div>
+        <div class="legend-row" title="Email digest pipeline">
+          <div class="legend-dot" style="background:var(--green)"></div>
+          <div class="legend-name">Email pipeline</div>
+          <div class="legend-status" id="ls-email" style="color:var(--green)">Healthy</div>
+        </div>
+        <div class="legend-row" title="Memory chunking + indexing">
+          <div class="legend-dot" style="background:var(--cyan)"></div>
+          <div class="legend-name">Memory sync · Cognify</div>
+          <div class="legend-status" id="ls-cognify" style="color:var(--green)">Healthy</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Defect alert -->
+    <div class="alert">
+      <div class="alert-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div class="alert-body">
+        <strong>2 things to look at</strong> — the WhatsApp pipeline and the nightly reflection are noisy. 19 errors total, mostly historical.
+      </div>
+    </div>
+
+    <!-- Live feed -->
+    <div class="s-card">
+      <div class="s-eyebrow">Live activity</div>
+      <div id="live-feed">
+        <div class="feed-empty">Waiting for activity. The heart-beat will fill this in as pipelines run.</div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       PANELS
+       ════════════════════════════════════════════════════════════════ -->
+  <main class="panels">
+
+    <!-- ═══════════ TAB · VITALS ═══════════ -->
+    <section class="panel active" id="tab-scan" role="tabpanel">
+
+      <div class="hero">
+        <div>
+          <div class="hero-eye">Today's vitals</div>
+          <h1 class="hero-title">All systems running smoothly.</h1>
+          <p class="hero-sub">A snapshot of how Adam is performing — task runs, tool calls, errors, and pipeline health, refreshed live.</p>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-glow" style="background:var(--cyan)"></div>
+          <div class="kpi-lbl">Task runs today</div>
+          <div class="kpi-val" style="color:var(--cyan)" data-target="14" data-suffix="">0</div>
+          <div class="kpi-ft">↑ 12% vs yesterday</div>
+        </div>
+        <div class="kpi"><div class="kpi-glow" style="background:var(--brand-1)"></div>
+          <div class="kpi-lbl">Tool calls</div>
+          <div class="kpi-val" style="color:var(--brand-1)" data-target="333" data-suffix="">0</div>
+          <div class="kpi-ft">↑ 8% vs yesterday</div>
+        </div>
+        <div class="kpi"><div class="kpi-glow" style="background:var(--red)"></div>
+          <div class="kpi-lbl">Errors caught</div>
+          <div class="kpi-val" style="color:var(--red)" data-target="19" data-suffix="">0</div>
+          <div class="kpi-ft">3 new · 16 historical</div>
+        </div>
+        <div class="kpi"><div class="kpi-glow" style="background:var(--green)"></div>
+          <div class="kpi-lbl">Pipeline health</div>
+          <div class="kpi-val" style="color:var(--green)" data-target="94" data-suffix="%">0</div>
+          <div class="kpi-ft">4 of 5 running clean</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-hd-l">
+              <div class="card-title">Recent issues</div>
+              <div class="card-sub">Last 24 hours · mostly noise</div>
+            </div>
+            <span class="chip amber">19 open</span>
+          </div>
+          <div class="card-bd-flat">
+            <table class="tbl">
+              <thead><tr><th>Issue</th><th>Where</th><th>When</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td class="t1">Tool issue</td><td class="mono">whatsapp-sync</td><td class="mono">02:14</td><td><span class="chip amber">noise</span></td></tr>
+                <tr><td class="t1">Timed out</td><td class="mono">web-research</td><td class="mono">02:14</td><td><span class="chip amber">noise</span></td></tr>
+                <tr><td class="t1">Missing file</td><td class="mono">daily-reflection</td><td class="mono">01:00</td><td><span class="chip green">resolved</span></td></tr>
+                <tr><td class="t1">Tool failed</td><td class="mono">memory-sync</td><td class="mono">00:30</td><td><span class="chip amber">noise</span></td></tr>
+                <tr><td class="t1">Exit error</td><td class="mono">whatsapp-sync</td><td class="mono">23:14</td><td><span class="chip brand">historical</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-hd-l">
+              <div class="card-title">Task sessions</div>
+              <div class="card-sub">Today · 14 runs · 94% healthy</div>
+            </div>
+            <span class="chip green">94% OK</span>
+          </div>
+          <div class="card-bd-flat">
+            <table class="tbl">
+              <thead><tr><th>Task</th><th>Duration</th><th>Calls</th><th>Result</th></tr></thead>
+              <tbody>
+                <tr><td class="t1">Morning Briefing</td><td class="mono">1m 24s</td><td class="mono">42</td><td><span class="chip green">OK</span></td></tr>
+                <tr><td class="t1">WhatsApp Sync</td><td class="mono">0m 18s</td><td class="mono">12</td><td><span class="chip green">OK</span></td></tr>
+                <tr><td class="t1">Memory Sync</td><td class="mono">8m 02s</td><td class="mono">89</td><td><span class="chip green">OK</span></td></tr>
+                <tr><td class="t1">Nightly Reflection</td><td class="mono">2m 11s</td><td class="mono">31</td><td><span class="chip amber">warn</span></td></tr>
+                <tr><td class="t1">Council Session</td><td class="mono">4m 38s</td><td class="mono">127</td><td><span class="chip green">OK</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ═══════════ TAB · WELLNESS HOUSE ═══════════ -->
+    <section class="panel" id="tab-wh" role="tabpanel">
+
+      <div class="hero">
+        <div>
+          <div class="hero-eye">Wellness House</div>
+          <h1 class="hero-title">Sessions are up. Conversion needs attention.</h1>
+          <p class="hero-sub">Live snapshot of Wellness House — sessions, conversion, therapists, new patients.</p>
+        </div>
+        <div class="hero-score">
+          <span id="wh-data-chip" class="chip cyan">○ connecting…</span>
+          <span class="score-lbl" id="wh-data-ts" style="margin-top:8px"></span>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-glow" style="background:var(--cyan)"></div>
+          <div class="kpi-lbl">Sessions today</div>
+          <div id="wh-sessions-val" class="kpi-val" style="color:var(--cyan)" data-target="24" data-suffix="">0</div>
+          <div id="wh-sessions-ft" class="kpi-ft">↑ 3 vs last Tuesday</div>
+        </div>
+        <div class="kpi"><div class="kpi-glow" style="background:var(--brand-1)"></div>
+          <div class="kpi-lbl">Session 1 → 2 conversion</div>
+          <div id="wh-conv-val" class="kpi-val" style="color:var(--brand-1)" data-target="38" data-suffix="%">0</div>
+          <div id="wh-conv-ft" class="kpi-ft">Target 50% · still climbing</div>
+        </div>
+        <div class="kpi"><div class="kpi-glow" style="background:var(--green)"></div>
+          <div class="kpi-lbl">Active therapists</div>
+          <div id="wh-therapists-val" class="kpi-val" style="color:var(--green)" data-target="18" data-suffix="">0</div>
+          <div id="wh-therapists-ft" class="kpi-ft">2 finishing onboarding</div>
+        </div>
+        <div class="kpi"><div class="kpi-glow" style="background:var(--amber)"></div>
+          <div class="kpi-lbl">New patients this week</div>
+          <div id="wh-patients-val" class="kpi-val" style="color:var(--amber)" data-target="7" data-suffix="">0</div>
+          <div id="wh-patients-ft" class="kpi-ft">↑ 2 vs last week</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-hd-l">
+            <div class="card-title">Quick actions</div>
+            <div class="card-sub">One click. Adam handles the rest.</div>
+          </div>
+        </div>
+        <div class="card-bd">
+          <div class="actions">
+            <div class="action" data-action="morning">
+              <div class="action-icon brand">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+              </div>
+              <div class="action-title">Morning Briefing</div>
+              <div class="action-desc">Calendar, WhatsApp, business pulse — your full daily start.</div>
+              <div class="action-meta brand">▶ Run now</div>
+            </div>
+            <div class="action" data-action="wa">
+              <div class="action-icon green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <div class="action-title">WhatsApp Pulse</div>
+              <div class="action-desc">Last hour digest, flagged messages, pending replies.</div>
+              <div class="action-meta green">● 3 new</div>
+            </div>
+            <div class="action" data-action="report">
+              <div class="action-icon cyan">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              </div>
+              <div class="action-title">Weekly Report</div>
+              <div class="action-desc">Sessions, revenue, therapist performance — auto-compiled.</div>
+              <div class="action-meta">Last sent · Sunday</div>
+            </div>
+            <div class="action" data-action="funnel">
+              <div class="action-icon amber">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+              </div>
+              <div class="action-title">Funnel Analysis</div>
+              <div class="action-desc">Where patients drop. What therapists keep them.</div>
+              <div class="action-meta amber">⚠ 38% conv.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-hd-l">
+              <div class="card-title">Patient journey</div>
+              <div class="card-sub">This month · Egypt + MENA</div>
+            </div>
+          </div>
+          <div class="card-bd">
+            <div class="funnel">
+              <div class="funnel-bar b1" style="width:100%"><span class="lbl">Signups</span><span class="num">248</span></div>
+              <div class="funnel-bar b2" style="width:72%"><span class="lbl">First session</span><span class="num">178</span></div>
+              <div class="funnel-bar b3" style="width:38%"><span class="lbl">Second session</span><span class="num">68 · 38%</span></div>
+              <div class="funnel-bar b4" style="width:24%"><span class="lbl">Stayed for 3+</span><span class="num">43</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-hd-l">
+              <div class="card-title">Top therapists</div>
+              <div class="card-sub">By session volume this month</div>
+            </div>
+          </div>
+          <div class="card-bd-flat">
+            <table class="tbl">
+              <thead><tr><th>Therapist</th><th>Sessions</th><th>Retention</th><th>Rating</th></tr></thead>
+              <tbody>
+                <tr><td class="t1">Dr. Sara M.</td><td class="mono">34</td><td><span class="chip green">78%</span></td><td class="mono">4.9 ★</td></tr>
+                <tr><td class="t1">Dr. Khaled A.</td><td class="mono">28</td><td><span class="chip green">71%</span></td><td class="mono">4.8 ★</td></tr>
+                <tr><td class="t1">Dr. Nour H.</td><td class="mono">22</td><td><span class="chip amber">52%</span></td><td class="mono">4.7 ★</td></tr>
+                <tr><td class="t1">Dr. Youssef R.</td><td class="mono">19</td><td><span class="chip amber">48%</span></td><td class="mono">4.6 ★</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─────────────── KPI TOWER (Year 1) ─────────────── -->
+      <div class="tower">
+        <div class="tower-head">
+          <div>
+            <div class="card-title">KPI Tower — Year 1</div>
+            <div class="card-sub">38 metrics, hierarchical from North Star down to activities · Showing dummy numbers, will wire to live data later</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <span class="chip brand">5 layers</span>
+            <span class="chip cyan">38 KPIs</span>
+            <span class="chip amber">Demo data</span>
+          </div>
+        </div>
+
+        <div class="tower-body">
+
+          <!-- North Star -->
+          <div class="north-star">
+            <div class="ns-eyebrow">★ North Star</div>
+            <div class="ns-text">A sustainable, growing base of engaged clients whose mental and emotional well-being is measurably improved through Wellness House experiences.</div>
+          </div>
+
+          <!-- LAYER 1 — Company Health -->
+          <div class="tower-layer l1">
+            <div class="tower-rail"></div>
+            <div class="layer-eyebrow"><span class="layer-num">L1</span> <span class="layer-title">Company health</span> · Top of the tower · CEO view</div>
+            <div class="cat-kpis">
+              <div class="mini-kpi">
+                <div class="mk-lbl">Total monthly revenue<span class="mk-freq">M</span></div>
+                <div class="mk-val brand">EGP 2.40<span class="unit">M</span></div>
+                <div class="mk-ft up">↑ 18% vs last month</div>
+                <div class="mk-owner">Owner · CEO / Finance</div>
+              </div>
+              <div class="mini-kpi">
+                <div class="mk-lbl">Operating profit / loss<span class="mk-freq">M</span></div>
+                <div class="mk-val red">−EGP 380K</div>
+                <div class="mk-ft up">Gap to breakeven shrinking</div>
+                <div class="mk-owner">Owner · CEO / Finance</div>
+              </div>
+              <div class="mini-kpi">
+                <div class="mk-lbl">Cash runway<span class="mk-freq">M</span></div>
+                <div class="mk-val cyan"><span data-target="11">0</span><span class="unit">months</span></div>
+                <div class="mk-ft">At current burn rate</div>
+                <div class="mk-owner">Owner · Finance / CEO</div>
+              </div>
+              <div class="mini-kpi">
+                <div class="mk-lbl">Active B2C clients<span class="mk-freq">M</span></div>
+                <div class="mk-val accent"><span data-target="312">0</span></div>
+                <div class="mk-ft up">↑ 24 vs last month</div>
+                <div class="mk-owner">Owner · Ops / CEO</div>
+              </div>
+              <div class="mini-kpi">
+                <div class="mk-lbl">B2B active accounts<span class="mk-freq">Q</span></div>
+                <div class="mk-val green"><span data-target="9">0</span></div>
+                <div class="mk-ft up">+2 this quarter</div>
+                <div class="mk-owner">Owner · BDM / CEO</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- LAYER 2 — Engines -->
+          <div class="tower-layer l2">
+            <div class="tower-rail"></div>
+            <div class="layer-eyebrow"><span class="layer-num">L2</span> <span class="layer-title">Engines</span> · Drivers of company health · Functional leads</div>
+
+            <div class="layer-stack">
+
+              <!-- Growth & Sales -->
+              <div class="tower-cat-block">
+                <div class="tower-cat">Growth &amp; sales <span class="cat-meta">7 KPIs · Owners: Growth, Tele-sales, BDM</span></div>
+                <div class="cat-kpis">
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Leads generated · B2C<span class="mk-freq">W</span></div>
+                    <div class="mk-val cyan"><span data-target="487">0</span></div>
+                    <div class="mk-ft up">↑ 9% WoW</div>
+                    <div class="mk-owner">Growth / Tele-sales</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Lead → booking conv.<span class="mk-freq">M</span></div>
+                    <div class="mk-val accent"><span data-target="22">0</span><span class="unit">%</span></div>
+                    <div class="mk-ft up">Target 25%</div>
+                    <div class="mk-owner">Growth / Tele-sales</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">B2C revenue · split<span class="mk-freq">M</span></div>
+                    <div class="mk-val brand">EGP 1.86<span class="unit">M</span></div>
+                    <div class="mk-ft">Single 32% · Day 18% · Starter 28% · Fusion 22%</div>
+                    <div class="mk-owner">Commercial / CEO</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">B2B pipeline · opps<span class="mk-freq">W</span></div>
+                    <div class="mk-val cyan"><span data-target="14">0</span></div>
+                    <div class="mk-ft">Active opportunities</div>
+                    <div class="mk-owner">BDM</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">B2B win rate<span class="mk-freq">Q</span></div>
+                    <div class="mk-val green"><span data-target="31">0</span><span class="unit">%</span></div>
+                    <div class="mk-ft up">↑ from 24% last Q</div>
+                    <div class="mk-owner">BDM</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Avg revenue / B2C client<span class="mk-freq">M</span></div>
+                    <div class="mk-val">EGP <span data-target="7650">0</span></div>
+                    <div class="mk-ft up">↑ 6% MoM</div>
+                    <div class="mk-owner">CEO / Finance</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Avg revenue / B2B account<span class="mk-freq">Q</span></div>
+                    <div class="mk-val">EGP <span data-target="145">0</span><span class="unit">K</span></div>
+                    <div class="mk-ft">Steady QoQ</div>
+                    <div class="mk-owner">CEO / Finance</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Operations & CX -->
+              <div class="tower-cat-block">
+                <div class="tower-cat">Operations &amp; customer experience <span class="cat-meta">6 KPIs · Owners: Ops, CX</span></div>
+                <div class="cat-kpis">
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Sessions delivered · B2C<span class="mk-freq">M</span></div>
+                    <div class="mk-val cyan"><span data-target="942">0</span></div>
+                    <div class="mk-ft up">↑ 11% MoM</div>
+                    <div class="mk-owner">Operations Manager</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Sessions delivered · B2B<span class="mk-freq">M</span></div>
+                    <div class="mk-val green"><span data-target="38">0</span></div>
+                    <div class="mk-ft">Workshops + onsite days</div>
+                    <div class="mk-owner">Ops / BDM</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Room utilization<span class="mk-freq">M</span></div>
+                    <div class="mk-val accent"><span data-target="67">0</span><span class="unit">%</span></div>
+                    <div class="mk-ft">Target 75%</div>
+                    <div class="mk-owner">Operations Manager</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">No-show rate<span class="mk-freq">W</span></div>
+                    <div class="mk-val amber"><span data-target="11">0</span><span class="unit">%</span></div>
+                    <div class="mk-ft down">Above 8% target</div>
+                    <div class="mk-owner">Ops / Tele-sales</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Client satisfaction · CSAT<span class="mk-freq">M</span></div>
+                    <div class="mk-val green">4.6<span class="unit">/ 5</span></div>
+                    <div class="mk-ft up">+0.1 vs last month</div>
+                    <div class="mk-owner">CX / Operations</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Complaint rate<span class="mk-freq">Q</span></div>
+                    <div class="mk-val">0.8<span class="unit">/ 100</span></div>
+                    <div class="mk-ft">Avg time to resolve · 1.2 days</div>
+                    <div class="mk-owner">CX / CEO</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Clinical & Programs -->
+              <div class="tower-cat-block">
+                <div class="tower-cat">Clinical &amp; programs <span class="cat-meta">4 KPIs · Owners: Clinical lead, Therapists</span></div>
+                <div class="cat-kpis">
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Starter completion rate<span class="mk-freq">Q</span></div>
+                    <div class="mk-val brand"><span data-target="74">0</span><span class="unit">%</span></div>
+                    <div class="mk-ft up">↑ 6 pts QoQ</div>
+                    <div class="mk-owner">Clinical Lead</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Fusion completion rate<span class="mk-freq">Q</span></div>
+                    <div class="mk-val brand"><span data-target="68">0</span><span class="unit">%</span></div>
+                    <div class="mk-ft">Target 75%</div>
+                    <div class="mk-owner">Clinical Lead</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Clinical goal progress<span class="mk-freq">Q</span></div>
+                    <div class="mk-val green">+1.4<span class="unit">pts</span></div>
+                    <div class="mk-ft up">Self-rated improvement</div>
+                    <div class="mk-owner">Clinical Lead</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Referral-out rate<span class="mk-freq">Q</span></div>
+                    <div class="mk-val accent"><span data-target="6">0</span><span class="unit">%</span></div>
+                    <div class="mk-ft">Higher level of care</div>
+                    <div class="mk-owner">Clinical Lead</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- LAYER 3 — Inputs -->
+          <div class="tower-layer l3">
+            <div class="tower-rail"></div>
+            <div class="layer-eyebrow"><span class="layer-num">L3</span> <span class="layer-title">Inputs</span> · Demand creation &amp; financial inputs</div>
+
+            <div class="layer-stack">
+
+              <!-- Community & Social -->
+              <div class="tower-cat-block">
+                <div class="tower-cat">Community, social &amp; media <span class="cat-meta">6 KPIs · Owners: Social, Marketing, Community</span></div>
+                <div class="cat-kpis">
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Audience size · core platforms<span class="mk-freq">M</span></div>
+                    <div class="mk-val brand"><span data-target="142">0</span><span class="unit">K</span></div>
+                    <div class="mk-ft up">+4.2K MoM · IG/FB/WA/Email</div>
+                    <div class="mk-owner">Social Media Specialist</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Engagement rate<span class="mk-freq">M</span></div>
+                    <div class="mk-val accent">4.8<span class="unit">%</span></div>
+                    <div class="mk-ft">Healthy &gt; 3% benchmark</div>
+                    <div class="mk-owner">Social Media Specialist</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Leads from social &amp; community<span class="mk-freq">M</span></div>
+                    <div class="mk-val cyan"><span data-target="184">0</span></div>
+                    <div class="mk-ft up">38% of total lead flow</div>
+                    <div class="mk-owner">Growth / Marketing</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Community event attendance<span class="mk-freq">M</span></div>
+                    <div class="mk-val green"><span data-target="87">0</span></div>
+                    <div class="mk-ft">Avg per event</div>
+                    <div class="mk-owner">Community Lead / Ops</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Referral clients<span class="mk-freq">M</span></div>
+                    <div class="mk-val green"><span data-target="23">0</span></div>
+                    <div class="mk-ft up">↑ 8 vs last month</div>
+                    <div class="mk-owner">Growth / CX</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Paid media CPL · blended<span class="mk-freq">M</span></div>
+                    <div class="mk-val amber">EGP <span data-target="95">0</span></div>
+                    <div class="mk-ft down">Up from EGP 78 — investigate</div>
+                    <div class="mk-owner">Media Buyer / Marketing Lead</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Finance & Cash -->
+              <div class="tower-cat-block">
+                <div class="tower-cat">Finance &amp; cash <span class="cat-meta">5 KPIs · Owners: Finance, CEO</span></div>
+                <div class="cat-kpis">
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Gross margin<span class="mk-freq">M</span></div>
+                    <div class="mk-val green"><span data-target="58">0</span><span class="unit">%</span></div>
+                    <div class="mk-ft up">↑ 3 pts MoM</div>
+                    <div class="mk-owner">Finance / CEO</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">OpEx vs budget<span class="mk-freq">M</span></div>
+                    <div class="mk-val accent"><span data-target="94">0</span><span class="unit">%</span></div>
+                    <div class="mk-ft">Under plan · 6% buffer</div>
+                    <div class="mk-owner">Finance</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Cash burn rate<span class="mk-freq">M</span></div>
+                    <div class="mk-val red">EGP <span data-target="420">0</span><span class="unit">K / mo</span></div>
+                    <div class="mk-ft">Net cash outflow</div>
+                    <div class="mk-owner">Finance / CEO</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">Cash runway<span class="mk-freq">M</span></div>
+                    <div class="mk-val cyan"><span data-target="11">0</span><span class="unit">months</span></div>
+                    <div class="mk-ft">Mirrors L1 · finance view</div>
+                    <div class="mk-owner">Finance / CEO</div>
+                  </div>
+                  <div class="mini-kpi">
+                    <div class="mk-lbl">B2B receivables &amp; aging<span class="mk-freq">M</span></div>
+                    <div class="mk-val amber">EGP <span data-target="680">0</span><span class="unit">K</span></div>
+                    <div class="mk-ft">Avg 32 days outstanding</div>
+                    <div class="mk-owner">Finance</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- LAYER 4 — People & Learning -->
+          <div class="tower-layer l4">
+            <div class="tower-rail"></div>
+            <div class="layer-eyebrow"><span class="layer-num">L4</span> <span class="layer-title">People &amp; learning</span> · Foundation · HR / Clinical Lead</div>
+            <div class="cat-kpis">
+              <div class="mini-kpi">
+                <div class="mk-lbl">Headcount by function<span class="mk-freq">Q</span></div>
+                <div class="mk-val rose"><span data-target="24">0</span></div>
+                <div class="mk-ft">Growth 6 · Ops 5 · Clinical 9 · Admin 4</div>
+                <div class="mk-owner">HR / CEO</div>
+              </div>
+              <div class="mini-kpi">
+                <div class="mk-lbl">Staff utilization · clinical<span class="mk-freq">M</span></div>
+                <div class="mk-val accent"><span data-target="71">0</span><span class="unit">%</span></div>
+                <div class="mk-ft">Therapist time booked</div>
+                <div class="mk-owner">Ops / Clinical Lead</div>
+              </div>
+              <div class="mini-kpi">
+                <div class="mk-lbl">Team retention · 12-mo<span class="mk-freq">Q</span></div>
+                <div class="mk-val green"><span data-target="92">0</span><span class="unit">%</span></div>
+                <div class="mk-ft up">2 departures TTM</div>
+                <div class="mk-owner">HR / CEO</div>
+              </div>
+              <div class="mini-kpi">
+                <div class="mk-lbl">Training &amp; supervision<span class="mk-freq">Q</span></div>
+                <div class="mk-val cyan"><span data-target="88">0</span><span class="unit">hrs</span></div>
+                <div class="mk-ft">Per quarter · all clinical staff</div>
+                <div class="mk-owner">Clinical Lead / HR</div>
+              </div>
+              <div class="mini-kpi">
+                <div class="mk-lbl">Staff satisfaction · pulse<span class="mk-freq">Q</span></div>
+                <div class="mk-val brand">4.2<span class="unit">/ 5</span></div>
+                <div class="mk-ft">Stable · burnout watch on Clinical</div>
+                <div class="mk-owner">HR / CEO</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ═══════════ TAB · TODAY ═══════════ -->
+    <section class="panel" id="tab-morning" role="tabpanel">
+
+      <div class="hero">
+        <div>
+          <div class="hero-eye" id="greet-date">—</div>
+          <h1 class="hero-title">Good morning, Ahmed.</h1>
+          <p class="hero-sub">Here's what's on your plate today — calendar, conversations, and the briefs that matter most.</p>
+        </div>
+        <div class="hero-score">
+          <span class="score-num" id="day-score">94</span>
+          <span class="score-lbl">today's score</span>
+        </div>
+      </div>
+
+      <div class="three-col">
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-hd-l">
+              <div class="card-title">Calendar</div>
+              <div class="card-sub">4 events scheduled</div>
+            </div>
+            <span class="chip cyan">4 events</span>
+          </div>
+          <div class="card-bd">
+            <div class="cal-list">
+              <div class="cal-event"><div class="cal-time">09:00</div><div><div class="cal-name">WH team standup</div><div class="cal-meta">Google Meet · 30 min</div></div></div>
+              <div class="cal-event"><div class="cal-time">11:00</div><div><div class="cal-name">AstraForm — Orion demo</div><div class="cal-meta">Zoom · with Saden Group</div></div></div>
+              <div class="cal-event"><div class="cal-time">14:30</div><div><div class="cal-name">Therapist review</div><div class="cal-meta">Internal · with Dr. Sara M.</div></div></div>
+              <div class="cal-event"><div class="cal-time">17:00</div><div><div class="cal-name">Deep work block</div><div class="cal-meta">No meetings · just thinking</div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-hd-l">
+              <div class="card-title">WhatsApp pulse</div>
+              <div class="card-sub">3 unread · 1 priority</div>
+            </div>
+            <span class="chip amber">3 unread</span>
+          </div>
+          <div class="card-bd">
+            <div class="wa-list">
+              <div class="wa-msg"><div class="wa-from">Marwan F.</div><div class="wa-text">تمام، هبعتلك التقرير الصبح — AstraForm Orion update</div></div>
+              <div class="wa-msg"><div class="wa-from">Dr. Sara</div><div class="wa-text">Patient cancelled the 2pm session, slot is open.</div></div>
+              <div class="wa-msg"><div class="wa-from">WH Ops</div><div class="wa-text">Weekly session count: 24 · revenue on track.</div></div>
+              <div class="wa-msg ok"><div class="wa-from">Adam</div><div class="wa-text">✓ WhatsApp pipeline healthy · last run 2m ago.</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-hd-l">
+              <div class="card-title">Email digest</div>
+              <div class="card-sub">2 priority · 1 needs reply</div>
+            </div>
+            <span class="chip brand">2 priority</span>
+          </div>
+          <div class="card-bd">
+            <div class="cal-list">
+              <div class="cal-event"><div class="cal-time">08:44</div><div><div class="cal-name">Saden Group — contract review</div><div class="cal-meta">Needs your reply · AstraForm</div></div></div>
+              <div class="cal-event"><div class="cal-time">07:30</div><div><div class="cal-name">WH monthly analytics</div><div class="cal-meta">Auto-generated · 38% conversion flagged</div></div></div>
+              <div class="cal-event"><div class="cal-time">06:12</div><div><div class="cal-name">Nightly system report</div><div class="cal-meta">94% health · 19 errors (mostly noise)</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+          Run morning briefing
+        </button>
+        <button class="btn btn-success">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          WhatsApp pulse
+        </button>
+        <button class="btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          Weekly brief
+        </button>
+        <button class="btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+          WH funnel
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ═══════════ TAB · MEMORY ═══════════ -->
+    <section class="panel" id="tab-brain" role="tabpanel">
+
+      <div class="hero">
+        <div>
+          <div class="hero-eye">Memory</div>
+          <h1 class="hero-title">62 books, 36k searches, 688 chats — connected.</h1>
+          <p class="hero-sub">Adam's long-term memory — every dataset, every node, every connection.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-hd-l">
+            <div class="card-title">Brain graph</div>
+            <div class="card-sub">Live 3D topology — <span id="bg-node-count">loading…</span></div>
+          </div>
+          <div style="display:flex;gap:var(--sp-2);align-items:center">
+            <span class="chip brand" id="bg-status">● connecting</span>
+            <a href="brain_graph.html" target="_blank" class="icon-btn" title="Open fullscreen">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+            </a>
+          </div>
+        </div>
+        <div class="card-bd">
+          <div class="brain-frame">
+            <iframe id="brain-iframe" src="brain_graph.html" loading="lazy" title="3D brain topology"></iframe>
+          </div>
+        </div>
+      </div>
+
+      <div class="mem-grid">
+        <div class="mem-stat"><div class="mem-num" style="color:var(--brand-1)" data-target="688" data-suffix="">0</div><div class="mem-lbl">WhatsApp memories</div></div>
+        <div class="mem-stat"><div class="mem-num" style="color:var(--cyan)" data-target="62" data-suffix="">0</div><div class="mem-lbl">Books indexed</div></div>
+        <div class="mem-stat"><div class="mem-num" style="color:var(--green)" data-target="17639" data-suffix="">0</div><div class="mem-lbl">Encyclopedia chunks</div></div>
+        <div class="mem-stat"><div class="mem-num" style="color:var(--accent)" data-target="5" data-suffix="">0</div><div class="mem-lbl">Active datasets</div></div>
+        <div class="mem-stat"><div class="mem-num" style="color:var(--amber)" data-target="36912" data-suffix="">0</div><div class="mem-lbl">Searches indexed</div></div>
+        <div class="mem-stat"><div class="mem-num" style="color:var(--green)" data-target="94" data-suffix="%">0</div><div class="mem-lbl">Memory health</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-hd-l">
+            <div class="card-title">Memory layers</div>
+            <div class="card-sub">Datasets indexed in ChromaDB · powered by Cognee</div>
+          </div>
+          <span class="chip green">5 active</span>
+        </div>
+        <div class="card-bd-flat">
+          <div class="dataset-row"><div class="legend-dot" style="background:var(--brand-1)"></div><div class="ds-name">adam_wa_memory</div><div class="ds-count">688 chunks</div><div class="ds-bar-wrap"><div class="ds-bar" style="width:88%;background:var(--brand-1)"></div></div></div>
+          <div class="dataset-row"><div class="legend-dot" style="background:var(--cyan)"></div><div class="ds-name">adam_encyclopedia</div><div class="ds-count">17,639 chunks</div><div class="ds-bar-wrap"><div class="ds-bar" style="width:100%;background:var(--cyan)"></div></div></div>
+          <div class="dataset-row"><div class="legend-dot" style="background:var(--accent)"></div><div class="ds-name">adam_sessions</div><div class="ds-count">Active</div><div class="ds-bar-wrap"><div class="ds-bar" style="width:60%;background:var(--accent)"></div></div></div>
+          <div class="dataset-row"><div class="legend-dot" style="background:var(--green)"></div><div class="ds-name">ahmed_profile</div><div class="ds-count">Full profile</div><div class="ds-bar-wrap"><div class="ds-bar" style="width:75%;background:var(--green)"></div></div></div>
+          <div class="dataset-row"><div class="legend-dot" style="background:var(--amber)"></div><div class="ds-name">google_searches</div><div class="ds-count">36,912 indexed</div><div class="ds-bar-wrap"><div class="ds-bar" style="width:92%;background:var(--amber)"></div></div></div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+</div><!-- /layout -->
+</div><!-- /shell -->
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   ADAM — Frontend wiring
+   All live data hooks preserved from v1: WS, HTTP brain/wh APIs,
+   SVG element IDs, count-ups, XP bar.
+   ════════════════════════════════════════════════════════════════ */
+
+/* ───────── THEME (light/dark with system fallback) ───────── */
+const THEME_KEY = 'adam-theme';
+const SUN_ICON  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>';
+const MOON_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  const ico = document.getElementById('theme-icon');
+  if(ico) ico.outerHTML = (theme === 'dark' ? SUN_ICON : MOON_ICON).replace('<svg', '<svg id="theme-icon"');
+}
+(function initTheme(){
+  const saved  = localStorage.getItem(THEME_KEY);
+  const prefers = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyTheme(saved || (prefers ? 'dark' : 'light'));
+})();
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme(next);
+});
+
+/* ───────── CLOCK ───────── */
+function tick(){
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-GB',{hour12:false});
+}
+tick(); setInterval(tick, 1000);
+
+/* ───────── COUNT-UP ───────── */
+function countUp(el){
+  const target = +el.dataset.target;
+  const suffix = el.dataset.suffix || '';
+  const dur = 1200, t0 = performance.now();
+  const step = ts => {
+    const p = Math.min((ts - t0) / dur, 1);
+    const e = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(e * target).toLocaleString() + suffix;
+    if(p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+/* ───────── TABS ───────── */
+function activateTab(name){
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('.panel').forEach(p => {
+    const show = p.id === `tab-${name}`;
+    p.classList.toggle('active', show);
+    if(show){
+      p.querySelectorAll('[data-target]').forEach(el => {
+        el.textContent = '0' + (el.dataset.suffix || '');
+        countUp(el);
+      });
+      // Smooth scroll to top of panel area
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+  });
+}
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => activateTab(t.dataset.tab));
+});
+
+/* ───────── API BASES (local vs hosted) ───────── */
+const _isLocal = location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+const BRAIN_API = _isLocal ? 'http://localhost:8767' : '/adam/api/brain';
+const WH_API    = _isLocal ? 'http://localhost:8768' : '/adam/api/wh';
+const NERVE_WS  = _isLocal
+  ? 'ws://localhost:8766'
+  : `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/adam/api/nerve`;
+
+/* ───────── BRAIN PING ───────── */
+async function pingBrainServer(){
+  const chip = document.getElementById('bg-status');
+  const sub  = document.getElementById('bg-node-count');
+  try {
+    const r = await fetch(`${BRAIN_API}/health`, {signal: AbortSignal.timeout(2500)});
+    if(r.ok){
+      const d = await r.json();
+      if(chip){ chip.textContent='● live'; chip.className='chip green'; }
+      if(sub) sub.textContent = `${d.active_sources} collections connected`;
+    }
+  } catch {
+    if(chip){ chip.textContent='○ server offline'; chip.className='chip'; chip.style.color='var(--t3)'; chip.style.background='var(--card-alt)'; }
+    if(sub) sub.textContent = 'Demo mode · start the brain server for live data.';
+  }
+}
+document.querySelector('[data-tab="brain"]')?.addEventListener('click', pingBrainServer);
+
+/* ───────── WH LIVE DATA ───────── */
+async function loadWhData(){
+  const chip = document.getElementById('wh-data-chip');
+  const ts   = document.getElementById('wh-data-ts');
+  try {
+    const r = await fetch(`${WH_API}/wh`, {signal: AbortSignal.timeout(2500)});
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d = await r.json();
+
+    const kpis = [
+      { valId:'wh-sessions-val',   ftId:'wh-sessions-ft',   key:'sessions_today',    suffix:'',  ft:'sessions_ft'  },
+      { valId:'wh-conv-val',       ftId:'wh-conv-ft',       key:'s1_s2_conv',        suffix:'%', ft:'conv_ft'      },
+      { valId:'wh-therapists-val', ftId:'wh-therapists-ft', key:'active_therapists', suffix:'',  ft:'therapists_ft'},
+      { valId:'wh-patients-val',   ftId:'wh-patients-ft',   key:'new_patients',      suffix:'',  ft:'patients_ft'  },
+    ];
+    kpis.forEach(({valId, ftId, key, suffix, ft}) => {
+      const valEl = document.getElementById(valId);
+      const ftEl  = document.getElementById(ftId);
+      if(valEl && d[key] !== undefined){
+        valEl.dataset.target = d[key];
+        valEl.dataset.suffix = suffix;
+        valEl.textContent = '0' + suffix;
+        countUp(valEl);
+      }
+      if(ftEl && d[ft]) ftEl.textContent = d[ft];
+    });
+
+    const age = d.updated_at ? new Date(d.updated_at * 1000).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '?';
+    if(chip){ chip.textContent='● Live data'; chip.className='chip cyan'; }
+    if(ts)  ts.textContent = `Updated ${age}`;
+  } catch(e) {
+    if(chip){ chip.textContent='○ Static data'; chip.className='chip'; chip.style.color='var(--t3)'; chip.style.background='var(--card-alt)'; }
+    if(ts)  ts.textContent = 'Start the WH data server for live KPIs.';
+    document.querySelectorAll('#tab-wh .kpi-val[data-target]').forEach(el => {
+      el.textContent = '0' + (el.dataset.suffix || '');
+      countUp(el);
+    });
+  }
+}
+document.querySelector('[data-tab="wh"]')?.addEventListener('click', loadWhData);
+
+/* ───────── INIT count-ups for visible tab + sidebar ───────── */
+document.querySelectorAll('#tab-scan [data-target], .sidebar [data-target]').forEach(countUp);
+
+/* ───────── GREETING DATE ───────── */
+(function(){
+  const d = new Date();
+  const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const el = document.getElementById('greet-date');
+  if(el) el.textContent = `${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()} · Cairo, Egypt`;
+})();
+
+/* ───────── ACTION CARDS press ───────── */
+document.querySelectorAll('.action').forEach(c => {
+  c.addEventListener('click', () => {
+    c.style.transform = 'scale(0.97)';
+    setTimeout(() => c.style.transform = '', 120);
+  });
+});
+
+/* ───────── XP BAR ───────── */
+const XP_INITIAL = 94;
+function setXP(value, animate){
+  const fill  = document.getElementById('xp-fill');
+  const val   = document.getElementById('xp-val');
+  const tier  = document.getElementById('xp-tier');
+  if(!fill) return;
+
+  const clamped = Math.max(0, Math.min(100, value));
+  fill.style.width = clamped + '%';
+
+  if(animate){
+    const from = parseInt(val.textContent) || 0;
+    const dur = 900, t0 = performance.now();
+    const step = ts => {
+      const p = Math.min((ts - t0) / dur, 1);
+      const e = 1 - Math.pow(1 - p, 3);
+      val.innerHTML = Math.round(from + (clamped - from) * e) + '<span class="xp-denom">/100</span>';
+      if(p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  } else {
+    val.innerHTML = clamped + '<span class="xp-denom">/100</span>';
+  }
+
+  tier.classList.remove('degraded','critical');
+  if(clamped >= 90){
+    fill.style.background = 'linear-gradient(90deg,#10B981,#06B6D4)';
+    fill.style.boxShadow  = '0 0 12px rgba(16,185,129,0.40)';
+    tier.textContent = '● Healthy';
+  } else if(clamped >= 70){
+    fill.style.background = 'linear-gradient(90deg,#F59E0B,#FBBF24)';
+    fill.style.boxShadow  = '0 0 12px rgba(245,158,11,0.40)';
+    tier.textContent = '⚡ Degraded';
+    tier.classList.add('degraded');
+  } else if(clamped >= 50){
+    fill.style.background = 'linear-gradient(90deg,#FB7185,#EF4444)';
+    fill.style.boxShadow  = '0 0 12px rgba(239,68,68,0.45)';
+    tier.textContent = '✕ Critical';
+    tier.classList.add('critical');
+  } else {
+    fill.style.background = 'linear-gradient(90deg,#7F1D1D,#FB7185)';
+    fill.style.boxShadow  = '0 0 14px rgba(239,68,68,0.7)';
+    tier.textContent = '💀 Offline';
+    tier.classList.add('critical');
+  }
+
+  const ds = document.getElementById('day-score');
+  if(ds) ds.textContent = clamped;
+}
+setTimeout(() => setXP(XP_INITIAL, true), 300);
+
+/* ════════════════════════════════════════════════════════════════
+   NERVE WEBSOCKET — live organ animations + activity feed
+   ════════════════════════════════════════════════════════════════ */
+(function(){
+  const WS_URL = NERVE_WS;
+  const PIPELINE_MAP = {
+    'wa_hourly':           { organ:'lung-l',     legend:'ls-wa',      color:'#F59E0B', label:'WhatsApp Sync' },
+    'wa_pulse':            { organ:'lung-l',     legend:'ls-wa',      color:'#F59E0B', label:'WhatsApp Pulse' },
+    'run_wa_hourly':       { organ:'lung-l',     legend:'ls-wa',      color:'#F59E0B', label:'WhatsApp Sync' },
+    'cognify':             { organ:'gut-organ',  legend:'ls-cognify', color:'#06B6D4', label:'Memory Sync' },
+    'run_cognify':         { organ:'gut-organ',  legend:'ls-cognify', color:'#06B6D4', label:'Memory Sync' },
+    'nerve':               { organ:'heart-pulse',legend:'ls-nerve',   color:'#FB7185', label:'Heart Beat' },
+    'nerve_nightly':       { organ:'heart-pulse',legend:'ls-nerve',   color:'#FB7185', label:'Nightly Reflection' },
+    'email':               { organ:'lung-r',     legend:'ls-email',   color:'#10B981', label:'Email' },
+    'cognee':              { organ:'brain-core', legend:'ls-cognee',  color:'#7C3AED', label:'Memory' },
+    'midnight_reflection': { organ:'brain-core', legend:'ls-cognee',  color:'#7C3AED', label:'Nightly Reflection' },
+  };
+
+  let socket = null;
+  let reconnectTimer = null;
+
+  function connect(){
+    try { socket = new WebSocket(WS_URL); }
+    catch(e){ scheduleReconnect(); return; }
+
+    socket.onopen = () => {
+      console.log('[NERVE] connected');
+      clearTimeout(reconnectTimer);
+      const pill = document.querySelector('.live-pill');
+      if(pill) pill.style.boxShadow = '0 0 10px rgba(16,185,129,0.4)';
+    };
+    socket.onmessage = e => {
+      try { handleEvent(JSON.parse(e.data)); }
+      catch(err){ console.warn('[NERVE] bad message', err); }
+    };
+    socket.onerror = () => {};
+    socket.onclose = () => {
+      console.log('[NERVE] disconnected — retry in 5s');
+      scheduleReconnect();
+    };
+  }
+  function scheduleReconnect(){
+    clearTimeout(reconnectTimer);
+    reconnectTimer = setTimeout(connect, 5000);
+  }
+
+  function handleEvent(ev){
+    if(ev.type === 'health_update' && typeof ev.health_score === 'number'){
+      setXP(ev.health_score, true);
+      return;
+    }
+
+    const fill = document.getElementById('xp-fill');
+    if(fill){
+      const current = parseInt(document.getElementById('xp-val')?.textContent) || XP_INITIAL;
+      if(ev.status === 'error' || ev.type === 'pipeline_error'){
+        setXP(Math.max(50, current - 2), true);
+      } else if(ev.status === 'success' || ev.type === 'pipeline_run'){
+        setXP(Math.min(99, current + 1), true);
+      }
+    }
+
+    const key = ev.pipeline || '';
+    const map = PIPELINE_MAP[key] || guessPipeline(key);
+    if(!map) return;
+
+    const organ  = document.getElementById(map.organ);
+    const legend = document.getElementById(map.legend);
+    const isErr  = (ev.status === 'error' || ev.type === 'pipeline_error');
+
+    if(organ){
+      const flashColor = isErr ? '#EF4444' : map.color;
+      organ.style.transition = 'filter .15s ease';
+      organ.style.filter = `drop-shadow(0 0 14px ${flashColor}) drop-shadow(0 0 6px ${flashColor})`;
+
+      if(map.organ === 'lung-l'){
+        const ring = document.getElementById('defect-ring');
+        if(ring) ring.style.opacity = isErr ? '1' : '0.3';
+      }
+
+      setTimeout(() => {
+        organ.style.filter = isErr ? `drop-shadow(0 0 8px rgba(245,158,11,0.6))` : '';
+      }, 1200);
+    }
+
+    if(legend){
+      legend.textContent  = isErr ? '⚠ Issue' : '● Active';
+      legend.style.color  = isErr ? 'var(--amber)' : 'var(--green)';
+      if(!isErr){
+        setTimeout(() => {
+          legend.textContent = 'Healthy';
+          legend.style.color = 'var(--green)';
+        }, 4000);
+      }
+    }
+
+    addFeedEntry(map.label, isErr, ev);
+  }
+  function guessPipeline(name){
+    if(name.includes('wa'))    return PIPELINE_MAP['wa_hourly'];
+    if(name.includes('cogni')) return PIPELINE_MAP['cognify'];
+    if(name.includes('nerve')) return PIPELINE_MAP['nerve'];
+    if(name.includes('email')) return PIPELINE_MAP['email'];
+    return null;
+  }
+  function addFeedEntry(label, isErr, ev){
+    const feed = document.getElementById('live-feed');
+    if(!feed) return;
+
+    // Clear empty placeholder once first event arrives
+    const empty = feed.querySelector('.feed-empty');
+    if(empty) empty.remove();
+
+    const time   = new Date().toLocaleTimeString('en-GB',{hour12:false});
+    const color  = isErr ? 'var(--amber)' : 'var(--green)';
+    const detail = isErr ? (ev.error || 'error').slice(0,40) : `${ev.duration_ms || '—'}ms`;
+
+    const row = document.createElement('div');
+    row.className = 'feed-item';
+    row.innerHTML = `
+      <span class="feed-dot" style="background:${color}"></span>
+      <span class="feed-label">${label}</span>
+      <span class="feed-detail">${detail}</span>
+      <span class="feed-time">${time}</span>`;
+    feed.prepend(row);
+    if(feed.children.length > 30) feed.lastChild.remove();
+  }
+
+  connect();
+})();
+</script>
+</body>
+</html>
