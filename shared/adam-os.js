@@ -85,13 +85,13 @@
     wrap.querySelector('.adam-modal-scrim').addEventListener('click', closeModal);
     wrap.querySelector('.adam-modal-close').addEventListener('click', closeModal);
     wrap.querySelector('.adam-modal-foot .btn-action:not(.primary)').addEventListener('click', closeModal);
-    wrap.querySelector('.adam-modal-send').addEventListener('click', () => {
+    wrap.querySelector('.adam-modal-send').addEventListener('click', async () => {
       const body = wrap.querySelector('.adam-modal-body').value;
       const channel = wrap.dataset.channel;
       const recipient = wrap.dataset.recipient;
-      // Real impl: POST to wa_send.sh / email gateway
-      console.log('[Adam OS] SEND', { channel, recipient, body });
-      flashSent();
+
+      const result = await dispatchSend(channel, recipient, body);
+      flashSent(result);
     });
 
     // ESC to close
@@ -100,13 +100,60 @@
     });
   }
 
-  function flashSent() {
+  function flashSent(result) {
     const wrap = document.getElementById('adam-modal');
     const send = wrap.querySelector('.adam-modal-send');
-    send.textContent = '✓ Sent';
-    send.style.background = '#22C55E';
-    send.style.color = '#FFFFFF';
-    setTimeout(() => closeModal(), 900);
+    if (result && result.status === 'sent') {
+      send.textContent = '✓ Sent';
+      send.style.background = '#22C55E';
+      send.style.color = '#FFFFFF';
+      showToast('Message sent ✓', 'success');
+    } else if (result && result.status === 'queued') {
+      send.textContent = '⌛ Queued';
+      send.style.background = '#F59E0B';
+      send.style.color = '#1A1A22';
+      showToast(result.note || 'Queued · API will fire when bridge is online', 'warning');
+    } else {
+      send.textContent = '⚠ Failed';
+      send.style.background = '#EF4444';
+      send.style.color = '#FFFFFF';
+      showToast((result && result.error) || 'Send failed — check API server', 'error');
+    }
+    setTimeout(() => closeModal(), 1300);
+  }
+
+  /* ═══════════════════ API DISPATCH ═══════════════════ */
+  const API_CANDIDATES = [
+    'https://api.ahmedhaz.com',     // Saturday: when CF tunnel hostname is configured
+    'http://127.0.0.1:8770',        // Local dev fallback
+  ];
+
+  async function dispatchSend(channel, recipient, body) {
+    const endpoint = channel === 'email' ? '/api/email/send'
+                   : channel === 'cal'   ? '/api/calendar/block'
+                   :                       '/api/wa/send';
+
+    const payload = channel === 'email'
+      ? { to: recipient, subject: body.split('\n')[0].slice(0, 80), body, account: 'personal' }
+      : channel === 'cal'
+      ? { date: new Date().toISOString().slice(0, 10), title: 'Adam OS · ' + recipient, duration_min: 30 }
+      : { to: recipient, message: body, contact_name: recipient };
+
+    for (const base of API_CANDIDATES) {
+      try {
+        const r = await fetch(base + endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          mode: 'cors',
+        });
+        if (!r.ok) continue;
+        return await r.json();
+      } catch (e) {
+        console.warn('[Adam OS] API attempt failed:', base, e.message);
+      }
+    }
+    return { status: 'failed', error: 'API unreachable. Run adam_api_server.py on your Mac.' };
   }
 
   function openModal(opts) {
