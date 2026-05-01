@@ -300,6 +300,36 @@
         margin: 6px 0 0;
       }
       .qf-interpret strong { color: var(--ink); font-weight: 600; }
+
+      /* Toast */
+      .adam-toast {
+        position: fixed;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background: var(--ink);
+        color: white;
+        padding: 11px 22px;
+        border-radius: 999px;
+        font-family: var(--font-body);
+        font-size: 13px;
+        font-weight: 500;
+        box-shadow: 0 14px 36px rgba(0,0,0,0.22);
+        opacity: 0;
+        transition: opacity 0.22s cubic-bezier(.2,.8,.2,1), transform 0.22s cubic-bezier(.2,.8,.2,1);
+        z-index: 10001;
+        pointer-events: none;
+        max-width: calc(100vw - 48px);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .adam-toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+      .adam-toast-success { background: #15803D; }
+      .adam-toast-warning { background: #B45309; }
     `;
     document.head.appendChild(s);
   }
@@ -578,16 +608,132 @@
     return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
+  /* ═══════════════════ TOAST ═══════════════════ */
+  function showToast(msg, kind) {
+    kind = kind || 'info';
+    const t = document.createElement('div');
+    t.className = `adam-toast adam-toast-${kind}`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    requestAnimationFrame(() => t.classList.add('show'));
+    setTimeout(() => {
+      t.classList.remove('show');
+      setTimeout(() => t.remove(), 250);
+    }, 2200);
+  }
+
+  /* ═══════════════════ GENERIC BUTTON ROUTER ═══════════════════ */
+  function hookGenericButtons() {
+    document.body.addEventListener('click', e => {
+      const btn = e.target.closest('button, a');
+      if (!btn) return;
+
+      // Skip already-wired
+      if (btn.dataset.action || btn.dataset.contact) return;
+      if (btn.closest('.adam-modal-card')) return;
+      if (btn.classList.contains('adam-modal-close')) return;
+      if (btn.classList.contains('quick-fire-go')) return;
+      if (btn.classList.contains('body-organ-btn')) return;
+      if (btn.hasAttribute('href') && btn.getAttribute('href').startsWith('http')) return;
+      if (btn.hasAttribute('onclick')) return; // existing navigations
+      if (btn.dataset.earTab) return;          // Ear sub-tabs
+
+      const txt = (btn.textContent || '').trim().toLowerCase();
+      if (!txt) return;
+
+      // ─── Specific routes ───
+      if (/open trello/.test(txt))         { window.open('https://trello.com/', '_blank'); showToast('Opening Trello'); return; }
+      if (/open gmail|open email/.test(txt)) { window.open('https://mail.google.com/', '_blank'); showToast('Opening Gmail'); return; }
+      if (/open comms/.test(txt))          { window.location.href = 'body.html#ear'; return; }
+      if (/open full body|full body view/.test(txt)) { window.location.href = 'body.html'; return; }
+      if (/open wh dashboard/.test(txt))   { window.location.href = 'wellness-house.html'; return; }
+      if (/open astraform dashboard/.test(txt)) { window.location.href = 'astraform.html'; return; }
+      if (/open plaud library/.test(txt))  { window.open('https://app.plaud.ai/', '_blank'); return; }
+      if (/open meet recordings/.test(txt)){ window.open('https://drive.google.com/drive/recent', '_blank'); return; }
+      if (/open calendar/.test(txt))       { window.open('https://calendar.google.com/', '_blank'); return; }
+      if (/open audit/.test(txt))          { showToast('Memory audit · launching tonight', 'info'); return; }
+
+      // Hero CTAs
+      if (/start with the deck|open samsung deal|open samsung deal →/.test(txt)) {
+        openModal({ channel: 'wa', contact: CONTACTS.hagar, body: getDraft('hagar', 'wa') });
+        return;
+      }
+      if (/open orion/.test(txt)) {
+        openModal({ channel: 'cal', contact: CONTACTS.hazem, body: '15-min: Orion priority sync this afternoon.' });
+        return;
+      }
+      if (/see full plan/.test(txt))       { window.open('/adam-os-plan.md', '_blank'); showToast('Plan opens'); return; }
+      if (/see full pipeline|pipeline view/.test(txt)) {
+        const p = document.querySelector('.kanban'); if (p) p.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      // New action / search
+      if (/^\+\s*new action$/.test(txt))   {
+        openModal({ channel: 'wa', contact: { name: 'Pick a contact', role: 'Type recipient', avatar: '?', tone: 'peach' }, body: '' });
+        return;
+      }
+
+      // Task-card lifecycle
+      if (/^done$/.test(txt))              {
+        const card = btn.closest('.task'); if (card) card.style.opacity = '0.45';
+        showToast('Task marked done · ✓', 'success'); return;
+      }
+      if (/^snooze/.test(txt))             { showToast('Snoozed 4h · I\'ll bring it back', 'info'); return; }
+      if (/^skip$/.test(txt))              { showToast('Skipped', 'info'); return; }
+      if (/^approve|keep going/.test(txt)) {
+        btn.style.background = '#22C55E'; btn.style.color = 'white'; btn.textContent = '✓ Approved';
+        showToast('Approved · keeping going', 'success'); return;
+      }
+      if (/^adjust/.test(txt))             { showToast('Tell me what\'s off in chat', 'info'); return; }
+      if (/^pause/.test(txt))              { showToast('Paused', 'info'); return; }
+
+      // Hero/companion side actions
+      if (/^voice$/.test(txt))             { showToast('Voice mode · ⌘+Space wires Saturday', 'info'); return; }
+      if (/focus mode|invisible/.test(txt)){ showToast('Invisible focus mode · Saturday build', 'info'); return; }
+      if (/^refresh|refresh now/.test(txt)){ showToast('Refreshing live data…', 'info'); loadData(); return; }
+      if (/block calendar|block focus/.test(txt)) { showToast('Calendar block requested · pending Calendar OAuth', 'warning'); return; }
+      if (/book 15-min/.test(txt))         { showToast('Calendar block requested · pending Calendar OAuth', 'warning'); return; }
+      if (/schedule call/.test(txt))       { showToast('Schedule pending Calendar OAuth', 'warning'); return; }
+
+      // Comms-side
+      if (/reply to top/.test(txt))        { showToast('Drafting top replies…', 'info'); return; }
+      if (/mark all read/.test(txt))       { showToast('All marked read', 'success'); return; }
+      if (/reply.*marwan|reply.*hazem/.test(txt)) { return; }
+
+      // Tabs / All
+      if (/^all$/.test(txt))               { showToast('Full view · Saturday', 'info'); return; }
+      if (/cohort/.test(txt))              { showToast('Cohort retention · Saturday', 'info'); return; }
+
+      // Team 1:1 — find contact from row context
+      if (/^1:1$/.test(txt) || /^standup$/.test(txt)) {
+        const row = btn.closest('.team-row');
+        const name = row?.querySelector('.team-name')?.textContent || '';
+        const key = findContact(name.split('·')[0].trim());
+        if (key && CONTACTS[key]) {
+          openModal({ channel: 'wa', contact: CONTACTS[key], body: getDraft(key, 'wa') });
+        } else {
+          showToast(`${name.trim() || 'Team'} not in contact map yet`, 'info');
+        }
+        return;
+      }
+
+      // Default fallthrough — register the intent
+      showToast(`"${btn.textContent.trim()}" registered — wires next`, 'info');
+    });
+  }
+
   /* ═══════════════════ BOOT ═══════════════════ */
   function boot() {
     injectStyles();
     injectModal();
     hookActionButtons();
     hookQuickFire();
+    hookGenericButtons();
     loadData();
 
     // Expose for debugging
-    window.AdamOS = { openModal, closeModal, parseQuickFire, CONTACTS };
+    window.AdamOS = { openModal, closeModal, parseQuickFire, CONTACTS, showToast };
   }
 
   if (document.readyState === 'loading') {
