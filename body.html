@@ -499,8 +499,80 @@
     });
   });
 
-  // Initial render
+  // Inject real Plaud data from data.json once it loads
+  function injectRealPlaud() {
+    const data = window.adamData;
+    if (!data || !data.plaud || !data.plaud.length) return;
+
+    const rows = data.plaud.map((p, i) => {
+      const tagBg = p.tag === 'samsung' ? 'rgba(220,252,79,0.6)'
+                    : i % 4 === 0 ? 'var(--peach-soft)'
+                    : i % 4 === 1 ? 'rgba(184,160,255,0.4)'
+                    : i % 4 === 2 ? 'rgba(160,232,200,0.45)'
+                    : 'rgba(255,163,199,0.4)';
+      return `
+        <div class="wa-row">
+          <div class="wa-avatar" style="background:${tagBg};"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Microphone/3D/microphone_3d.png" style="width:22px;height:22px;"></div>
+          <div>
+            <div class="wa-name" dir="auto">${escapeHtml(p.title)}</div>
+            <div class="wa-msg" dir="auto" style="white-space:normal;">${escapeHtml(p.title_en || p.snippet || '')}</div>
+          </div>
+          <div class="wa-time">${p.time || p.date}</div>
+        </div>`;
+    }).join('');
+
+    // Group by date
+    const byDate = {};
+    data.plaud.forEach(p => { (byDate[p.date] = byDate[p.date] || []).push(p); });
+    const dates = Object.keys(byDate).sort().reverse();
+    const today = new Date().toISOString().slice(0,10);
+
+    const grouped = dates.map(d => {
+      const label = d === today ? 'Today' : new Date(d).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+      const items = byDate[d].map((p, i) => {
+        const tagBg = p.tag === 'samsung' ? 'rgba(220,252,79,0.6)'
+                      : i % 4 === 0 ? 'var(--peach-soft)'
+                      : i % 4 === 1 ? 'rgba(184,160,255,0.4)'
+                      : i % 4 === 2 ? 'rgba(160,232,200,0.45)'
+                      : 'rgba(255,163,199,0.4)';
+        return `
+          <div class="wa-row">
+            <div class="wa-avatar" style="background:${tagBg};"><img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Microphone/3D/microphone_3d.png" style="width:22px;height:22px;"></div>
+            <div>
+              <div class="wa-name" dir="auto">${escapeHtml(p.title)}</div>
+              <div class="wa-msg" dir="auto" style="white-space:normal;">${escapeHtml(p.title_en || p.snippet || '')}</div>
+            </div>
+            <div class="wa-time">${p.time || ''}</div>
+          </div>`;
+      }).join('');
+      return `<div class="drilldown-day">${label}</div><div class="wa-list">${items}</div>`;
+    }).join('');
+
+    // Override Plaud pane content
+    ORGANS.ear.sub = `${data.plaud.length} Plaud · live from Gmail · auto-pulled`;
+    ORGANS.ear.content = ORGANS.ear.content
+      .replace(/<div data-ear-pane="plaud"[^>]*>[\s\S]*?<\/div>\s*<div data-ear-pane="meet"/,
+        `<div data-ear-pane="plaud" style="display:none;">${grouped}<div style="background:var(--card-soft);border-radius:var(--r-md);padding:10px 14px;margin-top:12px;font-size:11px;color:var(--muted);">Live · pulled from Gmail · subject prefix <code>ADAM_EAR:</code> · ${data.plaud.length} entries · refresh on next snapshot</div></div><div data-ear-pane="meet"`);
+
+    // Re-render if Ear is currently active
+    if (document.querySelector('.body-organ-btn.active')?.dataset.organ === 'ear') {
+      showOrgan('ear');
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // Initial render with dummy
   showOrgan('ear');
+
+  // Once adam-os.js loads data.json, swap in real Plaud
+  function tryInject() {
+    if (window.adamData) injectRealPlaud();
+    else setTimeout(tryInject, 200);
+  }
+  tryInject();
 </script>
 
 </body>

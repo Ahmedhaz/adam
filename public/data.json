@@ -281,5 +281,48 @@
     "frameworks": 44
   },
   "mirsad": 6,
-  "calendar": []
+  "calendar": [],
+  "plaud": [
+    {
+      "date": "2026-04-30",
+      "time": "16:36",
+      "title": "من تشات بوت إلى وكيل شخصي مقود بالذاكرة: معمارية متعددة النماذج وتنفيذ آمن تحت حوكمة ASK",
+      "title_en": "From chatbot to memory-driven personal agent — multi-model architecture under ASK governance",
+      "snippet": "اوصل لمرحلة بتبني شخصيات كاملة و بتاع و عاملين. يباشا يباشا الراجل ما بيهزرش...",
+      "speakers": 2
+    },
+    {
+      "date": "2026-04-30",
+      "time": "16:33",
+      "title": "محادثة غير رسمية: توصية فندقية في العين السخنة",
+      "title_en": "Informal: hotel rec for Ain Sokhna",
+      "snippet": "انا بقى قلت لك الرقم بتاع فالم بيتش. بقى كلمته مرة تلو بيردش...",
+      "speakers": 2
+    },
+    {
+      "date": "2026-04-30",
+      "time": "15:37",
+      "title": "محادثة قصيرة",
+      "title_en": "Short conversation",
+      "snippet": "خديجة الكوهرة بقى. طيب يلا. وصلت الكل لحاجة حلوة...",
+      "speakers": 1
+    },
+    {
+      "date": "2026-04-28",
+      "time": "21:00",
+      "title": "عرض نموذج عمل لمشروع \"العافية المتكاملة\" (Wellness Experience)",
+      "title_en": "Wellness Experience — business model presentation",
+      "snippet": "اشتركوا في القناة, المترجم للقناة. تكلمتم شو اترو انت والزمن عليه يعني...",
+      "speakers": 2
+    },
+    {
+      "date": "2026-04-28",
+      "time": "20:29",
+      "title": "اجتماع تخطيطي: برنامج رفاهية مؤسسي لمدة 3 أشهر (Mind-Body-Soul) وإطلاق منصة Wellness Plus",
+      "title_en": "Samsung 3-month Mind-Body-Soul corporate program + Wellness Plus launch",
+      "snippet": "انت عندك نوكس نوكس. ميتنج. ده صيني صح؟ كي ان او اكس؟...",
+      "speakers": 3,
+      "tag": "samsung"
+    }
+  ]
 }
