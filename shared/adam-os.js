@@ -467,6 +467,115 @@
     if (verveDelta && d.signal) {
       verveDelta.innerHTML = `<span class="dot"></span>${d.signal.headline || 'system healthy'}`;
     }
+
+    // Pulse feed (home page) — mix Plaud + Gmail + WA into one stream
+    const feedContainer = document.querySelector('.feed');
+    if (feedContainer && (d.plaud || d.gmail)) {
+      injectPulseFeed(feedContainer, d);
+    }
+
+    // WH page — top emails panel
+    const isWH = document.body.dataset.brand === 'wh' ||
+                 document.documentElement.dataset.brand === 'wh';
+    if (isWH && d.gmail) {
+      injectEmailPanel('wh', d.gmail);
+    }
+    const isAF = document.body.dataset.brand === 'af' ||
+                 document.documentElement.dataset.brand === 'af';
+    if (isAF && d.gmail) {
+      injectEmailPanel('af', d.gmail);
+    }
+  }
+
+  function injectPulseFeed(container, d) {
+    // Combine Plaud + Gmail by date
+    const items = [];
+    (d.plaud || []).slice(0, 3).forEach(p => items.push({
+      type: 'plaud',
+      avatar: 'mic',
+      tone: p.tag === 'samsung' ? 'lime' : 'peach',
+      name: p.title_en || p.title,
+      msg: p.snippet || '',
+      time: p.time || p.date,
+      sortKey: `${p.date} ${p.time||''}`,
+    }));
+    (d.gmail || []).slice(0, 4).forEach(e => items.push({
+      type: 'email',
+      avatar: emailInitials(e.from),
+      tone: e.priority === 'hot' ? 'pink' : e.priority === 'warm' ? 'violet' : 'sky',
+      name: `${e.from} · ${e.tag.toUpperCase()}`,
+      msg: e.subject_en || e.subject,
+      time: e.time || e.date,
+      sortKey: `${e.date} ${e.time||''}`,
+    }));
+
+    items.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
+
+    const head = container.querySelector('.feed-head');
+    const newRows = items.slice(0, 6).map(it => {
+      const avatarInner = it.avatar === 'mic'
+        ? `<img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/Microphone/3D/microphone_3d.png" style="width:22px;height:22px;">`
+        : it.avatar;
+      const toneBg = {
+        lime: 'rgba(220,252,79,0.6)',
+        peach: 'var(--peach-soft, #FFD4B8)',
+        violet: 'rgba(184,160,255,0.4)',
+        mint: 'rgba(160,232,200,0.45)',
+        pink: 'rgba(255,163,199,0.4)',
+        sky: 'rgba(160,208,255,0.45)',
+      }[it.tone] || 'var(--peach-soft, #FFD4B8)';
+      return `
+        <div class="feed-item">
+          <div class="feed-avatar" style="background:${toneBg};">${avatarInner}</div>
+          <div class="feed-body">
+            <div class="feed-name" dir="auto">${escapeHtml(it.name)}</div>
+            <div class="feed-msg" dir="auto">${escapeHtml(it.msg)}</div>
+            <div class="feed-time">${escapeHtml(it.time)} · ${it.type}</div>
+          </div>
+        </div>`;
+    }).join('');
+
+    container.innerHTML = (head ? head.outerHTML : '<div class="feed-head"><h3>Pulse · live</h3><button class="btn-action">All</button></div>') + newRows;
+  }
+
+  function injectEmailPanel(brand, gmail) {
+    const panels = document.querySelectorAll('.panel');
+    let target = null;
+    panels.forEach(p => {
+      const h3 = p.querySelector('.panel-head h3');
+      if (h3 && /top emails/i.test(h3.textContent)) target = p;
+    });
+    if (!target) return;
+
+    const filtered = gmail
+      .filter(e => e.tag === brand || e.tag === 'personal' && brand === 'wh')
+      .slice(0, 8);
+
+    if (filtered.length === 0) return;
+
+    const head = target.querySelector('.panel-head');
+    const list = filtered.map(e => `
+      <div class="email-row">
+        <div class="email-priority ${e.priority || ''}"></div>
+        <div>
+          <div class="email-from" dir="auto">${escapeHtml(e.from)}</div>
+          <div class="email-subject" dir="auto">${escapeHtml(e.subject_en || e.subject)}</div>
+        </div>
+        <div class="email-time">${escapeHtml(e.time || e.date)}</div>
+      </div>`).join('');
+
+    target.innerHTML = head.outerHTML + `<div class="email-list">${list}</div>`;
+  }
+
+  function emailInitials(from) {
+    if (!from) return '??';
+    const parts = from.replace(/[<>]/g, '').split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return from.slice(0, 2).toUpperCase();
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
   /* ═══════════════════ BOOT ═══════════════════ */

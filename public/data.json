@@ -282,6 +282,110 @@
   },
   "mirsad": 6,
   "calendar": [],
+  "gmail": [
+    {
+      "subject": "Security alert for a.haz@wellnesshouse.me",
+      "from": "Google",
+      "from_email": "no-reply@accounts.google.com",
+      "date": "2026-04-30",
+      "time": "23:43",
+      "preview": "This is a copy of a security alert sent to a.haz@wellnesshouse.me. ahmed.haz@gmail.com is the recovery email…",
+      "tag": "wh",
+      "priority": "warm"
+    },
+    {
+      "subject": "(Wellmesshouse) Page has no outgoing links: 2 URLs",
+      "from": "Ahrefs Site Audit",
+      "from_email": "sa@ahrefs.com",
+      "date": "2026-05-01",
+      "time": "07:27",
+      "preview": "Health Score 94 · Errors 2 · Warnings 10 · Notices 10 — Wellmesshouse 10 internal URLs",
+      "tag": "wh",
+      "priority": "info"
+    },
+    {
+      "subject": "(Mersal-ngo) Image file size too large: 14 URLs",
+      "from": "Ahrefs Site Audit",
+      "from_email": "sa@ahrefs.com",
+      "date": "2026-05-01",
+      "time": "07:24",
+      "preview": "Health Score 85 · Errors 38 · Warnings 29 · Notices 27 — Mersal-ngo 35 URLs analyzed",
+      "tag": "wh",
+      "priority": "info"
+    },
+    {
+      "subject": "(Mersal-ngo) CSS file size too large: 7 URLs",
+      "from": "Ahrefs Site Audit",
+      "from_email": "sa@ahrefs.com",
+      "date": "2026-05-01",
+      "time": "07:37",
+      "preview": "Health Score 81 · Errors 98 · Warnings 61 (+1) · Notices 54",
+      "tag": "wh",
+      "priority": "warm"
+    },
+    {
+      "subject": "GWI Initiative Trends Report — Collective Intelligence + Foresight from Global Wellness Leaders",
+      "from": "Heidi Moon · Global Wellness Institute",
+      "from_email": "info@globalwellnessinstitute.org",
+      "date": "2026-04-30",
+      "time": "17:08",
+      "preview": "2026 wellness trends report — complimentary release. Industry intel for WH B2B positioning.",
+      "tag": "wh",
+      "priority": "info"
+    },
+    {
+      "subject": "€25.00 payment to Lovable Labs Incorporated was unsuccessful",
+      "from": "Lovable Labs",
+      "from_email": "failed-payments@lovable.dev",
+      "date": "2026-04-30",
+      "time": "16:40",
+      "preview": "Payment failed. Card on file declined. Renewal blocked.",
+      "tag": "infra",
+      "priority": "hot",
+      "actionable": "update payment method"
+    },
+    {
+      "subject": "Your OpenRouter, Inc receipt [#1963-5993]",
+      "from": "OpenRouter, Inc",
+      "from_email": "receipts@openrouter.ai",
+      "date": "2026-05-01",
+      "time": "04:37",
+      "preview": "$10.80 paid · card ending 2986 · API credits topup",
+      "tag": "infra",
+      "priority": "info"
+    },
+    {
+      "subject": "New sign-in detected on your Vercel account",
+      "from": "Vercel",
+      "from_email": "notifications@vercel.com",
+      "date": "2026-05-01",
+      "time": "03:42",
+      "preview": "Sign-in event recorded — review if not you.",
+      "tag": "infra",
+      "priority": "info"
+    },
+    {
+      "subject": "المبادئ القيادية السبعة التي يعتمدها رئيس شركة آبل تيم كوك",
+      "subject_en": "Tim Cook's 7 leadership principles",
+      "from": "هارفارد بزنس ريفيو",
+      "from_email": "hbr@m.majarra.com",
+      "date": "2026-04-30",
+      "time": "15:24",
+      "preview": "HBR Arabic — Tim Cook leadership read",
+      "tag": "personal",
+      "priority": "info"
+    },
+    {
+      "subject": "The most underrated founder trait in 2026",
+      "from": "James Currier · NFX",
+      "from_email": "qed@nfx.com",
+      "date": "2026-04-30",
+      "time": "21:10",
+      "preview": "Top founders are tapped into a bigger pattern — The Optimists Will Win.",
+      "tag": "personal",
+      "priority": "info"
+    }
+  ],
   "plaud": [
     {
       "date": "2026-04-30",
