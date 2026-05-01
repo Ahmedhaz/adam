@@ -301,35 +301,39 @@
       }
       .qf-interpret strong { color: var(--ink); font-weight: 600; }
 
-      /* Toast */
+      /* Toast — top center, large, instant-visible */
       .adam-toast {
         position: fixed;
-        bottom: 28px;
+        top: 24px;
         left: 50%;
-        transform: translateX(-50%) translateY(20px);
-        background: var(--ink);
+        transform: translateX(-50%);
+        background: #1A1A22;
         color: white;
-        padding: 11px 22px;
-        border-radius: 999px;
-        font-family: var(--font-body);
-        font-size: 13px;
-        font-weight: 500;
-        box-shadow: 0 14px 36px rgba(0,0,0,0.22);
-        opacity: 0;
-        transition: opacity 0.22s cubic-bezier(.2,.8,.2,1), transform 0.22s cubic-bezier(.2,.8,.2,1);
-        z-index: 10001;
+        padding: 14px 24px;
+        border-radius: 14px;
+        font-family: 'Inter', -apple-system, sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 1.3;
+        box-shadow: 0 18px 50px rgba(0,0,0,0.32);
+        z-index: 999999;
         pointer-events: none;
         max-width: calc(100vw - 48px);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .adam-toast.show {
         opacity: 1;
-        transform: translateX(-50%) translateY(0);
+        transition: opacity 0.32s ease, transform 0.32s ease;
+        animation: adam-toast-in 0.32s cubic-bezier(.2,.8,.2,1);
+      }
+      .adam-toast.fade-out {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-12px);
       }
       .adam-toast-success { background: #15803D; }
       .adam-toast-warning { background: #B45309; }
+      .adam-toast-error   { background: #B91C1C; }
+      @keyframes adam-toast-in {
+        from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+        to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+      }
     `;
     document.head.appendChild(s);
   }
@@ -611,15 +615,37 @@
   /* ═══════════════════ TOAST ═══════════════════ */
   function showToast(msg, kind) {
     kind = kind || 'info';
+    // Remove any existing toasts to avoid stacking
+    document.querySelectorAll('.adam-toast').forEach(t => t.remove());
     const t = document.createElement('div');
-    t.className = `adam-toast adam-toast-${kind}`;
+    t.className = `adam-toast adam-toast-${kind} show`;
     t.textContent = msg;
     document.body.appendChild(t);
-    requestAnimationFrame(() => t.classList.add('show'));
+    // Force reflow then add show (belt-and-suspenders)
+    void t.offsetHeight;
     setTimeout(() => {
-      t.classList.remove('show');
-      setTimeout(() => t.remove(), 250);
-    }, 2200);
+      t.classList.add('fade-out');
+      setTimeout(() => t.remove(), 350);
+    }, 3000);
+  }
+
+  /* ═══════════════════ CLICK FLASH ═══════════════════ */
+  function flashButton(btn, color) {
+    if (!btn) return;
+    const orig = {
+      bg: btn.style.background,
+      color: btn.style.color,
+      shadow: btn.style.boxShadow,
+    };
+    btn.style.background = color || '#DCFC4F';
+    btn.style.color = '#1A1A22';
+    btn.style.boxShadow = '0 0 0 4px rgba(220, 252, 79, 0.4)';
+    btn.style.transition = 'all 0.18s';
+    setTimeout(() => {
+      btn.style.background = orig.bg;
+      btn.style.color = orig.color;
+      btn.style.boxShadow = orig.shadow;
+    }, 350);
   }
 
   /* ═══════════════════ GENERIC BUTTON ROUTER ═══════════════════ */
@@ -628,15 +654,26 @@
       const btn = e.target.closest('button, a');
       if (!btn) return;
 
-      // Skip already-wired
-      if (btn.dataset.action || btn.dataset.contact) return;
+      // Skip modal internals only
       if (btn.closest('.adam-modal-card')) return;
+
+      // Always flash the button on any click — instant visual feedback
+      flashButton(btn);
+
+      // Skip already-wired (data-action handler runs separately, modal opens)
+      if (btn.dataset.action || btn.dataset.contact) return;
       if (btn.classList.contains('adam-modal-close')) return;
       if (btn.classList.contains('quick-fire-go')) return;
       if (btn.classList.contains('body-organ-btn')) return;
+      if (btn.dataset.earTab) return;
       if (btn.hasAttribute('href') && btn.getAttribute('href').startsWith('http')) return;
-      if (btn.hasAttribute('onclick')) return; // existing navigations
-      if (btn.dataset.earTab) return;          // Ear sub-tabs
+
+      // Sidebar nav items have onclick — flash + let them navigate
+      if (btn.hasAttribute('onclick')) {
+        const dest = btn.getAttribute('onclick').match(/['"]([^'"]+)['"]/);
+        if (dest) showToast(`→ ${dest[1].replace('.html','').replace('-',' ')}`, 'info');
+        return;
+      }
 
       const txt = (btn.textContent || '').trim().toLowerCase();
       if (!txt) return;
