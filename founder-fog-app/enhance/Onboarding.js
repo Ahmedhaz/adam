@@ -50,7 +50,24 @@ function (g, r, i, a, m, _e, d) {
       style: st.titleWrap,
       children: [
         jsx(View, { dataSet: { ff: "fogbank" }, pointerEvents: "none", style: st.titleFog }),
-        jsx(Touchable, { style: st.langPill, onPress: switchLanguage, children: jsx(Text, { style: st.langTxt, children: IS_AR ? "English" : "\u0627\u0644\u0639\u0631\u0628\u064a\u0629" }) }),
+        // EN | عربي switch, always visible at the top of the title screen
+        jsx(View, {
+          style: st.langSwitch,
+          children: [
+            ["EN", false],
+            ["\u0639\u0631\u0628\u064a", true],
+          ].map(([label, ar]) =>
+            jsx(
+              Touchable,
+              {
+                style: [st.langOpt, ar === IS_AR && st.langOptOn],
+                onPress: () => ar !== IS_AR && switchLanguage(),
+                children: jsx(Text, { style: [st.langTxt, ar === IS_AR && st.langTxtOn], children: label }),
+              },
+              label,
+            ),
+          ),
+        }),
         jsxs(View, {
           style: st.titleCenter,
           children: [
@@ -271,8 +288,11 @@ function (g, r, i, a, m, _e, d) {
     logoMark: { fontSize: 64, textAlign: "center" },
     logo: { fontFamily: "AzeretMono_600SemiBold", fontSize: 26, letterSpacing: 4, color: COLOR.text, textAlign: "center" },
     logoTag: { ...TYPE.body, fontSize: 14, lineHeight: 21, color: COLOR.text2, textAlign: "center", maxWidth: 300 },
-    langPill: { position: "absolute", top: 16, right: 16, zIndex: 5, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, backgroundColor: COLOR.panel, borderWidth: 1, borderColor: COLOR.lineHot },
-    langTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 13, color: COLOR.text },
+    langSwitch: { direction: "ltr", flexDirection: "row", alignSelf: "center", marginTop: 8, padding: 3, borderRadius: 999, backgroundColor: COLOR.panel, borderWidth: 1, borderColor: COLOR.lineHot, zIndex: 5 },
+    langOpt: { minWidth: 64, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, alignItems: "center" },
+    langOptOn: { backgroundColor: COLOR.accent },
+    langTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 14, color: COLOR.text2 },
+    langTxtOn: { color: "#fff" },
     titleActions: { gap: 12, width: "100%", maxWidth: 440, alignSelf: "center" },
     saveCard: {
       flexDirection: "row",

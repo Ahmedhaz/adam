@@ -73,9 +73,22 @@ function (g, r, i, a, m, _e, d) {
       window.localStorage.removeItem(SAVE_KEY);
     } catch (err) {}
   }
+  // Language: index.html is English, ar.html is Arabic. Switching mid-game reloads the
+  // other page and picks the saved game straight back up.
+  const IS_AR = typeof document !== "undefined" && document.documentElement.lang === "ar";
+  const RESUME_KEY = "founderFog.resumeAfterSwitch";
+  function switchLanguage() {
+    try {
+      window.localStorage.setItem("founderFog.lang", IS_AR ? "en" : "ar");
+      window.sessionStorage.setItem(RESUME_KEY, "1");
+    } catch (err) {}
+    window.location.replace(IS_AR ? "index.html" : "ar.html");
+  }
+
   function restoreEngine(state) {
     const engine = new Engine.StartupEngine(state.founderName, state.companyName, state.sector && state.sector.id);
     engine.state = state;
+    engine.recalculate(); // re-reads the week's target from this page's (possibly other-language) data
     return engine;
   }
 
@@ -242,6 +255,22 @@ function (g, r, i, a, m, _e, d) {
     }, [S]);
 
     React.useEffect(() => () => toastTimer.current && clearTimeout(toastTimer.current), []);
+
+    // Came here from the language switch: jump straight back into the saved game.
+    React.useEffect(() => {
+      try {
+        if (!window.sessionStorage.getItem(RESUME_KEY)) return;
+        window.sessionStorage.removeItem(RESUME_KEY);
+      } catch (err) {
+        return;
+      }
+      const sv = readSave();
+      if (!sv) return;
+      const eng = restoreEngine(sv.state);
+      ensureFeatureState(eng.state);
+      setEngine(eng);
+      setS({ ...eng.state });
+    }, []);
 
     // XP can arrive from anywhere (targets, inbox, dilemmas); level up as soon as it does.
     React.useEffect(() => {
@@ -985,6 +1014,7 @@ function (g, r, i, a, m, _e, d) {
             }),
             jsx(View, { style: st.stagePill, children: jsx(Text, { style: st.stagePillTxt, children: stageName }) }),
             jsx(View, { style: st.expPill, children: jsx(Text, { style: st.expPillTxt, children: "Lv " + S.level }) }),
+            jsx(Touchable, { style: st.langBtn, onPress: switchLanguage, children: jsx(Text, { style: st.langBtnTxt, children: IS_AR ? "EN" : "\u0639\u0631\u0628\u064a" }) }),
           ],
         }),
         tab !== "hq" && hud,
@@ -1075,6 +1105,8 @@ function (g, r, i, a, m, _e, d) {
     weekLine: { fontFamily: "Archivo_500Medium", fontSize: 12, color: COLOR.text3, marginTop: 2 },
     stagePill: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: "#1d2733", borderWidth: 1, borderColor: "#2b3a4c" },
     stagePillTxt: { fontFamily: "AzeretMono_500Medium", fontSize: 10.5, color: COLOR.act },
+    langBtn: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5, minHeight: 28, justifyContent: "center", backgroundColor: COLOR.panel2, borderWidth: 1, borderColor: COLOR.lineHot },
+    langBtnTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 12, color: COLOR.text },
     expPill: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: "#211c0c", borderWidth: 1, borderColor: "#4a3d10" },
     expPillTxt: { fontFamily: "AzeretMono_500Medium", fontSize: 10.5, color: COLOR.gold },
     hud: { flexDirection: "row", gap: 6, paddingHorizontal: 10, paddingBottom: 10, overflow: "hidden" },
