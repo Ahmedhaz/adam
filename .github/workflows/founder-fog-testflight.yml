@@ -16,6 +16,7 @@ on:
     paths:
       - 'founder-fog/**'
       - 'founder-fog-app/**'
+      - '.github/workflows/founder-fog-testflight.yml'
 
 concurrency:
   group: founder-fog-testflight
@@ -23,7 +24,7 @@ concurrency:
 
 jobs:
   testflight:
-    runs-on: macos-15
+    runs-on: macos-26
     defaults:
       run:
         working-directory: founder-fog-app
@@ -46,6 +47,16 @@ jobs:
           fi
 
       - uses: actions/checkout@v4
+
+      # App Store Connect only accepts builds made with the iOS 26 SDK (Xcode 26+).
+      - name: Select Xcode 26
+        working-directory: .
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | grep -v -i beta | sort -V | tail -1)
+          [ -n "$XCODE" ] || XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$XCODE" ]; then echo "::error::No Xcode 26 on this runner"; ls -d /Applications/Xcode*; exit 1; fi
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
 
       - uses: actions/setup-node@v4
         with:
