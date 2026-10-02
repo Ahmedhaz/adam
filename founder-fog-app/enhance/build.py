@@ -36,9 +36,14 @@ ENGINE_PATCHES = [
         "founder stress: clarity drains every week, faster when runway is short or the team is unhappy, so the fog actually rolls in",
         "this.state.cac=Math.max(s,this.state.cac*p),this.applyMoraleAttrition(),",
         "this.state.cac=Math.max(s,this.state.cac*p),"
-        "this.state.mentalClarity=Math.max(0,this.state.mentalClarity-(2+(parseFloat(this.state.runwayMonths)<6?2:0)"
+        "this.state.mentalClarity=Math.max(0,this.state.mentalClarity-(((this.state.perks||[]).includes(\"stoic\")?1:2)+(parseFloat(this.state.runwayMonths)<6?2:0)"
         "+(parseFloat(this.state.runwayMonths)<3?2:0)+(this.state.teamMorale<40?1:0))),"
         "this.applyMoraleAttrition(),",
+    ),
+    (
+        "Magnetic perk: relationships decay half as fast",
+        "health:Math.max(0,e.health-2)",
+        'health:Math.max(0,e.health-((this.state.perks||[]).includes("magnetic")?1:2))',
     ),
 ]
 
@@ -122,6 +127,8 @@ def main():
     # 1. swap whole modules for the rewritten screens
     for mod_id, fname in MODULES.items():
         code = (HERE / fname).read_text(encoding="utf-8")
+        # "// @include other.js" inlines a sibling file into the module scope
+        code = re.sub(r"^// @include (\S+)$", lambda inc: (HERE / inc.group(1)).read_text(encoding="utf-8"), code, flags=re.M)
         code = code[code.index("function ("):].strip()
         end_marker = "},%d,[" % mod_id
         start = bundle.rindex("__d(function(", 0, bundle.index(end_marker))

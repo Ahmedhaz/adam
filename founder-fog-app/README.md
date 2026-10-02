@@ -41,6 +41,8 @@ any repo. Enhancements are applied on top of it:
 
 - `enhance/App.js` replaces the game shell and HQ screen (Metro module 144)
 - `enhance/Onboarding.js` replaces the title screen and new-company setup (module 265)
+- `enhance/features.js` holds the added gameplay systems; App.js pulls it in
+  with `// @include features.js`
 - `enhance/build.py` applies small patches to the game engine and wraps the
   page for mobile (PWA head, safe areas)
 
@@ -63,6 +65,15 @@ cd founder-fog-app && npx cap sync         # copy into the native projects
   and a vignette around the screen that thicken as clarity drops
 - Icon tab bar with attention dots, a pulsing *End week* button when there's
   nothing left to do, and motion that respects reduced-motion settings
+
+### Gameplay systems (v3)
+- **Inbox:** 1–2 short messages every week (customers, co-founder, investors,
+  family). Swipe or tap to decide; some messages punish being ignored
+- **Fundraising:** pitch an angel, seed fund or top-tier VC. Answer three
+  questions scored against your real numbers, then sign the term sheet or
+  push for 30% more. Costs equity and your weekly action; one round per stage
+- **Founder levels:** XP now levels you up; pick one of three perks each level
+- **Target streaks:** consecutive weekly targets pay cash and clarity bonuses
 
 ### What the enhanced version changes
 - **Autosave:** progress is saved after every move; on launch you get

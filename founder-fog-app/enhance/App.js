@@ -111,6 +111,9 @@ function (g, r, i, a, m, _e, d) {
     arpu: ["ARPU", "$"],
     cac: ["CAC", "$"],
     founderExp: ["EXP", ""],
+    valuation: ["Valuation", "$"],
+    equity: ["Equity", "%"],
+    baseBurn: ["Burn", "$"],
   };
 
   function effectChips(effects) {
@@ -180,8 +183,11 @@ function (g, r, i, a, m, _e, d) {
       stage: s.stage,
       badges: (s.unlockedBadges || []).length,
       slotUsed: s.slotUsed,
+      streak: s.streak || 0,
     };
   }
+
+// @include features.js
 
   function buildReport(before, after) {
     const rows = [
@@ -198,7 +204,11 @@ function (g, r, i, a, m, _e, d) {
     if (parseFloat(after.runwayMonths) < 3) notes.push(["⏳", "Under 3 months of runway. Cut burn or bring in cash.", -1]);
     if (!before.slotUsed) notes.push(["⚡", "You didn't use last week's personal action.", 0]);
     if (after.pendingEvent) notes.push(["⚖️", "A decision is waiting for you.", 0]);
+    if (after.inbox && after.inbox.length) notes.push(["📨", after.inbox.length + " new message" + (after.inbox.length > 1 ? "s" : "") + " in your inbox.", 0]);
     return { week: before.week, rows: rows, notes: notes, quest: after.currentTarget && after.currentTarget.title, nextWeek: after.week };
+  }
+  function addNote(report, note) {
+    report.notes.unshift(note);
   }
 
   function App() {
@@ -216,7 +226,9 @@ function (g, r, i, a, m, _e, d) {
       [guideOpen, setGuideOpen] = React.useState(false),
       [saved, setSaved] = React.useState(readSave),
       [toast, setToast] = React.useState(null),
-      [report, setReport] = React.useState(null);
+      [report, setReport] = React.useState(null),
+      [inboxOpen, setInboxOpen] = React.useState(false),
+      [pitchOpen, setPitchOpen] = React.useState(false);
     const toastTimer = React.useRef(null);
 
     React.useEffect(() => {
@@ -226,6 +238,11 @@ function (g, r, i, a, m, _e, d) {
     }, [S]);
 
     React.useEffect(() => () => toastTimer.current && clearTimeout(toastTimer.current), []);
+
+    // XP can arrive from anywhere (targets, inbox, dilemmas); level up as soon as it does.
+    React.useEffect(() => {
+      if (engine && S && !S.gameOver && !S.victory && checkLevelUp(engine.state)) setS({ ...engine.state });
+    }, [S]);
 
     const notify = (text, kind) => {
       toastTimer.current && clearTimeout(toastTimer.current);
@@ -256,6 +273,8 @@ function (g, r, i, a, m, _e, d) {
 
     const start = ({ founderName, companyName, sectorId }) => {
       const eng = new Engine.StartupEngine(founderName, companyName, sectorId);
+      ensureFeatureState(eng.state);
+      dealInbox(eng.state, 1);
       clearSave();
       setSaved(null);
       setEngine(eng);
@@ -266,6 +285,7 @@ function (g, r, i, a, m, _e, d) {
     const resume = () => {
       if (!saved) return;
       const eng = restoreEngine(saved.state);
+      ensureFeatureState(eng.state);
       setEngine(eng);
       setS({ ...eng.state });
       setTab("HQ");
@@ -322,12 +342,76 @@ function (g, r, i, a, m, _e, d) {
 
     const advance = () => {
       const before = snapshot(S);
+      const hitTarget = targetDone;
+      const ignored = expireInbox(engine);
+      if (engine.state.gameOver || engine.state.victory) return setS({ ...engine.state });
       const next = engine.advanceWeek();
+      ensureFeatureState(next);
+      // streaks: consecutive weekly targets pay out
+      let streakNote = null;
+      if (hitTarget) {
+        next.streak += 1;
+        next.bestStreak = Math.max(next.bestStreak, next.streak);
+        const bonus = streakReward(next.streak);
+        if (bonus) {
+          next.cash += bonus.cash || 0;
+          if (bonus.clarity) next.mentalClarity = Math.min(100, next.mentalClarity + bonus.clarity);
+          engine.addLog("🔥 " + next.streak + "-week streak", "You hit " + next.streak + " weekly targets in a row. Bonus: " + bonus.text + ".", "mentor");
+          streakNote = ["🔥", next.streak + "-week streak! Bonus " + bonus.text + ".", 1];
+        } else streakNote = ["🔥", next.streak + "-week target streak. Keep it going.", 1];
+      } else if (before.streak > 0) {
+        streakNote = ["🧊", "Streak lost at " + before.streak + ". You missed last week's target.", -1];
+        next.streak = 0;
+      }
+      dealInbox(next, next.pendingEvent ? 1 : 2);
+      engine.recalculate();
       setS({ ...next });
       buzz(12);
       if (next.gameOver || next.victory) return;
-      setReport(buildReport(before, next));
+      const rep = buildReport(before, next);
+      if (ignored) addNote(rep, ["📭", ignored + " message" + (ignored > 1 ? "s" : "") + " went unanswered" + (has(next, "delegator") ? " (Delegator: no harm done)." : "."), -1]);
+      if (streakNote) addNote(rep, streakNote);
+      setReport(rep);
       setTab("HQ");
+    };
+
+    const chooseMail = (card, side) => {
+      const s = engine.state;
+      s.inbox = s.inbox.filter((m) => m.id !== card.id);
+      const next = applyEffects(engine, card.title, card[side].label, fx(card[side], s), card[side].log);
+      setS({ ...next });
+      buzz(12);
+      notify(card[side].log, "info");
+      if (!next.inbox.length) setInboxOpen(false);
+    };
+    const pickPerk = (p) => {
+      const s = engine.state;
+      p.apply && p.apply(s);
+      s.perks.push(p.id);
+      s.level += 1;
+      s.perkChoice = null;
+      engine.addLog("⭐ Level " + s.level + ": " + p.name, p.desc, "mentor");
+      setS({ ...engine.recalculate() });
+      buzz(20);
+      notify(p.icon + " " + p.name + " unlocked", "ok");
+    };
+    const roundName = ROUND_NAMES[S.stage] || "Growth";
+    const pitchDone = (title, effects, log) => {
+      const s = engine.state;
+      s.slotUsed = true;
+      s.lastPitchWeek = s.week;
+      setS({ ...applyEffects(engine, title, "Pitch", effects, log) });
+    };
+    const signRound = (inv, sheet, negotiated) => {
+      const s = engine.state;
+      s.equity = s.equity * (1 - sheet.pct);
+      s.valuation = Math.max(s.valuation, sheet.post);
+      s.rounds.push({ week: s.week, stage: s.stage, name: roundName, amount: sheet.amount, pct: sheet.pct, investor: inv.name });
+      pitchDone(
+        "💼 Closed a " + roundName + " round",
+        { cash: sheet.amount, investorTrust: 10, founderExp: 120 },
+        inv.name + " invested " + money(sheet.amount) + " for " + Math.round(sheet.pct * 100) + "%" + (negotiated ? " after you pushed for more" : "") + ". You now own " + s.equity.toFixed(1) + "%.",
+      );
     };
 
     // ---------- pieces ----------
@@ -384,6 +468,7 @@ function (g, r, i, a, m, _e, d) {
               children: [
                 jsx(Text, { style: st.kicker, children: "IN THE BANK" }),
                 jsx(Text, { style: [st.heroCash, { opacity: fogOp }], children: ft(money(S.cash), "cashBig") }),
+                jsx(Text, { style: st.heroEquity, children: "you own " + (S.equity == null ? 100 : S.equity).toFixed(S.equity < 100 ? 1 : 0) + "%" }),
               ],
             }),
           ],
@@ -429,6 +514,26 @@ function (g, r, i, a, m, _e, d) {
       ],
     });
 
+    const lvlFrom = xpForLevel(S.level),
+      lvlTo = xpForLevel(S.level + 1);
+    const levelRow = jsxs(View, {
+      style: st.levelRow,
+      children: [
+        jsxs(View, {
+          style: st.rowBetween,
+          children: [
+            jsx(Text, { style: st.kicker, children: "FOUNDER LEVEL " + S.level }),
+            jsx(Text, { style: [st.kicker, { color: COLOR.gold }], children: S.founderExp + " / " + lvlTo + " XP" }),
+          ],
+        }),
+        jsx(View, { style: st.levelTrack, children: jsx(View, { style: [st.levelFill, { width: clamp(((S.founderExp - lvlFrom) / Math.max(1, lvlTo - lvlFrom)) * 100, 2, 100) + "%" }] }) }),
+        jsx(Text, {
+          style: st.levelPerks,
+          children: (S.perks || []).length ? "Perks: " + S.perks.map((id) => { const p = PERKS.find((x) => x.id === id); return p ? p.icon + " " + p.name : ""; }).join("  ·  ") : "Level up to unlock a perk.",
+        }),
+      ],
+    });
+
     const milestone = nextStage
       ? jsxs(View, {
           style: st.card,
@@ -447,6 +552,7 @@ function (g, r, i, a, m, _e, d) {
               children: jsx(View, { style: [st.goalFill, { width: Math.max(2, Math.min(100, (S.monthlyRevenue / nextStage.mrr) * 100)) + "%" }] }),
             }),
             jsx(Text, { style: st.cardSub, children: ft(money(S.monthlyRevenue), "mrr2") + " of " + money(nextStage.mrr) + " · valuation re-rates to " + compact(nextStage.valuation) }),
+            levelRow,
           ],
         })
       : null;
@@ -461,7 +567,9 @@ function (g, r, i, a, m, _e, d) {
             style: st.rowBetween,
             children: [
               jsx(Text, { style: [st.kicker, { color: targetDone ? COLOR.vital : COLOR.accent }], children: targetDone ? "✓ WEEKLY TARGET DONE" : "🎯 WEEKLY TARGET" }),
-              jsx(Chips, { items: [{ text: "+" + (target.reward_exp || 50) + " EXP", tone: 2 }].concat(target.reward_cash ? [{ text: "+" + money(target.reward_cash), tone: 1 }] : []) }),
+              jsx(Chips, {
+                items: (S.streak ? [{ text: "🔥 " + S.streak, tone: 1 }] : []).concat([{ text: "+" + (target.reward_exp || 50) + " EXP", tone: 2 }]).concat(target.reward_cash ? [{ text: "+" + money(target.reward_cash), tone: 1 }] : []),
+              }),
             ],
           }),
           jsx(Text, { style: st.cardTitle, children: questTitle(target.title) }),
@@ -512,6 +620,27 @@ function (g, r, i, a, m, _e, d) {
               style: st.actionBtn,
               onPress: () => setTab("Relationships"),
               children: jsx(Text, { style: st.actionBtnTxt, children: "🤝 Circle" + (weakTie ? " · !" : "") }),
+            }),
+          ],
+        }),
+        jsxs(Touchable, {
+          style: [st.pitchBtn, !canPitch(S) && st.pitchBtnOff],
+          disabled: !canPitch(S),
+          activeOpacity: 0.85,
+          onPress: () => setPitchOpen(true),
+          children: [
+            jsx(Text, { style: [st.pitchTxt, !canPitch(S) && { color: COLOR.text3 }], children: "💼 " + (raisedThisStage(S) ? roundName + " round raised ✓" : "Pitch investors · " + roundName + " round") }),
+            jsx(Text, {
+              style: st.pitchSub,
+              children: canPitch(S)
+                ? "Raise cash for equity. Uses your action."
+                : raisedThisStage(S)
+                  ? "Round closed. Next round opens at " + (nextStage ? money(nextStage.mrr) + " MRR" : "the next stage")
+                  : S.week < 3
+                    ? "Opens in week 3"
+                    : S.slotUsed
+                      ? "Needs this week's action"
+                      : "Investors will take a meeting in " + pitchCooldown(S) + " wk",
             }),
           ],
         }),
@@ -567,6 +696,28 @@ function (g, r, i, a, m, _e, d) {
               children: [jsx(Text, { style: st.fogBannerTxt, children: Fog.fogNotice(S.mentalClarity) }), jsx(Text, { style: st.fogBannerCta, children: "Rest ▸" })],
             },
             "fogb",
+          ),
+        S.inbox && S.inbox.length > 0 &&
+          jsxs(
+            Touchable,
+            {
+              style: st.inboxCard,
+              activeOpacity: 0.85,
+              dataSet: { ff: "rise2" },
+              onPress: () => setInboxOpen(true),
+              children: [
+                jsx(Text, { style: st.inboxIcon, children: "📨" }),
+                jsxs(View, {
+                  style: { flex: 1 },
+                  children: [
+                    jsx(Text, { style: [st.kicker, { color: "#c9b48f" }], children: S.inbox.length + " MESSAGE" + (S.inbox.length > 1 ? "S" : "") + " · ANSWER BEFORE WEEK ENDS" }),
+                    jsx(Text, { style: st.inboxTitle, numberOfLines: 1, children: (cardById(S.inbox[0].id) || {}).title }),
+                  ],
+                }),
+                jsx(Text, { style: st.inboxArrow, children: "▸" }),
+              ],
+            },
+            "inbox",
           ),
         jsx(React.Fragment, { children: quest }, "quest"),
         jsx(React.Fragment, { children: actionCard }, "action"),
@@ -829,7 +980,7 @@ function (g, r, i, a, m, _e, d) {
               ],
             }),
             jsx(View, { style: st.stagePill, children: jsx(Text, { style: st.stagePillTxt, children: stageName }) }),
-            jsx(View, { style: st.expPill, children: jsx(Text, { style: st.expPillTxt, children: S.founderExp + " XP" }) }),
+            jsx(View, { style: st.expPill, children: jsx(Text, { style: st.expPillTxt, children: "Lv " + S.level }) }),
           ],
         }),
         tab !== "HQ" && hud,
@@ -840,13 +991,13 @@ function (g, r, i, a, m, _e, d) {
             jsx(Text, {
               style: [st.endHint, { color: allDone ? COLOR.vital : COLOR.text3 }],
               numberOfLines: 1,
-              children: allDone ? "All set for this week" : [!targetDone && guide ? "target open" : null, !S.slotUsed ? "action unused" : null].filter(Boolean).join(" · "),
+              children: allDone && !(S.inbox || []).length ? "All set for this week" : [S.inbox && S.inbox.length ? S.inbox.length + " unread" : null, !targetDone && guide ? "target open" : null, !S.slotUsed ? "action unused" : null].filter(Boolean).join(" · "),
             }),
             jsx(Touchable, {
               style: st.endBtn,
               onPress: advance,
               activeOpacity: 0.85,
-              dataSet: allDone ? { ff: "pulse" } : undefined,
+              dataSet: allDone && !(S.inbox || []).length ? { ff: "pulse" } : undefined,
               children: jsx(Text, { style: st.endBtnTxt, children: "End week " + S.week + " ▸" }),
             }),
           ],
@@ -855,7 +1006,7 @@ function (g, r, i, a, m, _e, d) {
           style: st.nav,
           children: TABS.map((t) => {
             const on = tab === t.key || (t.key === "HQ" && tab === "Assets");
-            const dot = (t.key === "Activities" && !S.slotUsed) || (t.key === "Relationships" && weakTie);
+            const dot = (t.key === "Activities" && !S.slotUsed) || (t.key === "Relationships" && weakTie) || (t.key === "HQ" && S.inbox && S.inbox.length > 0 && tab !== "HQ");
             return jsxs(
               Touchable,
               {
@@ -892,6 +1043,16 @@ function (g, r, i, a, m, _e, d) {
         reportModal,
         dilemmaModal,
         guideModal,
+        S.perkChoice && !report && !S.pendingEvent && jsx(PerkModal, { S: S, onPick: pickPerk }),
+        inboxOpen && !report && !S.pendingEvent && !S.perkChoice && jsx(InboxModal, { S: S, onChoose: chooseMail, onClose: () => setInboxOpen(false) }),
+        pitchOpen &&
+          jsx(PitchModal, {
+            S: S,
+            onClose: () => setPitchOpen(false),
+            onSign: signRound,
+            onFail: () => pitchDone("💼 Pitch went nowhere", { investorTrust: -8, mentalClarity: -5 }, "They passed. “Come back when the numbers say it for you.”"),
+            onWalk: () => pitchDone("💼 Investor walked", { investorTrust: -5, mentalClarity: -3 }, "You pushed for more and they walked."),
+          }),
       ],
     });
   }
@@ -926,6 +1087,7 @@ function (g, r, i, a, m, _e, d) {
     heroTop: { flexDirection: "row", alignItems: "flex-end", gap: 12 },
     heroBig: { fontFamily: "AzeretMono_600SemiBold", fontSize: 40, letterSpacing: -2, marginTop: 2 },
     heroUnit: { fontFamily: "Archivo_500Medium", fontSize: 14, letterSpacing: 0, color: COLOR.text2 },
+    heroEquity: { fontFamily: "AzeretMono_500Medium", fontSize: 10.5, color: COLOR.gold, marginTop: 4, textAlign: "right" },
     heroCash: { fontFamily: "AzeretMono_600SemiBold", fontSize: 20, letterSpacing: -0.6, color: COLOR.text, marginTop: 4 },
     pips: { flexDirection: "row", gap: 4, marginTop: 14 },
     pip: { flex: 1, height: 8, borderRadius: 3, backgroundColor: COLOR.panel2 },
@@ -947,6 +1109,18 @@ function (g, r, i, a, m, _e, d) {
     card: card,
     cardTitle: { fontFamily: "Archivo_600SemiBold", fontSize: 17, letterSpacing: -0.3, color: COLOR.text, marginTop: 8 },
     cardSub: { fontFamily: "Archivo_400Regular", fontSize: 13, lineHeight: 19, color: COLOR.text2, marginTop: 6 },
+    levelRow: { borderTopWidth: 1, borderTopColor: COLOR.line, marginTop: 14, paddingTop: 12 },
+    levelTrack: { height: 6, borderRadius: 3, backgroundColor: COLOR.panel2, marginTop: 8, overflow: "hidden" },
+    levelFill: { height: "100%", borderRadius: 3, backgroundColor: "#a77bf3" },
+    levelPerks: { fontFamily: "Archivo_500Medium", fontSize: 12, color: COLOR.text2, marginTop: 8 },
+    pitchBtn: { marginTop: 8, borderRadius: 12, padding: 12, backgroundColor: "#16233a", borderWidth: 1, borderColor: "#2b4a7a" },
+    pitchBtnOff: { backgroundColor: COLOR.panel2, borderColor: COLOR.line },
+    pitchTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 13.5, color: COLOR.text },
+    pitchSub: { fontFamily: "Archivo_400Regular", fontSize: 11.5, color: COLOR.text3, marginTop: 3 },
+    inboxCard: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#2a2419", borderRadius: 18, padding: 14, borderWidth: 1, borderColor: "#5c4d30" },
+    inboxIcon: { fontSize: 26 },
+    inboxTitle: { fontFamily: "Archivo_600SemiBold", fontSize: 15, color: "#f1ece2", marginTop: 4 },
+    inboxArrow: { color: "#c9b48f", fontSize: 20 },
     goalTrack: { height: 10, borderRadius: 5, backgroundColor: COLOR.panel2, marginTop: 12, overflow: "hidden" },
     goalFill: { height: "100%", borderRadius: 5, backgroundColor: COLOR.gold },
     quest: { borderColor: "#5a2a20", backgroundColor: "#1a1716" },
