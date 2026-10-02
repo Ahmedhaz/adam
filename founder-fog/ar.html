@@ -1679,6 +1679,446 @@ __d(function (g, r, i, a, m, _e, d) {
     btnTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 15, color: "#fff" },
   });
 
+  // ================================================================ market
+  // Phase 2 of the content plan: learn first, scale second.
+  //   * product-market fit (0-100) multiplies every revenue gain, pulls churn
+  //     towards its own level and, above 60, adds word of mouth
+  //   * PMF starts hidden: talking to customers reveals it and deals insight
+  //     cards; building on an insight raises it, building on a hunch is a gamble
+  //   * experiments test one hypothesis a week; a matching insight improves the odds
+  //   * pivot: a new PMF roll for a big cut in revenue and clarity
+  //   * competitors grow and act: copy features, raise rounds, cut prices
+  //   * sector rules: fintech licence, marketplace liquidity, edtech seasons,
+  //     health trust, SaaS retention
+  // Engine methods (talkToCustomers, runExperiment, buildProduct, pivot) are
+  // added to StartupEngine so the UI and the balance bot use the same code.
+  // shares App's scope (see economy.js) plus economy's helpers.
+
+  const INSIGHTS = [
+    { area: "onboarding", text: "المستخدمون يحبون المنتج بعد إعداده، لكن نصفهم ينسحب أثناء التهيئة." },
+    { area: "onboarding", text: "لا أحد يشاهد الشرح. يريدون مثالًا يعمل خلال دقيقتين." },
+    { area: "onboarding", text: "العملاء لا يعرفون ماذا يفعلون في اليوم الثاني. أعطهم سببًا للعودة." },
+    { area: "pricing", text: "السعر ليس المشكلة. العملاء لا يفهمون ما تتضمنه كل باقة." },
+    { area: "pricing", text: "أفضل عملائك سيدفعون الضعف مقابل باقة سنوية مع دعم ذي أولوية." },
+    { area: "feature", text: "المستخدمون يحبون زر التصدير ويتجاهلون لوحة التحكم التي قضيت شهرًا عليها." },
+    { area: "feature", text: "ثلاثة عملاء صنعوا نفس الحل البديل في جدول بيانات. هذه ميزتك القادمة." },
+    { area: "feature", text: "الميزة التي يطلبها الجميع ليست ما سيدفعون مقابله. السرعة هي ذلك." },
+    { area: "channel", text: "معظم أفضل مستخدميك جاؤوا من مجتمع إلكتروني واحد، لا من الإعلانات." },
+    { area: "channel", text: "وجدك العملاء عبر توصية شريك. لم يضغط أحد على إعلان." },
+    { area: "support", text: "الناس يبقون لأن أحدًا ردّ عليهم بسرعة. الدعم جزء من المنتج." },
+    { area: "support", text: "المستخدمون يرحلون بصمت بعد أول خلل. لا يبلّغون عنه أبدًا." },
+  ];
+  const AREAS = {
+    onboarding: { icon: "🧩", name: "التهيئة" },
+    pricing: { icon: "🏷️", name: "التسعير" },
+    feature: { icon: "🛠️", name: "المنتج" },
+    channel: { icon: "📡", name: "قناة الوصول" },
+    support: { icon: "🫶", name: "الدعم" },
+  };
+  const BUILD = {
+    onboarding: { pmf: 10, apply: (s) => (s.churnRate = Math.max(0.5, s.churnRate - 0.8)), text: "أعدت بناء التهيئة حول ما قاله العملاء. التسرّب ⁦−0.8%⁩." },
+    pricing: { pmf: 6, apply: (s) => (s.arpu += 4), text: "أعدت تغليف الباقات بالطريقة التي يفكر بها العملاء. الإيراد لكل مستخدم ⁦+$4.⁩" },
+    feature: { pmf: 12, apply: (s) => (s.techDebt = Math.min(100, s.techDebt + 4)), text: "بنيت بالضبط ما كان العملاء يرقّعونه بأنفسهم. الدين التقني ⁦+4.⁩" },
+    channel: { pmf: 5, apply: (s) => (s.cac = Math.max(10, s.cac * 0.85)), text: "ضاعفت الرهان على القناة التي جاء منها أفضل مستخدميك. تكلفة الاستحواذ ⁦−15%⁩." },
+    support: { pmf: 7, apply: (s) => (s.churnRate = Math.max(0.5, s.churnRate - 1)), text: "الدعم السريع والإنساني صار جزءًا من المنتج. التسرّب ⁦−1%⁩." },
+  };
+  const EXPERIMENTS = [
+    { id: "x_price", area: "pricing", title: "اختبر سعرًا أعلى على المشتركين الجدد", win: (s) => ((s.arpu += 5), 3), winText: "المشتركون الجدد دفعوا أكثر دون تردد. الإيراد لكل مستخدم ⁦+$5.⁩", lose: (s) => ((s.churnRate += 0.5), 0), loseText: "انخفض الاشتراك. السعر لم يكن المفتاح. التسرّب ⁦+0.5%⁩." },
+    { id: "x_channel", area: "channel", title: "جرّب قناة جديدة لمدة أسبوعين", win: (s) => ((s.cac = Math.max(10, s.cac * 0.8)), 2), winText: "القناة الجديدة تحقق تحويلًا. تكلفة الاستحواذ ⁦−20%⁩.", lose: () => 0, loseText: "لم يكن أحد هناك يبحث عنك. مال أُنفق ودرس تعلّمته." },
+    { id: "x_fake", area: "feature", title: "اختبر ميزة جديدة بـ«باب وهمي»", win: () => 6, winText: "المئات ضغطوا زر ميزة لم تُبنَ بعد. ابنِها.", lose: () => 1, loseText: "لم يضغط أحد تقريبًا. جيد أنك لم تبنِها." },
+    { id: "x_onb", area: "onboarding", title: "أعد كتابة التهيئة لدفعة واحدة", win: (s) => ((s.churnRate = Math.max(0.5, s.churnRate - 1)), 4), winText: "تلك الدفعة بقيت. عمّمتها على الجميع: التسرّب ⁦−1%⁩.", lose: () => 0, loseText: "لا فرق. التهيئة لم تكن حيث يعلق الناس." },
+    { id: "x_conc", area: "support", title: "دعم شخصي لـ10 عملاء", win: (s) => ((s.churnRate = Math.max(0.5, s.churnRate - 0.8)), 4), winText: "الدعم الشخصي حوّل 10 مستخدمين إلى معجبين. التسرّب ⁦−0.8%⁩.", lose: () => 1, loseText: "كانوا مهذبين، لكن لم يتغير شيء." },
+  ];
+  const EXPERIMENT_COST = 1500;
+
+  const STYLES = {
+    copycat: { icon: "🕵️", name: "مقلِّد", growth: 0.02 },
+    funded: { icon: "🦈", name: "ممول بسخاء", growth: 0.025 },
+    cheap: { icon: "🏷️", name: "رخيص", growth: 0.015 },
+  };
+  const RIVALS = {
+    saas_ai: [["Flowly", "copycat"], ["Nimbus AI", "funded"], ["Taskr", "cheap"]],
+    fintech: [["PayNest", "copycat"], ["Dinar Labs", "funded"], ["Sahm Pay", "cheap"]],
+    ecommerce_marketplace: [["Bazaarist", "copycat"], ["Souqly", "funded"], ["DealDrop", "cheap"]],
+    healthtech: [["Dr. Now", "copycat"], ["CareLink", "funded"], ["Shifa Go", "cheap"]],
+    edtech: [["CodeCamp+", "copycat"], ["SkillUp Arabia", "funded"], ["LearnLite", "cheap"]],
+  };
+  // one line per sector, shown on the sector picker
+  const SECTOR_RULES = {
+    saas_ai: "العملاء يبقون أطول هنا: التسرّب يستقر أقل بـ⁦1%⁩.",
+    fintech: "لا نمو حقيقي قبل ترخيص البنك المركزي (الأسابيع 8–14). الامتثال يكلف ⁦$800⁩ شهريًا.",
+    ecommerce_marketplace: "البيضة والدجاجة: النمو بطيء حتى ⁦$5k⁩ إيراد شهري، ثم يبدأ أثر الشبكة.",
+    healthtech: "الثقة تُبنى ببطء: النمو أبطأ بـ⁦15%⁩، والتسرّب يستقر أقل بـ⁦1.5%⁩.",
+    edtech: "مواسم: أسابيع العودة للمدارس تنمو أسرع بـ⁦40%⁩، والصيف أبطأ بـ⁦30%⁩. التسرّب يستقر أعلى بـ⁦1%⁩.",
+  };
+
+  function ensureMarket(s) {
+    if (s.mkt) return s.mkt;
+    const sid = (s.sector && s.sector.id) || "saas_ai";
+    const base = rand(12, 30);
+    s.mkt = {
+      base: base, // where fit settles if you stop learning
+      pmf: base,
+      seen: null, // { week, value } of the last customer talks
+      talkWeek: 0,
+      expWeek: 0,
+      insights: [],
+      used: [],
+      pivots: 0,
+      licensed: sid !== "fintech",
+      licenceWeek: sid === "fintech" ? rand(8, 14) : 0,
+      rivals: (RIVALS[sid] || RIVALS.saas_ai).map(([name, style]) => ({ name: name, style: style, rev: rand(3, 15) * 1000 })),
+      nextRival: s.week + rand(7, 11),
+      notes: [],
+    };
+    if (sid === "fintech") s.baseBurn += 800;
+    return s.mkt;
+  }
+
+  // how much of any revenue gain actually lands
+  function growthMult(s) {
+    const m = ensureMarket(s),
+      sid = s.sector && s.sector.id,
+      wk = s.week % 52;
+    let mult = clamp(0.25 + m.pmf / 50, 0.25, 2);
+    if (sid === "fintech" && !m.licensed) mult *= 0.4;
+    if (sid === "ecommerce_marketplace") mult *= s.monthlyRevenue < 5000 ? 0.7 : 1.15;
+    if (sid === "healthtech") mult *= 0.85;
+    if (sid === "edtech") mult *= wk >= 30 && wk <= 40 ? 1.4 : wk >= 20 && wk < 30 ? 0.7 : 1;
+    return mult;
+  }
+  // the closer to full fit, the harder each step: gains shrink as fit grows
+  const gainFit = (m, pts) => {
+    const g = pts > 0 ? Math.max(1, Math.round(pts * (1 - m.pmf / 110))) : pts;
+    m.pmf = clamp(m.pmf + g, 0, 100);
+    return g;
+  };
+  const fitNote = (g) => (g > 0 ? ` التوافق ⁦+${g}⁩.` : g < 0 ? ` التوافق ${g}.` : "");
+  const CHURN_OFFSET = { saas_ai: -1, healthtech: -1.5, edtech: 1, ecommerce_marketplace: 0.5 };
+  const pmfBand = (v) =>
+    v < 25 ? "لا توافق بعد. التسويق يشتري التسرّب غالبًا." : v < 40 ? "بعض المستخدمين يهتمون. اكتشف من هم، ولماذا." : v < 60 ? "توافق مع شريحة محددة. النمو يتراكم من هنا." : "جذب قوي. الكلام المتناقل يقوم بتسويقك.";
+  const share = (s) => {
+    const m = ensureMarket(s),
+      total = s.monthlyRevenue + m.rivals.reduce((a, r) => a + r.rev, 0);
+    return total > 0 ? (s.monthlyRevenue / total) * 100 : 0;
+  };
+
+  function scaleGains(engine, before, isMarketing) {
+    const s = engine.state,
+      d = s.monthlyRevenue - before;
+    if (d > 0) s.monthlyRevenue = Math.round(before + d * growthMult(s));
+    // before fit, paid users don't stick
+    if (isMarketing && ensureMarket(s).pmf < 40) s.churnRate = Math.min(25, s.churnRate + 0.4);
+  }
+
+  function marketWeek(engine) {
+    const s = engine.state,
+      m = ensureMarket(s),
+      note = (icon, text, tone) => m.notes.push([icon, text, tone]);
+    m.notes = [];
+
+    // the market moves on: without learning, fit settles back to the idea's natural level; bugs erode it
+    if (m.base == null) m.base = Math.min(m.pmf, 30);
+    m.pmf = clamp(m.pmf + (m.base - m.pmf) * 0.03 - (s.techDebt > 60 ? 0.5 : 0), 0, 100);
+    // churn drifts towards what this level of fit deserves
+    const target = clamp(11 - m.pmf * 0.09 + (CHURN_OFFSET[s.sector && s.sector.id] || 0), 1.5, 20);
+    s.churnRate = Math.max(0.5, s.churnRate + (target - s.churnRate) * 0.06);
+    // word of mouth
+    if (m.pmf > 60 && s.monthlyRevenue > 0) {
+      const g = (m.pmf - 60) / 2000;
+      s.monthlyRevenue *= 1 + g;
+      s.activeUsers *= 1 + g;
+    }
+
+    // fintech licence
+    if (!m.licensed && s.week >= m.licenceWeek) {
+      m.licensed = true;
+      engine.addLog("🏦 تمت الموافقة على الترخيص", "وافقت البيئة التجريبية للبنك المركزي على ترخيصك. يمكنك أخيرًا ضم العملاء بأقصى سرعة.", "mentor");
+      note("🏦", "تمت الموافقة على الترخيص. النمو لم يعد مقيدًا.", 1);
+    }
+
+    // competitors grow, faster when you're weak
+    m.rivals.forEach((r) => (r.rev *= 1 + STYLES[r.style].growth * (m.pmf > 60 ? 0.5 : 1)));
+    if (s.week >= m.nextRival) {
+      m.nextRival = s.week + rand(7, 11);
+      const r = m.rivals[Math.floor(Math.random() * m.rivals.length)];
+      let text;
+      if (r.style === "copycat") {
+        const hit = m.pmf >= 70 ? 1 : 5;
+        m.pmf = Math.max(0, m.pmf - hit);
+        text = m.pmf >= 70 ? `${r.name} نسخ أفضل ميزاتك. مستخدموك لم يكترثوا: يحبون الأصل.` : `${r.name} نسخ أفضل ميزاتك وباعها بأرخص منك. بعض مستخدميك يجرّبونه.`;
+      } else if (r.style === "funded") {
+        r.rev *= 1.3;
+        s.cac *= 1.2;
+        text = `${r.name} جمع ⁦$20M⁩ ويشتري كل إعلان في سوقك. تكلفة الاستحواذ ⁦+20%⁩.`;
+        const poachable = s.team.filter((x) => x.id !== "emp_founder" && x.id !== "emp_cto");
+        if (poachable.length && Math.random() < 0.4) {
+          const p = poachable.reduce((a, b) => ((b.salary || 0) > (a.salary || 0) ? b : a), poachable[0]);
+          s.team = s.team.filter((x) => x.id !== p.id);
+          s.teamMorale = Math.max(0, s.teamMorale - 6);
+          text += ` واستقطب أيضًا ${p.name} من فريقك.`;
+        }
+      } else {
+        s.churnRate = Math.min(25, s.churnRate + (m.pmf >= 60 ? 0.3 : 1));
+        const why = m.pmf >= 60 ? "معظم مستخدميك بقوا: هم هنا من أجل المنتج." : "المستخدمون الحساسون للسعر يرحلون.";
+        text = `${r.name} خفّض أسعاره إلى النصف. ${why}`;
+      }
+      engine.addLog(STYLES[r.style].icon + " " + r.name, text, "negative");
+      note(STYLES[r.style].icon, text, -1);
+    }
+  }
+
+  (function () {
+    const P = Engine.StartupEngine.prototype;
+    if (P.__market) return;
+    P.__market = true;
+    const wrapGrowth = (name) => {
+      const orig = P[name];
+      P[name] = function (...args) {
+        const before = this.state.monthlyRevenue;
+        const res = orig.apply(this, args);
+        scaleGains(this, before, name === "executeDepartmentAction" && args[1] === "marketing");
+        this.recalculate();
+        return res && res.state ? { ...res, state: this.state } : res;
+      };
+    };
+    ["executeTargetStrategy", "executeDepartmentAction", "executeMoonshotGamble", "resolveEventChoice"].forEach(wrapGrowth);
+    const advance = P.advanceWeek;
+    P.advanceWeek = function () {
+      advance.call(this);
+      if (!this.state.gameOver && !this.state.victory) marketWeek(this);
+      return this.recalculate();
+    };
+
+    const ok = (engine) => ({ success: !0, state: engine.recalculate() });
+    const no = (reason) => ({ success: !1, reason: reason });
+
+    P.talkToCustomers = function () {
+      const s = this.state,
+        m = ensureMarket(s);
+      if (m.talkWeek === s.week) return no("تحدثت إلى العملاء هذا الأسبوع بالفعل.");
+      const first = !m.seen && !m.used.length;
+      m.talkWeek = s.week;
+      m.seen = { week: s.week, value: m.pmf };
+      s.mentalClarity = Math.max(0, s.mentalClarity - 4);
+      const pool = INSIGHTS.filter((x) => !m.used.includes(x.text) && !m.insights.some((y) => y.text === x.text));
+      const card = first || Math.random() < 0.6 ? pool[Math.floor(Math.random() * pool.length)] : null;
+      if (card) m.insights = m.insights.concat([card]).slice(-4);
+      const heard = card ? "شيء واحد لفت الانتباه: “" + card.text + "”" : "لا جديد هذه المرة. ملاحظات مجاملة في الغالب.";
+      this.addLog("🔍 تحدثت إلى 5 عملاء", `نحو ⁦${Math.round(m.pmf / 5) * 5}%⁩ سيخيب أملهم كثيرًا بدونك. ${heard}`, "mentor");
+      return ok(this);
+    };
+
+    P.buildProduct = function (idx) {
+      const s = this.state,
+        m = ensureMarket(s);
+      if (s.slotUsed) return no("البناء يأخذ إجراء هذا الأسبوع، وقد استُخدم بالفعل.");
+      s.slotUsed = !0;
+      const card = idx == null ? null : m.insights[idx];
+      if (card) {
+        const b = BUILD[card.area];
+        m.insights = m.insights.filter((_, i) => i !== idx);
+        m.used.push(card.text);
+        const g = gainFit(m, b.pmf);
+        b.apply(s);
+        this.addLog(AREAS[card.area].icon + " بنيت على رؤية من العملاء", b.text + fitNote(g), "mentor");
+      } else {
+        const d = gainFit(m, rand(-3, 4));
+        s.techDebt = Math.min(100, s.techDebt + 4);
+        this.addLog("💡 بنيت ما تؤمن به", (d > 0 ? "أعجب بعض المستخدمين. يصعب معرفة السبب." : "لم يستخدمه أحد. بدا بديهيًا جدًا تحت الدش.") + fitNote(d), d > 0 ? "mentor" : "negative");
+      }
+      return ok(this);
+    };
+
+    P.runExperiment = function (id) {
+      const s = this.state,
+        m = ensureMarket(s),
+        x = EXPERIMENTS.find((e) => e.id === id);
+      if (!x) return no("التجربة غير موجودة.");
+      if (m.expWeek === s.week) return no("تجربة واحدة في الأسبوع. دع هذه تأخذ وقتها.");
+      if (s.cash < EXPERIMENT_COST) return no("التجارب تكلف ⁦$1,500.⁩");
+      m.expWeek = s.week;
+      s.cash -= EXPERIMENT_COST;
+      const informed = m.insights.some((c) => c.area === x.area);
+      const win = Math.random() < (informed ? 0.75 : 0.35);
+      const g = gainFit(m, win ? x.win(s) : x.lose(s));
+      const text = (win ? x.winText : x.loseText) + fitNote(g);
+      this.addLog((win ? "🧪 نجحت التجربة: " : "🧪 فشلت التجربة: ") + x.title, text, win ? "mentor" : "negative");
+      return { ...ok(this), win: win, text: text };
+    };
+
+    P.pivot = function () {
+      const s = this.state,
+        m = ensureMarket(s);
+      if (s.week < 8) return no("مبكر جدًا على التحول. امنح الفكرة 8 أسابيع على الأقل.");
+      if (!m.seen) return no("تحدث إلى العملاء أولًا. لا يمكنك التحول عن شيء لم تقِسه.");
+      if (m.pmf >= 40) return no("لديك توافق. التحول الآن سيرميه.");
+      m.pivots += 1;
+      m.base = rand(15, 45);
+      m.pmf = m.base;
+      m.seen = null;
+      m.insights = [];
+      s.monthlyRevenue = Math.round(s.monthlyRevenue * 0.6);
+      s.activeUsers = Math.round(s.activeUsers * 0.6);
+      s.mentalClarity = Math.max(0, s.mentalClarity - 15);
+      s.teamMorale = Math.max(0, s.teamMorale - 10);
+      this.addLog("🔄 تحوّل", "احتفظت بالفريق والنقد، وغيّرت ما تبيعه ولمن. ⁦40%⁩ من الإيراد رحل مع الفكرة القديمة. تحدث إلى العملاء من جديد: التوافق مجهول جديد.", "negative");
+      return ok(this);
+    };
+  })();
+
+  // ---------------------------------------------------------- UI: customers
+  function CustomersModal({ S, onClose, onDo }) {
+    const m = ensureMarket(S),
+      known = !!m.seen,
+      talked = m.talkWeek === S.week,
+      tested = m.expWeek === S.week,
+      exps = [0, 1, 2].map((i) => EXPERIMENTS[(S.week + i * 2) % EXPERIMENTS.length]),
+      mine = share(S);
+    const btn = (label, sub, onPress, disabled, key, tone) =>
+      jsxs(
+        Touchable,
+        {
+          style: [mst.btn, tone === "primary" && mst.btnPrimary, disabled && { opacity: 0.45 }],
+          disabled: disabled,
+          activeOpacity: 0.85,
+          onPress: onPress,
+          children: [jsx(Text, { style: [mst.btnTxt, tone === "primary" && { color: "#fff" }], children: label }), sub ? jsx(Text, { style: [mst.btnSub, tone === "primary" && { color: "rgba(255,255,255,.85)" }], children: sub }) : null],
+        },
+        key,
+      );
+    return jsx(Modal, {
+      visible: !0,
+      transparent: !0,
+      animationType: "fade",
+      onRequestClose: onClose,
+      children: jsx(Touchable, {
+        activeOpacity: 1,
+        style: est.overlay,
+        onPress: onClose,
+        children: jsx(Touchable, {
+          activeOpacity: 1,
+          onPress: () => {},
+          style: est.sheet,
+          dataSet: { ff: "pop" },
+          children: jsx(ScrollView, {
+            showsVerticalScrollIndicator: !1,
+            children: [
+              jsx(Text, { style: est.kicker, children: "العملاء" }, "k"),
+              jsx(Text, { style: est.title, children: "توافق المنتج مع السوق" }, "t"),
+              jsxs(
+                View,
+                {
+                  style: mst.fitCard,
+                  children: [
+                    jsx(Text, { style: [mst.fitValue, !known && { color: COLOR.text3 }], children: known ? "~" + Math.round(m.seen.value / 5) * 5 + "%" : "?" }),
+                    jsxs(View, {
+                      style: { flex: 1 },
+                      children: [
+                        jsx(Text, { style: mst.fitQ, children: "سيخيب أملهم كثيرًا بدونك" }),
+                        jsx(Text, { style: mst.fitBand, children: known ? pmfBand(m.seen.value) : "لا تعرف بعد. لا أحد يعرف حتى يسأل." }),
+                        known && m.seen.week < S.week && jsx(Text, { style: est.hint, children: `قيس قبل ${S.week - m.seen.week} أسبوع. القيمة تتغير.` }),
+                      ],
+                    }),
+                  ],
+                },
+                "fit",
+              ),
+              jsx(Text, { style: est.hint, children: "⁦40%⁩ أو أكثر يعني توافقًا. دون ذلك، كل دولار تسويق يتسرب مع التسرّب." }, "fh"),
+
+              jsx(Text, { style: [est.kicker, { marginTop: 16 }], children: "تعلّم" }, "lk"),
+              btn("🗣️  تحدّث إلى 5 عملاء", talked ? "تم هذا الأسبوع" : "مجاني · الوضوح ⁦−4⁩ · يكشف التوافق ورؤية جديدة", () => onDo((e) => e.talkToCustomers(), "أضيفت رؤية."), talked, "talk", "primary"),
+
+              jsx(Text, { style: [est.kicker, { marginTop: 16 }], children: "رؤى" }, "ik"),
+              m.insights.length
+                ? m.insights.map((c, i) =>
+                    jsxs(
+                      View,
+                      {
+                        style: mst.insight,
+                        children: [
+                          jsxs(View, { style: mst.insightTop, children: [jsx(Pic, { e: AREAS[c.area].icon, size: 22 }), jsx(Text, { style: mst.insightArea, children: AREAS[c.area].name })] }),
+                          jsx(Text, { style: mst.insightTxt, children: "“" + c.text + "”" }),
+                          btn("ابنِ على هذا", S.slotUsed ? "يحتاج نشاط هذا الأسبوع" : "يستخدم إجراء هذا الأسبوع", () => onDo((e) => e.buildProduct(i), "تم البناء. التوافق يرتفع."), S.slotUsed, "b" + i),
+                        ],
+                      },
+                      "in" + i,
+                    ),
+                  )
+                : jsx(Text, { style: est.hint, children: "لا رؤى بعد. تحدث إلى العملاء لجمعها." }, "noin"),
+              btn("💡  ابنِ ما تؤمن به", "يستخدم إجراء هذا الأسبوع · مقامرة بلا دليل", () => onDo((e) => e.buildProduct(null), "أُطلق."), S.slotUsed, "hunch"),
+
+              jsx(Text, { style: [est.kicker, { marginTop: 16 }], children: "تجربة · ⁦$1,500⁩" }, "xk"),
+              ...exps.map((x) => {
+                const informed = m.insights.some((c) => c.area === x.area);
+                return btn(AREAS[x.area].icon + "  " + x.title, tested ? "تجربة واحدة في الأسبوع" : informed ? "✓ رؤية تدعم هذا: فرص جيدة" : "بلا رؤية تدعمه: فرص ضعيفة", () => onDo((e) => e.runExperiment(x.id), null), tested || S.cash < EXPERIMENT_COST, x.id);
+              }),
+
+              known && m.seen.value < 40 && S.week >= 8 &&
+                jsxs(
+                  View,
+                  {
+                    style: mst.pivot,
+                    children: [
+                      jsx(Text, { style: mst.pivotTitle, children: "🔄  تحوّل؟" }),
+                      jsx(Text, { style: est.hint, children: "احتفظ بالفريق والنقد، وغيّر ما تبيعه. تخسر ⁦40%⁩ من الإيراد، والتوافق الجديد مجهول." }),
+                      btn("حوّل الشركة", null, () => onDo((e) => e.pivot(), "تم التحول. اذهب وتحدث إلى العملاء."), false, "pv"),
+                    ],
+                  },
+                  "pivot",
+                ),
+
+              jsx(Text, { style: [est.kicker, { marginTop: 16 }], children: "المنافسة" }, "ck"),
+              jsxs(View, { style: mst.rival, children: [jsx(Text, { style: [mst.rivalName, { color: COLOR.act, width: 128 }], numberOfLines: 1, children: S.companyName }), jsx(View, { style: mst.shareTrack, children: jsx(View, { style: [mst.shareFill, { width: Math.max(2, mine) + "%", backgroundColor: COLOR.act }] }) }), jsx(Text, { style: mst.sharePct, children: Math.round(mine) + "%" })] }, "me"),
+              ...m.rivals.map((r) => {
+                const total = S.monthlyRevenue + m.rivals.reduce((a, x) => a + x.rev, 0),
+                  pct = total ? (r.rev / total) * 100 : 0;
+                return jsxs(
+                  View,
+                  {
+                    style: mst.rival,
+                    children: [
+                      jsxs(View, { style: mst.rivalNameWrap, children: [jsx(Pic, { e: STYLES[r.style].icon, size: 20 }), jsxs(View, { style: { flex: 1 }, children: [jsx(Text, { style: mst.rivalName, numberOfLines: 1, children: r.name }), jsx(Text, { style: mst.rivalStyle, children: STYLES[r.style].name })] })] }),
+                      jsx(View, { style: mst.shareTrack, children: jsx(View, { style: [mst.shareFill, { width: Math.max(2, pct) + "%" }] }) }),
+                      jsx(Text, { style: mst.sharePct, children: Math.round(pct) + "%" }),
+                    ],
+                  },
+                  r.name,
+                );
+              }),
+              jsx(Text, { style: est.hint, children: "الحصة السوقية حسب الإيراد الشهري. التوافق القوي يحميك من المقلّدين وحروب الأسعار." }, "ch"),
+              jsx(Touchable, { style: est.btn, onPress: onClose, activeOpacity: 0.85, children: jsx(Text, { style: est.btnTxt, children: "إغلاق" }) }, "close"),
+            ],
+          }),
+        }),
+      }),
+    });
+  }
+
+  const mst = StyleSheet.create({
+    fitCard: { flexDirection: "row", alignItems: "center", gap: 14, backgroundColor: "#EEF4FF", borderRadius: 16, padding: 14 },
+    fitValue: { fontFamily: "AzeretMono_600SemiBold", fontSize: 30, color: COLOR.act, minWidth: 84, textAlign: "center" },
+    fitQ: { fontFamily: "Archivo_500Medium", fontSize: 12, color: COLOR.text3 },
+    fitBand: { fontFamily: "Archivo_600SemiBold", fontSize: 14, lineHeight: 19, color: COLOR.text, marginTop: 3 },
+    btn: { backgroundColor: COLOR.panel2, borderRadius: 14, paddingVertical: 11, paddingHorizontal: 14, marginTop: 8, borderWidth: 1, borderColor: COLOR.line },
+    btnPrimary: { backgroundColor: COLOR.act, borderColor: COLOR.act },
+    btnTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 14.5, color: COLOR.text },
+    btnSub: { fontFamily: "Archivo_400Regular", fontSize: 12, color: COLOR.text3, marginTop: 2 },
+    insight: { backgroundColor: "#FFF8E6", borderRadius: 14, padding: 12, marginTop: 8 },
+    insightTop: { flexDirection: "row", alignItems: "center", gap: 6 },
+    insightArea: { fontFamily: "Archivo_600SemiBold", fontSize: 12, color: COLOR.gold },
+    insightTxt: { fontFamily: "Archivo_500Medium", fontSize: 14, lineHeight: 20, color: COLOR.text, marginTop: 6 },
+    pivot: { backgroundColor: "#FDECEC", borderRadius: 14, padding: 12, marginTop: 16 },
+    pivotTitle: { fontFamily: "Archivo_600SemiBold", fontSize: 15, color: COLOR.crit },
+    rival: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 10 },
+    rivalNameWrap: { flexDirection: "row", alignItems: "center", gap: 6, width: 128 },
+    rivalName: { fontFamily: "Archivo_600SemiBold", fontSize: 13, color: COLOR.text },
+    rivalStyle: { fontFamily: "Archivo_400Regular", fontSize: 11, color: COLOR.text3 },
+    shareTrack: { flex: 1, height: 10, borderRadius: 5, backgroundColor: COLOR.panel2, overflow: "hidden" },
+    shareFill: { height: 10, borderRadius: 5, backgroundColor: COLOR.text3 },
+    sharePct: { fontFamily: "AzeretMono_600SemiBold", fontSize: 12, color: COLOR.text2, width: 40, textAlign: "right" },
+  });
+
 
   function buildReport(before, after) {
     const rows = [
@@ -1720,7 +2160,8 @@ __d(function (g, r, i, a, m, _e, d) {
       [report, setReport] = React.useState(null),
       [inboxOpen, setInboxOpen] = React.useState(false),
       [pitchOpen, setPitchOpen] = React.useState(false),
-      [moneyOpen, setMoneyOpen] = React.useState(false);
+      [moneyOpen, setMoneyOpen] = React.useState(false),
+      [custOpen, setCustOpen] = React.useState(false);
     const toastTimer = React.useRef(null);
     const feedRef = React.useRef(null);
     // keep the life log scrolled to the latest week, BitLife style
@@ -1848,6 +2289,7 @@ __d(function (g, r, i, a, m, _e, d) {
       ft = (text, key) => Fog.fogText(text, S.mentalClarity, key, S.week),
       runway = parseFloat(S.runwayMonths),
       runwayLabel = S.defaultAlive ? "حيّة" : runway >= 999 ? "—" : runway.toFixed(1) + " شهر",
+      fitLabel = S.mkt && S.mkt.seen ? "التوافق ~" + Math.round(S.mkt.seen.value / 5) * 5 + "%" : "التوافق مجهول",
       runwayPct = S.defaultAlive ? 100 : (Math.min(runway, 12) / 12) * 100,
       runwayColor = S.defaultAlive ? COLOR.vital : runway < 3 ? COLOR.crit : runway < 6 ? COLOR.fog : COLOR.vital,
       clarityColor = S.mentalClarity < 25 ? COLOR.crit : fogged ? COLOR.fog : COLOR.act,
@@ -1889,6 +2331,7 @@ __d(function (g, r, i, a, m, _e, d) {
       if (ignored) addNote(rep, ["📭", (ignored === 1 ? "رسالة واحدة بلا رد." : ignored + " رسائل بلا رد.") + (has(next, "delegator") ? " المفوِّض: لا ضرر." : ""), -1]);
       if (streakNote) addNote(rep, streakNote);
       ((next.econ && next.econ.notes) || []).forEach((n) => addNote(rep, n));
+      ((next.mkt && next.mkt.notes) || []).forEach((n) => addNote(rep, n));
       setReport(rep);
       setTab("hq");
     };
@@ -1912,6 +2355,15 @@ __d(function (g, r, i, a, m, _e, d) {
       setS({ ...engine.recalculate() });
       buzz(20);
       notify(p.icon + " " + p.name + " مفعّلة", "ok");
+    };
+    const doCustomer = (fn, okText) => {
+      const r = fn(engine);
+      if (r && r.success && r.text) {
+        setS({ ...r.state });
+        buzz(10);
+        return notify((r.win ? "✅ " : "❌ ") + r.text, r.win ? "ok" : "bad");
+      }
+      act(r, okText);
     };
     const roundName = ROUND_NAMES[S.stage] || "النمو";
     const pitchDone = (title, effects, log) => {
@@ -2044,6 +2496,7 @@ __d(function (g, r, i, a, m, _e, d) {
       contentContainerStyle: st.tiles,
       children: [
         guide && tile("t", targetDone ? "✅" : "🎯", targetDone ? "تم الهدف" : "الهدف الأسبوعي", targetDone ? "+" + (S.streak || 0) + " سلسلة" : "+" + (target.reward_exp || 50) + " نقاط الخبرة", "#FFE8E1", () => setGuideOpen(true), S.streak ? "🔥" + S.streak : null, targetDone),
+        tile("f", "🔍", "العملاء", fitLabel, "#E5EEFF", () => setCustOpen(true), S.mkt && S.mkt.talkWeek !== S.week ? "!" : null, false),
         tile("i", "📨", "البريد", inboxN ? inboxN + " جديدة" : "لا جديد", "#FFF4D6", () => inboxN && setInboxOpen(true), inboxN || null, !inboxN),
         tile("m", "💵", "المال", S.defaultAlive ? "قادرة على العيش" : runwayLabel + " صمود", "#E2F6EA", () => setMoneyOpen(true), null, false),
         tile("a", fogged && !S.slotUsed ? "🧘" : "⚡", fogged && !S.slotUsed ? "استرح الآن" : "نشاطك", S.slotUsed ? "مُستخدَم" : "1 متبقٍ", "#E3F7EA", () => setTab("actions"), null, S.slotUsed),
@@ -2127,6 +2580,7 @@ __d(function (g, r, i, a, m, _e, d) {
         statBar("🧠", "الوضوح", S.mentalClarity, Math.round(S.mentalClarity) + "%"),
         statBar("🤝", "المعنويات", S.teamMorale, Math.round(S.teamMorale) + "%"),
         statBar("⏳", "الصمود", runwayPct, ft(S.defaultAlive ? "قادرة على العيش" : runwayLabel, "runway"), true),
+        statBar("🔍", "التوافق", S.mkt && S.mkt.seen ? S.mkt.seen.value : 0, S.mkt && S.mkt.seen ? "~" + Math.round(S.mkt.seen.value / 5) * 5 + "%" : "?"),
         statBar("💼", "الثقة", S.investorTrust == null ? 80 : S.investorTrust, Math.round(S.investorTrust == null ? 80 : S.investorTrust) + "%"),
         fogged && jsx(View, { pointerEvents: "none", dataSet: { ff: "fog" }, style: [st.fogLayer, { opacity: 0.2 + 0.4 * fogAmt }] }),
       ],
@@ -2482,6 +2936,7 @@ __d(function (g, r, i, a, m, _e, d) {
         guideModal,
         S.perkChoice && !report && !S.pendingEvent && jsx(PerkModal, { S: S, onPick: pickPerk }),
         inboxOpen && !report && !S.pendingEvent && !S.perkChoice && jsx(InboxModal, { S: S, onChoose: chooseMail, onClose: () => setInboxOpen(false) }),
+        custOpen && !report && !S.pendingEvent && jsx(CustomersModal, { S: S, onClose: () => setCustOpen(false), onDo: doCustomer }),
         moneyOpen && !report && !S.pendingEvent && jsx(MoneyModal, { S: S, ft: ft, onClose: () => setMoneyOpen(false) }),
         pitchOpen &&
           jsx(PitchModal, {
@@ -2904,6 +3359,14 @@ __d(function (g, r, i, a, m, _e, d) {
     { id: "winter", icon: "🧊", name: "شتاء التمويل", desc: "تبدأ في ركود: التقييمات منخفضة وموجات الشتاء تعود أكثر.", cash: 1 },
     { id: "hard", icon: "🌫️", name: "ضباب المؤسس", desc: "نقد أقل بـ⁦40%⁩ وصدمات أكثر بثلاث مرات تقريبًا. للمتحدّين فقط.", cash: 0.6 },
   ];
+  // each sector's special rule (implemented in App's market.js)
+  const SECTOR_RULES = {
+    saas_ai: "العملاء يبقون أطول هنا: التسرّب يستقر أقل بـ⁦1%⁩.",
+    fintech: "لا نمو حقيقي قبل ترخيص البنك المركزي (الأسابيع 8–14). الامتثال يكلف ⁦$800⁩ شهريًا.",
+    ecommerce_marketplace: "البيضة والدجاجة: النمو بطيء حتى ⁦$5k⁩ إيراد شهري، ثم يبدأ أثر الشبكة.",
+    healthtech: "الثقة تُبنى ببطء: النمو أبطأ بـ⁦15%⁩، والتسرّب يستقر أقل بـ⁦1.5%⁩.",
+    edtech: "مواسم: أسابيع العودة للمدارس تنمو أسرع بـ⁦40%⁩، والصيف أبطأ بـ⁦30%⁩. التسرّب يستقر أعلى بـ⁦1%⁩.",
+  };
   function sectorNumbers(s, cashMult) {
     const monthlyBurn = 2e3 * (s.burn_multiplier || 1) + 1500,
       cash = Math.round(s.initial_cash * (cashMult || 1));
@@ -3075,6 +3538,7 @@ __d(function (g, r, i, a, m, _e, d) {
                         jsxs(View, { style: st.stat, children: [jsx(Text, { style: st.statV, children: v }), jsx(Text, { style: st.statL, children: l })] }, l),
                       ),
                     }),
+                    SECTOR_RULES[s.id] && jsxs(View, { style: st.rule2, children: [jsx(Pic, { e: "⚖️", size: 18 }), jsx(Text, { style: st.rule2Txt, children: SECTOR_RULES[s.id] })] }),
                     on && jsx(Text, { style: st.desc, children: IS_AR ? s.what_it_does : s.desc_en }),
                     on && s.what_it_sells && jsx(Text, { style: st.descAr, children: s.what_it_sells }),
                   ],
@@ -3163,6 +3627,7 @@ __d(function (g, r, i, a, m, _e, d) {
                   ["🎯", "حقّق الهدف الأسبوعي باختيار استراتيجية واحدة."],
                   ["⚡", "لديك نشاط شخصي واحد أسبوعيًا: راحة، أو تواصل، أو مبادرة."],
                   ["⚖️", "كل بضعة أسابيع تصلك معضلة. لا يوجد خيار صحيح."],
+                  ["🔍", "تحدث إلى العملاء. النمو لا ينجح إلا حين يريد الناس حقًا ما تصنعه."],
                   ["💵", "التكاليف تكبر كلما كبرت. لن تكون بأمان إلا حين يغطي الإيراد بعد التكاليف المباشرة كل شيء."],
                   ["🌫️", "الضغط يستنزف الوضوح. تحت ⁦40%⁩ يخفي الضباب أرقامك. عند ⁦5%⁩ تنتهي اللعبة."],
                 ].map(([icon, text]) =>
@@ -3192,6 +3657,8 @@ __d(function (g, r, i, a, m, _e, d) {
     heroArt: { width: 260, height: 210, alignItems: "center", justifyContent: "center" },
     orbit: { position: "absolute" },
     heroFog: { position: "absolute", left: -40, right: -40, bottom: 20, height: 70 },
+    rule2: { flexDirection: "row", alignItems: "flex-start", gap: 6, marginTop: 10, backgroundColor: COLOR.panel2, borderRadius: 10, padding: 8 },
+    rule2Txt: { ...TYPE.body, flex: 1, fontSize: 12.5, lineHeight: 17, color: COLOR.text2 },
     modes: { flexDirection: "row", gap: 8, marginTop: 4 },
     modeOpt: { flex: 1, alignItems: "center", gap: 4, paddingVertical: 10, paddingHorizontal: 4, borderRadius: 14, backgroundColor: "#FFFFFF", borderWidth: 2, borderColor: "transparent" },
     modeOn: { borderColor: "#2D7FF9", backgroundColor: "#E9F0FF" },

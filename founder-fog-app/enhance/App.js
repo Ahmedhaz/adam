@@ -220,6 +220,7 @@ function (g, r, i, a, m, _e, d) {
 
 // @include features.js
 // @include economy.js
+// @include market.js
 
   function buildReport(before, after) {
     const rows = [
@@ -261,7 +262,8 @@ function (g, r, i, a, m, _e, d) {
       [report, setReport] = React.useState(null),
       [inboxOpen, setInboxOpen] = React.useState(false),
       [pitchOpen, setPitchOpen] = React.useState(false),
-      [moneyOpen, setMoneyOpen] = React.useState(false);
+      [moneyOpen, setMoneyOpen] = React.useState(false),
+      [custOpen, setCustOpen] = React.useState(false);
     const toastTimer = React.useRef(null);
     const feedRef = React.useRef(null);
     // keep the life log scrolled to the latest week, BitLife style
@@ -389,6 +391,7 @@ function (g, r, i, a, m, _e, d) {
       ft = (text, key) => Fog.fogText(text, S.mentalClarity, key, S.week),
       runway = parseFloat(S.runwayMonths),
       runwayLabel = S.defaultAlive ? "Alive" : runway >= 999 ? "—" : runway.toFixed(1) + " mo",
+      fitLabel = S.mkt && S.mkt.seen ? "Fit ~" + Math.round(S.mkt.seen.value / 5) * 5 + "%" : "Fit unknown",
       runwayPct = S.defaultAlive ? 100 : (Math.min(runway, 12) / 12) * 100,
       runwayColor = S.defaultAlive ? COLOR.vital : runway < 3 ? COLOR.crit : runway < 6 ? COLOR.fog : COLOR.vital,
       clarityColor = S.mentalClarity < 25 ? COLOR.crit : fogged ? COLOR.fog : COLOR.act,
@@ -430,6 +433,7 @@ function (g, r, i, a, m, _e, d) {
       if (ignored) addNote(rep, ["📭", (ignored === 1 ? "1 message went unanswered." : ignored + " messages went unanswered.") + (has(next, "delegator") ? " Delegator: no harm done." : ""), -1]);
       if (streakNote) addNote(rep, streakNote);
       ((next.econ && next.econ.notes) || []).forEach((n) => addNote(rep, n));
+      ((next.mkt && next.mkt.notes) || []).forEach((n) => addNote(rep, n));
       setReport(rep);
       setTab("hq");
     };
@@ -453,6 +457,15 @@ function (g, r, i, a, m, _e, d) {
       setS({ ...engine.recalculate() });
       buzz(20);
       notify(p.icon + " " + p.name + " unlocked", "ok");
+    };
+    const doCustomer = (fn, okText) => {
+      const r = fn(engine);
+      if (r && r.success && r.text) {
+        setS({ ...r.state });
+        buzz(10);
+        return notify((r.win ? "✅ " : "❌ ") + r.text, r.win ? "ok" : "bad");
+      }
+      act(r, okText);
     };
     const roundName = ROUND_NAMES[S.stage] || "Growth";
     const pitchDone = (title, effects, log) => {
@@ -585,6 +598,7 @@ function (g, r, i, a, m, _e, d) {
       contentContainerStyle: st.tiles,
       children: [
         guide && tile("t", targetDone ? "✅" : "🎯", targetDone ? "Target done" : "Weekly target", targetDone ? "+" + (S.streak || 0) + " streak" : "+" + (target.reward_exp || 50) + " XP", "#FFE8E1", () => setGuideOpen(true), S.streak ? "🔥" + S.streak : null, targetDone),
+        tile("f", "🔍", "Customers", fitLabel, "#E5EEFF", () => setCustOpen(true), S.mkt && S.mkt.talkWeek !== S.week ? "!" : null, false),
         tile("i", "📨", "Inbox", inboxN ? inboxN + " new" : "All clear", "#FFF4D6", () => inboxN && setInboxOpen(true), inboxN || null, !inboxN),
         tile("m", "💵", "Money", S.defaultAlive ? "Default alive" : runwayLabel + " runway", "#E2F6EA", () => setMoneyOpen(true), null, false),
         tile("a", fogged && !S.slotUsed ? "🧘" : "⚡", fogged && !S.slotUsed ? "Rest now" : "Your action", S.slotUsed ? "used" : "1 left", "#E3F7EA", () => setTab("actions"), null, S.slotUsed),
@@ -668,6 +682,7 @@ function (g, r, i, a, m, _e, d) {
         statBar("🧠", "Clarity", S.mentalClarity, Math.round(S.mentalClarity) + "%"),
         statBar("🤝", "Morale", S.teamMorale, Math.round(S.teamMorale) + "%"),
         statBar("⏳", "Runway", runwayPct, ft(S.defaultAlive ? "Default alive" : runwayLabel, "runway"), true),
+        statBar("🔍", "Fit", S.mkt && S.mkt.seen ? S.mkt.seen.value : 0, S.mkt && S.mkt.seen ? "~" + Math.round(S.mkt.seen.value / 5) * 5 + "%" : "?"),
         statBar("💼", "Trust", S.investorTrust == null ? 80 : S.investorTrust, Math.round(S.investorTrust == null ? 80 : S.investorTrust) + "%"),
         fogged && jsx(View, { pointerEvents: "none", dataSet: { ff: "fog" }, style: [st.fogLayer, { opacity: 0.2 + 0.4 * fogAmt }] }),
       ],
@@ -1023,6 +1038,7 @@ function (g, r, i, a, m, _e, d) {
         guideModal,
         S.perkChoice && !report && !S.pendingEvent && jsx(PerkModal, { S: S, onPick: pickPerk }),
         inboxOpen && !report && !S.pendingEvent && !S.perkChoice && jsx(InboxModal, { S: S, onChoose: chooseMail, onClose: () => setInboxOpen(false) }),
+        custOpen && !report && !S.pendingEvent && jsx(CustomersModal, { S: S, onClose: () => setCustOpen(false), onDo: doCustomer }),
         moneyOpen && !report && !S.pendingEvent && jsx(MoneyModal, { S: S, ft: ft, onClose: () => setMoneyOpen(false) }),
         pitchOpen &&
           jsx(PitchModal, {

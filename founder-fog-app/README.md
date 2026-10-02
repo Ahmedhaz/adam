@@ -47,6 +47,9 @@ any repo. Enhancements are applied on top of it:
   "default alive" instead of infinite runway, valuation as ARR × multiple,
   market cycles, shocks and difficulty modes. It wraps the engine's
   `recalculate` and `advanceWeek`, and is included the same way
+- `enhance/market.js` is product-market fit: a hidden fit score that scales
+  every revenue gain, customer talks and insight cards, experiments, pivots,
+  competitors and per-sector rules
 - `enhance/build.py` applies small patches to the game engine and wraps the
   page for mobile (PWA head, safe areas)
 

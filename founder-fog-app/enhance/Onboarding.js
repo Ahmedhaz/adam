@@ -55,6 +55,14 @@ function (g, r, i, a, m, _e, d) {
     { id: "winter", icon: "🧊", name: "Funding winter", desc: "You start in a downturn: valuations are low and winters come back more often.", cash: 1 },
     { id: "hard", icon: "🌫️", name: "Founder Fog", desc: "40% less cash and almost three times the shocks. For bragging rights.", cash: 0.6 },
   ];
+  // each sector's special rule (implemented in App's market.js)
+  const SECTOR_RULES = {
+    saas_ai: "Customers stay longest here: churn settles 1% lower.",
+    fintech: "No real growth until the central bank licence lands (weeks 8–14). Compliance costs $800/mo.",
+    ecommerce_marketplace: "Chicken and egg: growth is slow until $5k MRR, then the network kicks in.",
+    healthtech: "Trust builds slowly: growth runs 15% slower, churn settles 1.5% lower.",
+    edtech: "Seasons: back-to-school weeks grow 40% faster, summer 30% slower. Churn settles 1% higher.",
+  };
   function sectorNumbers(s, cashMult) {
     const monthlyBurn = 2e3 * (s.burn_multiplier || 1) + 1500,
       cash = Math.round(s.initial_cash * (cashMult || 1));
@@ -226,6 +234,7 @@ function (g, r, i, a, m, _e, d) {
                         jsxs(View, { style: st.stat, children: [jsx(Text, { style: st.statV, children: v }), jsx(Text, { style: st.statL, children: l })] }, l),
                       ),
                     }),
+                    SECTOR_RULES[s.id] && jsxs(View, { style: st.rule2, children: [jsx(Pic, { e: "⚖️", size: 18 }), jsx(Text, { style: st.rule2Txt, children: SECTOR_RULES[s.id] })] }),
                     on && jsx(Text, { style: st.desc, children: IS_AR ? s.what_it_does : s.desc_en }),
                     on && s.what_it_sells && jsx(Text, { style: st.descAr, children: s.what_it_sells }),
                   ],
@@ -314,6 +323,7 @@ function (g, r, i, a, m, _e, d) {
                   ["🎯", "Hit the weekly target by picking one strategy."],
                   ["⚡", "You get one personal action a week: rest, network, or reach out."],
                   ["⚖️", "Every few weeks a dilemma lands. There is no right option."],
+                  ["🔍", "Talk to customers. Growth only works once people really want what you make."],
                   ["💵", "Costs grow as you grow. You're safe only when revenue after margin pays for everything."],
                   ["🌫️", "Stress drains clarity. Below 40% the fog hides your numbers. At 5% it's over."],
                 ].map(([icon, text]) =>
@@ -343,6 +353,8 @@ function (g, r, i, a, m, _e, d) {
     heroArt: { width: 260, height: 210, alignItems: "center", justifyContent: "center" },
     orbit: { position: "absolute" },
     heroFog: { position: "absolute", left: -40, right: -40, bottom: 20, height: 70 },
+    rule2: { flexDirection: "row", alignItems: "flex-start", gap: 6, marginTop: 10, backgroundColor: COLOR.panel2, borderRadius: 10, padding: 8 },
+    rule2Txt: { ...TYPE.body, flex: 1, fontSize: 12.5, lineHeight: 17, color: COLOR.text2 },
     modes: { flexDirection: "row", gap: 8, marginTop: 4 },
     modeOpt: { flex: 1, alignItems: "center", gap: 4, paddingVertical: 10, paddingHorizontal: 4, borderRadius: 14, backgroundColor: "#FFFFFF", borderWidth: 2, borderColor: "transparent" },
     modeOn: { borderColor: "#2D7FF9", backgroundColor: "#E9F0FF" },
