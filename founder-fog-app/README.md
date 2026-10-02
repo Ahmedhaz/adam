@@ -135,3 +135,18 @@ choice is remembered, and first launch follows the device language.
   *Actions* matters and the burnout ending can happen
 - Rounded cash in the weekly log, a dot on *Actions* when the weekly action
   is unused, and larger tap targets
+
+## Promo site
+
+`founder-fog-app/site/` builds the bilingual landing page at `/fog/`
+(`fog/index.html` in English, `fog/ar.html` in Arabic, plus social cards):
+
+```bash
+python3 founder-fog-app/site/build.py
+```
+
+Copy lives in `site/strings.json` (both languages side by side) and the
+layout in `site/template.html`. Set `config.testflight_url` to a public
+TestFlight link to show an "iPhone beta" button. Screenshots in `fog/shots/`
+are real captures of the game in each language.
+

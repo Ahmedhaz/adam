@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="{{lang}}" dir="{{dir}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{meta_title}}</title>
+<meta name="description" content="{{meta_desc}}">
+<link rel="canonical" href="{{base}}{{self}}">
+<link rel="alternate" hreflang="en" href="{{base}}">
+<link rel="alternate" hreflang="ar" href="{{base}}ar.html">
+<link rel="alternate" hreflang="x-default" href="{{base}}">
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{meta_title}}">
+<meta property="og:description" content="{{meta_desc}}">
+<meta property="og:image" content="{{base}}og-{{lang}}.png">
+<meta property="og:url" content="{{base}}{{self}}">
+<meta property="og:locale" content="{{og_locale}}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#EEF2F7">
+<link rel="icon" type="image/png" href="../founder-fog/icons/icon-192.png">
+<link rel="apple-touch-icon" href="../founder-fog/icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+  // first visit follows the device language; a choice made here or in the game is remembered
+  (function () {
+    var page = document.documentElement.lang, pref = null;
+    try { pref = localStorage.getItem("founderFog.lang"); } catch (e) {}
+    var want = pref || ((navigator.language || "").toLowerCase().indexOf("ar") === 0 ? "ar" : "en");
+    if (want !== page && !/[?&]stay/.test(location.search)) location.replace(want === "ar" ? "ar.html" : "./");
+  })();
+  function setLang(l) { try { localStorage.setItem("founderFog.lang", l); } catch (e) {} }
+</script>
+<style>
+  :root {
+    --bg: #F4F6FA; --panel: #FFFFFF; --panel2: #EEF2F7; --line: #E3E8EF;
+    --ink: #1C2430; --ink2: #4E5A6B; --ink3: #8C97A6;
+    --accent: #FF5A36; --accent-ink: #FFFFFF; --blue: #2D7FF9; --green: #22A559; --gold: #C28F00; --red: #E5484D;
+    --sky1: #CFE3FF; --sky2: #EAF2FF; --shadow: 0 18px 50px rgba(28, 36, 48, .12);
+    --font: "Archivo", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0E131A; --panel: #161D26; --panel2: #1C2531; --line: #263140;
+      --ink: #EEF2F7; --ink2: #B3BFCC; --ink3: #7D8A99;
+      --sky1: #13243B; --sky2: #0F1A29; --shadow: 0 18px 50px rgba(0, 0, 0, .45);
+    }
+  }
+  :root[dir="rtl"] { --font: "IBM Plex Sans Arabic", "Archivo", system-ui, sans-serif; }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); line-height: 1.55; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  a { color: inherit; }
+  img { display: block; max-width: 100%; }
+  .wrap { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+  @media (min-width: 720px) { .wrap { padding: 0 28px; } }
+
+  /* header */
+  header { position: sticky; top: 0; z-index: 10; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); background: color-mix(in srgb, var(--bg) 78%, transparent); border-bottom: 1px solid var(--line); }
+  .bar { display: flex; align-items: center; justify-content: space-between; height: 60px; gap: 12px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: .14em; font-size: 15px; text-decoration: none; }
+  [dir="rtl"] .brand { letter-spacing: 0; }
+  .brand img { width: 32px; height: 32px; border-radius: 9px; }
+  .bar nav { display: flex; align-items: center; gap: 8px; }
+  .lang { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; background: var(--panel); }
+  .lang a { padding: 6px 12px; font-size: 13px; font-weight: 600; text-decoration: none; color: var(--ink2); }
+  .lang a.on { background: var(--ink); color: var(--bg); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px; border-radius: 14px; font-weight: 600; font-size: 16px; text-decoration: none; border: 1px solid transparent; transition: transform .15s ease, box-shadow .15s ease; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary { background: var(--accent); color: var(--accent-ink); box-shadow: 0 10px 24px rgba(255, 90, 54, .32); }
+  .btn-ghost { background: var(--panel); color: var(--ink); border-color: var(--line); }
+  .btn-sm { min-height: 38px; padding: 0 14px; font-size: 14px; border-radius: 11px; }
+  @media (max-width: 520px) { .hide-sm { display: none; } }
+
+  /* hero */
+  .hero { background: linear-gradient(180deg, var(--sky1), var(--sky2) 55%, var(--bg)); padding: 48px 0 64px; overflow: hidden; }
+  .hero-grid { display: grid; gap: 40px; align-items: center; }
+  @media (min-width: 900px) { .hero-grid { grid-template-columns: 1.1fr .9fr; } }
+  .kicker { font-size: 13px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+  [dir="rtl"] .kicker { letter-spacing: 0; }
+  h1 { font-size: clamp(36px, 7vw, 64px); line-height: 1.05; letter-spacing: -.03em; margin: 12px 0 16px; font-weight: 800; }
+  [dir="rtl"] h1 { letter-spacing: 0; line-height: 1.25; }
+  .lead { font-size: clamp(17px, 2.2vw, 20px); color: var(--ink2); max-width: 34em; margin: 0 0 26px; }
+  .ctas { display: flex; flex-wrap: wrap; gap: 12px; }
+  .note { font-size: 14px; color: var(--ink3); margin-top: 14px; }
+  .stage { position: relative; display: flex; justify-content: center; min-height: 520px; }
+  .phone { width: min(290px, 78vw); aspect-ratio: 390 / 844; border-radius: 42px; padding: 10px; background: #0E131A; box-shadow: var(--shadow), 0 0 0 1px rgba(255,255,255,.06) inset; }
+  .phone img { width: 100%; height: 100%; object-fit: cover; border-radius: 33px; }
+  .float { position: absolute; width: 74px; height: 74px; animation: bob 6s ease-in-out infinite; filter: drop-shadow(0 10px 18px rgba(28,36,48,.18)); }
+  .f1 { top: 6%; inset-inline-start: 2%; } .f2 { top: 30%; inset-inline-end: 0; animation-delay: -2s; width: 64px; height: 64px; }
+  .f3 { bottom: 12%; inset-inline-start: 6%; animation-delay: -4s; width: 60px; height: 60px; } .f4 { bottom: 2%; inset-inline-end: 8%; animation-delay: -1s; }
+  @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+  @media (prefers-reduced-motion: reduce) { .float { animation: none; } .btn:hover { transform: none; } }
+
+  /* stats */
+  .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: -28px; position: relative; }
+  @media (min-width: 720px) { .stats { grid-template-columns: repeat(5, 1fr); } }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; text-align: center; box-shadow: 0 6px 18px rgba(28,36,48,.05); }
+  .stat b { display: block; font-size: 28px; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .stat span { font-size: 13.5px; color: var(--ink2); }
+
+  section { padding: 72px 0 0; }
+  h2 { font-size: clamp(28px, 4.4vw, 42px); line-height: 1.12; letter-spacing: -.02em; margin: 8px 0 14px; font-weight: 800; }
+  [dir="rtl"] h2 { letter-spacing: 0; line-height: 1.3; }
+  .sub { color: var(--ink2); font-size: 18px; max-width: 40em; margin: 0 0 30px; }
+
+  /* cards */
+  .cards { display: grid; gap: 14px; }
+  @media (min-width: 760px) { .cards { grid-template-columns: repeat(3, 1fr); } }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 22px; }
+  .card img { width: 52px; height: 52px; margin-bottom: 12px; }
+  .card h3 { margin: 0 0 6px; font-size: 19px; }
+  .card p { margin: 0; color: var(--ink2); font-size: 15.5px; }
+
+  /* screens */
+  .screens { display: flex; gap: 18px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 6px 2px 18px; scrollbar-width: thin; }
+  .shot { flex: 0 0 auto; width: 220px; scroll-snap-align: start; margin: 0; }
+  .shot .phone { width: 220px; border-radius: 34px; padding: 8px; }
+  .shot .phone img { border-radius: 27px; }
+  .shot figcaption { margin-top: 12px; font-size: 14.5px; color: var(--ink2); }
+  .shot figcaption b { display: block; color: var(--ink); font-size: 15.5px; }
+
+  /* split + lists */
+  .split { display: grid; gap: 22px; align-items: center; }
+  @media (min-width: 860px) { .split { grid-template-columns: 1fr 1fr; gap: 48px; } }
+  .ticks { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+  .ticks li { display: flex; gap: 12px; align-items: flex-start; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
+  .ticks img { width: 34px; height: 34px; flex: 0 0 34px; }
+  .ticks b { display: block; }
+  .ticks span { color: var(--ink2); font-size: 15px; }
+
+  .band { background: var(--panel); border-block: 1px solid var(--line); margin-top: 72px; padding: 56px 0; }
+  .grades { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 18px; }
+  .grade { background: var(--panel2); border-radius: 14px; padding: 12px; text-align: center; font-size: 13.5px; color: var(--ink2); }
+  .grade b { display: block; font-size: 26px; color: var(--green); }
+
+  /* faq */
+  details { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; margin-bottom: 10px; }
+  summary { cursor: pointer; font-weight: 600; font-size: 16.5px; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; color: var(--ink3); font-weight: 400; font-size: 22px; line-height: 1; }
+  details[open] summary::after { content: "–"; }
+  details p { margin: 10px 0 0; color: var(--ink2); }
+
+  .final { text-align: center; padding: 80px 0; }
+  .final h2 { max-width: 16em; margin-inline: auto; }
+  .final .ctas { justify-content: center; }
+  footer { border-top: 1px solid var(--line); padding: 26px 0 40px; color: var(--ink3); font-size: 14px; }
+  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="#top"><img src="../founder-fog/icons/icon-192.png" alt="">{{brand}}</a>
+    <nav>
+      <span class="lang"><a href="./?stay" onclick="setLang('en')" class="{{en_on}}">EN</a><a href="ar.html?stay" onclick="setLang('ar')" class="{{ar_on}}">عربي</a></span>
+      <a class="btn btn-primary btn-sm hide-sm" href="{{play_url}}">{{cta_play_short}}</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <div class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <div class="kicker">{{hero_kicker}}</div>
+        <h1>{{hero_title}}</h1>
+        <p class="lead">{{hero_lead}}</p>
+        <div class="ctas">
+          <a class="btn btn-primary" href="{{play_url}}">▶ {{cta_play}}</a>
+          {{testflight_button}}
+          <a class="btn btn-ghost" href="#screens">{{cta_see}}</a>
+        </div>
+        <p class="note">{{hero_note}}</p>
+      </div>
+      <div class="stage" aria-hidden="true">
+        <img class="float f1" src="../founder-fog/img/rocket.webp" alt="">
+        <img class="float f2" src="../founder-fog/img/money_bag.webp" alt="">
+        <img class="float f3" src="../founder-fog/img/brain.webp" alt="">
+        <img class="float f4" src="../founder-fog/img/fog.webp" alt="">
+        <div class="phone"><img src="shots/{{lang}}-hq.webp" alt="{{alt_hq}}" width="390" height="844"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap stats">
+    <div class="stat"><b>91</b><span>{{stat_dilemmas}}</span></div>
+    <div class="stat"><b>40</b><span>{{stat_pages}}</span></div>
+    <div class="stat"><b>8</b><span>{{stat_endings}}</span></div>
+    <div class="stat"><b>2</b><span>{{stat_langs}}</span></div>
+    <div class="stat"><b>$0</b><span>{{stat_price}}</span></div>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <div class="kicker">{{why_kicker}}</div>
+      <h2>{{why_title}}</h2>
+      <p class="sub">{{why_sub}}</p>
+      <div class="cards">
+        <div class="card"><img src="../founder-fog/img/chart_increasing.webp" alt=""><h3>{{why1_t}}</h3><p>{{why1_p}}</p></div>
+        <div class="card"><img src="../founder-fog/img/magnifying_glass_tilted_left.webp" alt=""><h3>{{why2_t}}</h3><p>{{why2_p}}</p></div>
+        <div class="card"><img src="../founder-fog/img/fog.webp" alt=""><h3>{{why3_t}}</h3><p>{{why3_p}}</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screens">
+    <div class="wrap">
+      <div class="kicker">{{screens_kicker}}</div>
+      <h2>{{screens_title}}</h2>
+      <div class="screens">
+        <figure class="shot"><div class="phone"><img loading="lazy" src="shots/{{lang}}-dilemma.webp" alt="" width="390" height="844"></div><figcaption><b>{{s1_t}}</b>{{s1_p}}</figcaption></figure>
+        <figure class="shot"><div class="phone"><img loading="lazy" src="shots/{{lang}}-customers.webp" alt="" width="390" height="844"></div><figcaption><b>{{s2_t}}</b>{{s2_p}}</figcaption></figure>
+        <figure class="shot"><div class="phone"><img loading="lazy" src="shots/{{lang}}-money.webp" alt="" width="390" height="844"></div><figcaption><b>{{s3_t}}</b>{{s3_p}}</figcaption></figure>
+        <figure class="shot"><div class="phone"><img loading="lazy" src="shots/{{lang}}-mentor.webp" alt="" width="390" height="844"></div><figcaption><b>{{s4_t}}</b>{{s4_p}}</figcaption></figure>
+        <figure class="shot"><div class="phone"><img loading="lazy" src="shots/{{lang}}-report.webp" alt="" width="390" height="844"></div><figcaption><b>{{s5_t}}</b>{{s5_p}}</figcaption></figure>
+        <figure class="shot"><div class="phone"><img loading="lazy" src="shots/{{lang}}-sectors.webp" alt="" width="390" height="844"></div><figcaption><b>{{s6_t}}</b>{{s6_p}}</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap split">
+      <div>
+        <div class="kicker">{{region_kicker}}</div>
+        <h2>{{region_title}}</h2>
+        <p class="sub">{{region_sub}}</p>
+      </div>
+      <ul class="ticks">
+        <li><img src="../founder-fog/img/sunrise.webp" alt=""><div><b>{{r1_t}}</b><span>{{r1_p}}</span></div></li>
+        <li><img src="../founder-fog/img/classical_building.webp" alt=""><div><b>{{r2_t}}</b><span>{{r2_p}}</span></div></li>
+        <li><img src="../founder-fog/img/credit_card.webp" alt=""><div><b>{{r3_t}}</b><span>{{r3_p}}</span></div></li>
+        <li><img src="../founder-fog/img/house.webp" alt=""><div><b>{{r4_t}}</b><span>{{r4_p}}</span></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="band">
+    <div class="wrap split">
+      <div>
+        <div class="kicker">{{teach_kicker}}</div>
+        <h2>{{teach_title}}</h2>
+        <p class="sub">{{teach_sub}}</p>
+        <ul class="ticks">
+          <li><img src="../founder-fog/img/graduation_cap.webp" alt=""><div><b>{{t1_t}}</b><span>{{t1_p}}</span></div></li>
+          <li><img src="../founder-fog/img/notebook.webp" alt=""><div><b>{{t2_t}}</b><span>{{t2_p}}</span></div></li>
+          <li><img src="../founder-fog/img/bullseye.webp" alt=""><div><b>{{t3_t}}</b><span>{{t3_p}}</span></div></li>
+        </ul>
+      </div>
+      <div>
+        <div class="phone" style="margin-inline:auto"><img loading="lazy" src="shots/{{lang}}-report.webp" alt="{{alt_report}}" width="390" height="844"></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <div class="kicker">{{faq_kicker}}</div>
+      <h2>{{faq_title}}</h2>
+      <details><summary>{{q1}}</summary><p>{{a1}}</p></details>
+      <details><summary>{{q2}}</summary><p>{{a2}}</p></details>
+      <details><summary>{{q3}}</summary><p>{{a3}}</p></details>
+      <details><summary>{{q4}}</summary><p>{{a4}}</p></details>
+      <details><summary>{{q5}}</summary><p>{{a5}}</p></details>
+    </div>
+  </section>
+
+  <div class="wrap final">
+    <h2>{{final_title}}</h2>
+    <p class="sub" style="margin-inline:auto">{{final_sub}}</p>
+    <div class="ctas"><a class="btn btn-primary" href="{{play_url}}">▶ {{cta_play}}</a>{{testflight_button}}</div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Founder Fog · {{footer_tag}}</span>
+    <span class="lang"><a href="./?stay" onclick="setLang('en')" class="{{en_on}}">English</a><a href="ar.html?stay" onclick="setLang('ar')" class="{{ar_on}}">العربية</a></span>
+  </div>
+</footer>
+</body>
+</html>

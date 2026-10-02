@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Founder Fog — the startup game that tells the truth</title>
+<meta name="description" content="Run a startup week by week. Find product-market fit, raise money without losing control, and keep your head clear. Free, in English and Arabic.">
+<link rel="canonical" href="https://adam.ahmedhaz.com/fog/">
+<link rel="alternate" hreflang="en" href="https://adam.ahmedhaz.com/fog/">
+<link rel="alternate" hreflang="ar" href="https://adam.ahmedhaz.com/fog/ar.html">
+<link rel="alternate" hreflang="x-default" href="https://adam.ahmedhaz.com/fog/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Founder Fog — the startup game that tells the truth">
+<meta property="og:description" content="Run a startup week by week. Find product-market fit, raise money without losing control, and keep your head clear. Free, in English and Arabic.">
+<meta property="og:image" content="https://adam.ahmedhaz.com/fog/og-en.png">
+<meta property="og:url" content="https://adam.ahmedhaz.com/fog/">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#EEF2F7">
+<link rel="icon" type="image/png" href="../founder-fog/icons/icon-192.png">
+<link rel="apple-touch-icon" href="../founder-fog/icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+  // first visit follows the device language; a choice made here or in the game is remembered
+  (function () {
+    var page = document.documentElement.lang, pref = null;
+    try { pref = localStorage.getItem("founderFog.lang"); } catch (e) {}
+    var want = pref || ((navigator.language || "").toLowerCase().indexOf("ar") === 0 ? "ar" : "en");
+    if (want !== page && !/[?&]stay/.test(location.search)) location.replace(want === "ar" ? "ar.html" : "./");
+  })();
+  function setLang(l) { try { localStorage.setItem("founderFog.lang", l); } catch (e) {} }
+</script>
+<style>
+  :root {
+    --bg: #F4F6FA; --panel: #FFFFFF; --panel2: #EEF2F7; --line: #E3E8EF;
+    --ink: #1C2430; --ink2: #4E5A6B; --ink3: #8C97A6;
+    --accent: #FF5A36; --accent-ink: #FFFFFF; --blue: #2D7FF9; --green: #22A559; --gold: #C28F00; --red: #E5484D;
+    --sky1: #CFE3FF; --sky2: #EAF2FF; --shadow: 0 18px 50px rgba(28, 36, 48, .12);
+    --font: "Archivo", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0E131A; --panel: #161D26; --panel2: #1C2531; --line: #263140;
+      --ink: #EEF2F7; --ink2: #B3BFCC; --ink3: #7D8A99;
+      --sky1: #13243B; --sky2: #0F1A29; --shadow: 0 18px 50px rgba(0, 0, 0, .45);
+    }
+  }
+  :root[dir="rtl"] { --font: "IBM Plex Sans Arabic", "Archivo", system-ui, sans-serif; }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); line-height: 1.55; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  a { color: inherit; }
+  img { display: block; max-width: 100%; }
+  .wrap { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+  @media (min-width: 720px) { .wrap { padding: 0 28px; } }
+
+  /* header */
+  header { position: sticky; top: 0; z-index: 10; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); background: color-mix(in srgb, var(--bg) 78%, transparent); border-bottom: 1px solid var(--line); }
+  .bar { display: flex; align-items: center; justify-content: space-between; height: 60px; gap: 12px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: .14em; font-size: 15px; text-decoration: none; }
+  [dir="rtl"] .brand { letter-spacing: 0; }
+  .brand img { width: 32px; height: 32px; border-radius: 9px; }
+  .bar nav { display: flex; align-items: center; gap: 8px; }
+  .lang { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; background: var(--panel); }
+  .lang a { padding: 6px 12px; font-size: 13px; font-weight: 600; text-decoration: none; color: var(--ink2); }
+  .lang a.on { background: var(--ink); color: var(--bg); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px; border-radius: 14px; font-weight: 600; font-size: 16px; text-decoration: none; border: 1px solid transparent; transition: transform .15s ease, box-shadow .15s ease; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary { background: var(--accent); color: var(--accent-ink); box-shadow: 0 10px 24px rgba(255, 90, 54, .32); }
+  .btn-ghost { background: var(--panel); color: var(--ink); border-color: var(--line); }
+  .btn-sm { min-height: 38px; padding: 0 14px; font-size: 14px; border-radius: 11px; }
+  @media (max-width: 520px) { .hide-sm { display: none; } }
+
+  /* hero */
+  .hero { background: linear-gradient(180deg, var(--sky1), var(--sky2) 55%, var(--bg)); padding: 48px 0 64px; overflow: hidden; }
+  .hero-grid { display: grid; gap: 40px; align-items: center; }
+  @media (min-width: 900px) { .hero-grid { grid-template-columns: 1.1fr .9fr; } }
+  .kicker { font-size: 13px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+  [dir="rtl"] .kicker { letter-spacing: 0; }
+  h1 { font-size: clamp(36px, 7vw, 64px); line-height: 1.05; letter-spacing: -.03em; margin: 12px 0 16px; font-weight: 800; }
+  [dir="rtl"] h1 { letter-spacing: 0; line-height: 1.25; }
+  .lead { font-size: clamp(17px, 2.2vw, 20px); color: var(--ink2); max-width: 34em; margin: 0 0 26px; }
+  .ctas { display: flex; flex-wrap: wrap; gap: 12px; }
+  .note { font-size: 14px; color: var(--ink3); margin-top: 14px; }
+  .stage { position: relative; display: flex; justify-content: center; min-height: 520px; }
+  .phone { width: min(290px, 78vw); aspect-ratio: 390 / 844; border-radius: 42px; padding: 10px; background: #0E131A; box-shadow: var(--shadow), 0 0 0 1px rgba(255,255,255,.06) inset; }
+  .phone img { width: 100%; height: 100%; object-fit: cover; border-radius: 33px; }
+  .float { position: absolute; width: 74px; height: 74px; animation: bob 6s ease-in-out infinite; filter: drop-shadow(0 10px 18px rgba(28,36,48,.18)); }
+  .f1 { top: 6%; inset-inline-start: 2%; } .f2 { top: 30%; inset-inline-end: 0; animation-delay: -2s; width: 64px; height: 64px; }
+  .f3 { bottom: 12%; inset-inline-start: 6%; animation-delay: -4s; width: 60px; height: 60px; } .f4 { bottom: 2%; inset-inline-end: 8%; animation-delay: -1s; }
+  @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+  @media (prefers-reduced-motion: reduce) { .float { animation: none; } .btn:hover { transform: none; } }
+
+  /* stats */
+  .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: -28px; position: relative; }
+  @media (min-width: 720px) { .stats { grid-template-columns: repeat(5, 1fr); } }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; text-align: center; box-shadow: 0 6px 18px rgba(28,36,48,.05); }
+  .stat b { display: block; font-size: 28px; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .stat span { font-size: 13.5px; color: var(--ink2); }
+
+  section { padding: 72px 0 0; }
+  h2 { font-size: clamp(28px, 4.4vw, 42px); line-height: 1.12; letter-spacing: -.02em; margin: 8px 0 14px; font-weight: 800; }
+  [dir="rtl"] h2 { letter-spacing: 0; line-height: 1.3; }
+  .sub { color: var(--ink2); font-size: 18px; max-width: 40em; margin: 0 0 30px; }
+
+  /* cards */
+  .cards { display: grid; gap: 14px; }
+  @media (min-width: 760px) { .cards { grid-template-columns: repeat(3, 1fr); } }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 22px; }
+  .card img { width: 52px; height: 52px; margin-bottom: 12px; }
+  .card h3 { margin: 0 0 6px; font-size: 19px; }
+  .card p { margin: 0; color: var(--ink2); font-size: 15.5px; }
+
+  /* screens */
+  .screens { display: flex; gap: 18px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 6px 2px 18px; scrollbar-width: thin; }
+  .shot { flex: 0 0 auto; width: 220px; scroll-snap-align: start; margin: 0; }
+  .shot .phone { width: 220px; border-radius: 34px; padding: 8px; }
+  .shot .phone img { border-radius: 27px; }
+  .shot figcaption { margin-top: 12px; font-size: 14.5px; color: var(--ink2); }
+  .shot figcaption b { display: block; color: var(--ink); font-size: 15.5px; }
+
+  /* split + lists */
+  .split { display: grid; gap: 22px; align-items: center; }
+  @media (min-width: 860px) { .split { grid-template-columns: 1fr 1fr; gap: 48px; } }
+  .ticks { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+  .ticks li { display: flex; gap: 12px; align-items: flex-start; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
+  .ticks img { width: 34px; height: 34px; flex: 0 0 34px; }
+  .ticks b { display: block; }
+  .ticks span { color: var(--ink2); font-size: 15px; }
+
+  .band { background: var(--panel); border-block: 1px solid var(--line); margin-top: 72px; padding: 56px 0; }
+  .grades { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 18px; }
+  .grade { background: var(--panel2); border-radius: 14px; padding: 12px; text-align: center; font-size: 13.5px; color: var(--ink2); }
+  .grade b { display: block; font-size: 26px; color: var(--green); }
+
+  /* faq */
+  details { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; margin-bottom: 10px; }
+  summary { cursor: pointer; font-weight: 600; font-size: 16.5px; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; color: var(--ink3); font-weight: 400; font-size: 22px; line-height: 1; }
+  details[open] summary::after { content: "–"; }
+  details p { margin: 10px 0 0; color: var(--ink2); }
+
+  .final { text-align: center; padding: 80px 0; }
+  .final h2 { max-width: 16em; margin-inline: auto; }
+  .final .ctas { justify-content: center; }
+  footer { border-top: 1px solid var(--line); padding: 26px 0 40px; color: var(--ink3); font-size: 14px; }
+  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="#top"><img src="../founder-fog/icons/icon-192.png" alt="">FOUNDER FOG</a>
+    <nav>
+      <span class="lang"><a href="./?stay" onclick="setLang('en')" class="on">EN</a><a href="ar.html?stay" onclick="setLang('ar')" class="">عربي</a></span>
+      <a class="btn btn-primary btn-sm hide-sm" href="../founder-fog/index.html">Play free</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <div class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <div class="kicker">A startup survival game</div>
+        <h1>Build a company. Keep your head clear.</h1>
+        <p class="lead">Founder Fog puts you in the founder&#x27;s chair for a year: real runway, real customers, real term sheets, and a fog that rolls in when you stop looking after yourself.</p>
+        <div class="ctas">
+          <a class="btn btn-primary" href="../founder-fog/index.html">▶ Play free in your browser</a>
+          
+          <a class="btn btn-ghost" href="#screens">See the game</a>
+        </div>
+        <p class="note">Free · no account · English and Arabic · plays on any phone</p>
+      </div>
+      <div class="stage" aria-hidden="true">
+        <img class="float f1" src="../founder-fog/img/rocket.webp" alt="">
+        <img class="float f2" src="../founder-fog/img/money_bag.webp" alt="">
+        <img class="float f3" src="../founder-fog/img/brain.webp" alt="">
+        <img class="float f4" src="../founder-fog/img/fog.webp" alt="">
+        <div class="phone"><img src="shots/en-hq.webp" alt="The Founder Fog home screen: cash, weekly target, customers and inbox" width="390" height="844"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap stats">
+    <div class="stat"><b>91</b><span>dilemmas with no right answer</span></div>
+    <div class="stat"><b>40</b><span>Founder Playbook pages</span></div>
+    <div class="stat"><b>8</b><span>ways it can end</span></div>
+    <div class="stat"><b>2</b><span>languages, switch anytime</span></div>
+    <div class="stat"><b>$0</b><span>to play</span></div>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <div class="kicker">Why it&#x27;s different</div>
+      <h2>A game where doing what works in real life is what wins.</h2>
+      <p class="sub">Most startup games reward spending. This one is built so the mechanics behave like a real company: what works for real founders is what wins.</p>
+      <div class="cards">
+        <div class="card"><img src="../founder-fog/img/chart_increasing.webp" alt=""><h3>Money that doesn&#x27;t lie</h3><p>Costs grow as you grow, runway never goes to infinity, and your valuation follows revenue, growth and the market. Default alive is something you earn.</p></div>
+        <div class="card"><img src="../founder-fog/img/magnifying_glass_tilted_left.webp" alt=""><h3>Learn first, scale second</h3><p>Your product-market fit is hidden until you talk to customers. Ads before fit buy churn. Insights, experiments and pivots are how you win.</p></div>
+        <div class="card"><img src="../founder-fog/img/fog.webp" alt=""><h3>You are a resource too</h3><p>Stress drains your clarity. When it drops, the fog hides your numbers and the consequences of your choices. Burnout is a real way to lose.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screens">
+    <div class="wrap">
+      <div class="kicker">Inside the game</div>
+      <h2>Every week, a real decision.</h2>
+      <div class="screens">
+        <figure class="shot"><div class="phone"><img loading="lazy" src="shots/en-dilemma.webp" alt="" width="390" height="844"></div><figcaption><b>Dilemmas</b>91 of them, and they come back weeks later.</figcaption></figure>
+        <figure class="shot"><div class="phone"><img loading="lazy" src="shots/en-customers.webp" alt="" width="390" height="844"></div><figcaption><b>Customers</b>Talk, build, test, pivot.</figcaption></figure>
+        <figure class="shot"><div class="phone"><img loading="lazy" src="shots/en-money.webp" alt="" width="390" height="844"></div><figcaption><b>Money</b>Where every dollar goes, and when it runs out.</figcaption></figure>
+        <figure class="shot"><div class="phone"><img loading="lazy" src="shots/en-mentor.webp" alt="" width="390" height="844"></div><figcaption><b>Mentor notes</b>The lesson behind every choice.</figcaption></figure>
+        <figure class="shot"><div class="phone"><img loading="lazy" src="shots/en-report.webp" alt="" width="390" height="844"></div><figcaption><b>Report card</b>Six skills graded at the end of every run.</figcaption></figure>
+        <figure class="shot"><div class="phone"><img loading="lazy" src="shots/en-sectors.webp" alt="" width="390" height="844"></div><figcaption><b>Five markets</b>SaaS, fintech, marketplaces, health and education.</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap split">
+      <div>
+        <div class="kicker">Made for the region</div>
+        <h2>Written for founders in Riyadh, Dubai, Cairo and Amman.</h2>
+        <p class="sub">Not translated from Silicon Valley. The game knows the calendar, the regulators and the family dinner.</p>
+      </div>
+      <ul class="ticks">
+        <li><img src="../founder-fog/img/sunrise.webp" alt=""><div><b>Ramadan and the Eids</b><span>Usage peaks after iftar, B2B slows down, and the team expects an Eid bonus.</span></div></li>
+        <li><img src="../founder-fog/img/classical_building.webp" alt=""><div><b>Licences and wasta</b><span>Central-bank sandboxes, data residency, and an uncle who offers to make a call.</span></div></li>
+        <li><img src="../founder-fog/img/credit_card.webp" alt=""><div><b>Payments</b><span>Gateway freezes, cash on delivery, and customers who pay three months late.</span></div></li>
+        <li><img src="../founder-fog/img/house.webp" alt=""><div><b>Family</b><span>Parents who want you in a government job, and a partner who wants you home for dinner.</span></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="band">
+    <div class="wrap split">
+      <div>
+        <div class="kicker">For classrooms and incubators</div>
+        <h2>A year of founder mistakes in an hour, without losing real money.</h2>
+        <p class="sub">Every run ends with a lesson you can name. Use it in a class, a cohort kick-off or a workshop.</p>
+        <ul class="ticks">
+          <li><img src="../founder-fog/img/graduation_cap.webp" alt=""><div><b>Mentor notes</b><span>After every dilemma: the lesson, a real-world example and a book to read.</span></div></li>
+          <li><img src="../founder-fog/img/notebook.webp" alt=""><div><b>The Founder Playbook</b><span>40 pages to collect, from default alive to term sheets, plus a glossary.</span></div></li>
+          <li><img src="../founder-fog/img/bullseye.webp" alt=""><div><b>Challenges</b><span>Short runs with one goal: survive a funding winter, find fit in 20 weeks, raise and keep control.</span></div></li>
+        </ul>
+      </div>
+      <div>
+        <div class="phone" style="margin-inline:auto"><img loading="lazy" src="shots/en-report.webp" alt="A founder report card with six skill grades" width="390" height="844"></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <div class="kicker">Questions</div>
+      <h2>Before you start</h2>
+      <details><summary>Is it free?</summary><p>Yes. Play it in your browser with no account, no ads and nothing to buy.</p></details>
+      <details><summary>Can I play it on my phone?</summary><p>Yes. Open it in your phone&#x27;s browser and add it to your home screen: it then works like an app, even offline. An iPhone app is in beta.</p></details>
+      <details><summary>Is it really in Arabic?</summary><p>Fully. Every screen, dilemma, mentor note and playbook page is written in Arabic and English, and you can switch at any time without losing your game.</p></details>
+      <details><summary>How long is a game?</summary><p>A full run is about a year of game weeks, 30 to 60 minutes. Challenges are shorter. Your game saves automatically.</p></details>
+      <details><summary>Where is my data stored?</summary><p>Only on your device. There&#x27;s no account and nothing is sent to a server.</p></details>
+    </div>
+  </section>
+
+  <div class="wrap final">
+    <h2>Can you build a company before the cash, or you, run out?</h2>
+    <p class="sub" style="margin-inline:auto">Most players don&#x27;t make it on their first try. That&#x27;s the point.</p>
+    <div class="ctas"><a class="btn btn-primary" href="../founder-fog/index.html">▶ Play free in your browser</a></div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Founder Fog · Build a company. Keep your head clear.</span>
+    <span class="lang"><a href="./?stay" onclick="setLang('en')" class="on">English</a><a href="ar.html?stay" onclick="setLang('ar')" class="">العربية</a></span>
+  </div>
+</footer>
+</body>
+</html>
