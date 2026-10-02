@@ -4005,6 +4005,1246 @@ __d(function (g, r, i, a, m, _e, d) {
     };
   })();
 
+  const NOTES_A = {
+    dl_prod_01: {
+      lesson: "A customer who pays for a one-off integration is buying a slice of your roadmap. Charge for the upkeep too, or say no.",
+      example: "Many B2B startups built a connector for their biggest account and spent the next two years maintaining a product nobody else used.",
+      read: "Inspired, Marty Cagan",
+      page: "custom_work",
+      skills: { A: { frugality: 1, discovery: -1 }, B: { discovery: 1, integrity: 1 } },
+    },
+    dl_prod_02: {
+      lesson: "Usage that never turns into revenue is a cost centre with a fan club. Measure what each free feature converts, then decide.",
+      example: "Free tools often bring traffic that loves the product and never pays. Some become the best sales channel; most just raise the server bill.",
+      read: "Lean Analytics, Alistair Croll and Benjamin Yoskovitz",
+      page: "burn_multiple",
+      skills: { A: { frugality: 1, discovery: -1 }, B: { discovery: 1, frugality: -1 } },
+    },
+    dl_prod_03: {
+      lesson: "Full rewrites take longer than planned and freeze the business. Rebuild in slices behind the running system whenever you can.",
+      example: "Netscape's decision to rewrite its browser from scratch is the classic warning: years without a release while competitors kept shipping.",
+      read: "Things You Should Never Do, Part I, Joel Spolsky",
+      page: "tech_debt",
+      skills: { A: { hiring: 1, discovery: -1 }, B: { discovery: 1, hiring: -1 } },
+    },
+    dl_prod_04: {
+      lesson: "Build what your customers are asking for, not what your competitors announced. Investors fund traction, not feature lists.",
+      example: "Every hype cycle produces a wave of features shipped for the press release and quietly removed a year later because nobody used them.",
+      read: "Competing Against Luck, Clayton Christensen",
+      page: "pmf",
+      skills: { A: { fundraising: 1, frugality: -1 }, B: { discovery: 1, fundraising: -1 } },
+    },
+    dl_prod_05: {
+      lesson: "Before you pay for a new platform, watch five real users sign up on their phones. The fix is often smaller than the quote.",
+      example: "Plenty of startups paid an agency for native apps and found users still preferred the link they got on WhatsApp, which opens the web.",
+      read: "The Mom Test, Rob Fitzpatrick",
+      page: "mom_test",
+      skills: { A: { discovery: -1 }, B: { frugality: 1, discovery: 1 } },
+    },
+    dl_prod_06: {
+      lesson: "Someone hacking around your product is free research. Find out what they need before deciding whether to block or bless them.",
+      example: "Many public APIs started because outside developers were already scraping the product. Twitter's early ecosystem grew from third-party clients.",
+      read: "Platform Revolution, Parker, Van Alstyne and Choudary",
+      page: "experiments",
+      skills: { A: { discovery: 1, frugality: -1 }, B: { frugality: 1, discovery: -1 } },
+    },
+    dl_prod_07: {
+      lesson: "A free tier is a marketing budget paid in support hours and servers. Know what it costs per user before you match a competitor.",
+      example: "Freemium works when the free users cost almost nothing and a steady share upgrades. When support is human, free users can sink a small team.",
+      read: "Monetizing Innovation, Madhavan Ramanujam and Georg Tacke",
+      page: "pricing",
+      skills: { A: { fundraising: 1, frugality: -1 }, B: { frugality: 1, discovery: 1 } },
+    },
+    dl_prod_08: {
+      lesson: "When a critical supplier fails your customers, the credits go to you but the damage goes to them. Price the next outage, not this one.",
+      example: "Companies that kept a flaky vendor for the discount usually migrated anyway, after a worse outage and under far more pressure.",
+      read: "Site Reliability Engineering, Betsy Beyer et al.",
+      page: "crisis",
+      skills: { A: { integrity: 1, frugality: -1 }, B: { frugality: 1, integrity: -1 } },
+    },
+    dl_prod_09: {
+      lesson: "Consistency work pays back slowly and invisibly. Do it when you can name the features it will speed up, not just the mess it cleans.",
+      example: "Teams that built a design system early often ship screens in days; teams that built it too early polished components for features that died.",
+      read: "Atomic Design, Brad Frost",
+      page: "tech_debt",
+      skills: { A: { hiring: 1, integrity: -1 }, B: { integrity: 1, hiring: -1 } },
+    },
+    dl_prod_10: {
+      lesson: "With regulated data, the boring plan is the fast plan. Run old and new side by side until the numbers match.",
+      example: "Health and finance migrations that went big-bang tend to produce the incident reports; parallel runs produce the clean audits.",
+      read: "Release It!, Michael Nygard",
+      page: "mena_regulation",
+      skills: { A: { frugality: 1, integrity: -1 }, B: { integrity: 1, frugality: -1 } },
+    },
+    dl_prod_11: {
+      lesson: "A number on your homepage is a promise someone will check. Use the claim you can defend in a room with a journalist.",
+      example: "Inflated customer counts are among the first things diligence teams and reporters test. The correction always gets more readers than the claim.",
+      read: "Obviously Awesome, April Dunford",
+      page: "ethics",
+      skills: { A: { integrity: -1 }, B: { integrity: 1 } },
+    },
+    dl_prod_12: {
+      lesson: "Growth bought just before a raise shows up in the next board meeting. Investors read retention eventually; make sure yours survives it.",
+      example: "Many startups showed a beautiful signup curve at seed, then spent the next round explaining why the discounted cohorts left.",
+      read: "Venture Deals, Brad Feld and Jason Mendelson",
+      page: "fundraise_timing",
+      skills: { A: { fundraising: 1, integrity: -1 }, B: { integrity: 1, fundraising: -1 } },
+    },
+    dl_prod_13: {
+      lesson: "Judge a channel by what a paying customer costs and how long they stay, not by reach. Followers are not customers.",
+      example: "Big influencer posts often bring a spike that churns within weeks; many small creators with the right audience tend to bring steadier users.",
+      read: "Traction, Gabriel Weinberg and Justin Mares",
+      page: "unit_economics",
+      skills: { A: { frugality: -1 }, B: { discovery: 1, frugality: 1 } },
+    },
+    dl_prod_14: {
+      lesson: "Pay for referrals and you attract people who love the payment. Reward something only a real user would value.",
+      example: "PayPal paid cash for signups early on and it worked, at a huge cost. Dropbox gave free storage instead, a reward that only mattered to users.",
+      read: "Hacking Growth, Sean Ellis and Morgan Brown",
+      page: "churn",
+      skills: { A: { discovery: -1, frugality: -1 }, B: { frugality: 1 } },
+    },
+    dl_prod_15: {
+      lesson: "Growth taken without consent is borrowed against your reputation. Every pre-ticked box is a complaint you have scheduled.",
+      example: "LinkedIn settled a class action over the reminder emails it sent to users' imported contacts. Annoyed recipients remember the sender.",
+      read: "Deceptive Patterns, Harry Brignull",
+      page: "vanity",
+      skills: { A: { integrity: -1, discovery: 1 }, B: { integrity: 1 } },
+    },
+    dl_prod_16: {
+      lesson: "A distribution partner gives you reach and takes your pricing power. Read the exclusivity clause before the revenue line.",
+      example: "Startups bundled by a telecom or bank often grew fast and then found the partner owned the customer relationship and set the price.",
+      read: "Crossing the Chasm, Geoffrey Moore",
+      page: "channels",
+      skills: { A: { fundraising: 1, discovery: -1 }, B: { discovery: 1, fundraising: -1 } },
+    },
+    dl_prod_17: {
+      lesson: "A big stage multiplies whatever you show. Demo what works today, and protect the team from a crunch that the audience never sees.",
+      example: "Live demos of unfinished software are a startup tradition. So is the month of bug fixing and tired engineers that follows the applause.",
+      read: "The Lean Startup, Eric Ries",
+      page: "burnout",
+      skills: { A: { selfcare: -1, fundraising: 1 }, B: { selfcare: 1, hiring: 1 } },
+    },
+    dl_prod_18: {
+      lesson: "Organic demand in a new market is a signal, not a mandate. Learn why they came before you pay to bring more.",
+      example: "Startups that followed organic pull into a new country did best when they first called those users and learned what they wanted.",
+      read: "The Mom Test, Rob Fitzpatrick",
+      page: "expansion",
+      skills: { A: { discovery: 1, frugality: -1 }, B: { frugality: 1, discovery: -1 } },
+    },
+    dl_ppl_01: {
+      lesson: "Loyalty earns trust, not a management job. If you promote a builder, give them a coach and a way back without shame.",
+      example: "Many early engineers promoted to lead were miserable within a year. The ones who got training and a clear manager path often thrived.",
+      read: "The Making of a Manager, Julie Zhuo",
+      page: "delegation",
+      skills: { A: { hiring: -1, integrity: 1 }, B: { hiring: 1, frugality: -1 } },
+    },
+    dl_ppl_02: {
+      lesson: "Remote work fails when only one person is remote. If you say yes, move the team's decisions into writing for everyone.",
+      example: "Distributed companies that thrive write things down by default. Hybrid teams often leave the one remote person out of hallway decisions.",
+      read: "Remote, Jason Fried and David Heinemeier Hansson",
+      page: "culture",
+      skills: { A: { hiring: 1 }, B: { hiring: -1, frugality: -1 } },
+    },
+    dl_ppl_03: {
+      lesson: "Public fights are a vacuum where a decision should be. Make the call, write down why, and let the losing side disagree and commit.",
+      example: "Teams that split people to avoid a fight often end up with two systems doing the same job, and the original argument still unresolved.",
+      read: "Radical Candor, Kim Scott",
+      page: "no_jerks",
+      skills: { A: { hiring: 1, selfcare: -1 }, B: { selfcare: 1, hiring: -1 } },
+    },
+    dl_ppl_04: {
+      lesson: "Every counter-offer sets a salary policy, whether you meant it or not. Decide the rule you would want everyone to know.",
+      example: "Startups that matched one outside offer often faced three more within months. Clear salary bands make the next conversation easier.",
+      read: "No Rules Rules, Reed Hastings and Erin Meyer",
+      page: "transparency",
+      skills: { A: { hiring: 1, frugality: -1 }, B: { frugality: 1, hiring: -1 } },
+    },
+    dl_ppl_05: {
+      lesson: "Hiring through family and friends feels like trust and works like debt. Hire on the same bar, then explain it kindly at home.",
+      example: "In many Arab markets referrals from family are the main hiring channel. The companies that grow keep the interview bar the same for everyone.",
+      read: "Who, Geoff Smart and Randy Street",
+      page: "mena_wasta",
+      skills: { A: { selfcare: 1, hiring: -1 }, B: { hiring: 1, selfcare: -1 } },
+    },
+    dl_ppl_06: {
+      lesson: "If one person alone owns a critical system, you have a security problem before you have a people problem. Fix the single point of failure.",
+      example: "Many breaches and outages trace back to one engineer with sole access. Shared ownership and access reviews are cheap insurance.",
+      read: "An Elegant Puzzle, Will Larson",
+      page: "security",
+      skills: { A: { integrity: 1, frugality: -1 }, B: { frugality: 1, integrity: -1 } },
+    },
+    dl_ppl_07: {
+      lesson: "Cut once, cut deep enough, and tell people the plan. Small repeated cuts cost more trust than one hard decision.",
+      example: "Founders who cut too little often had to cut again within a quarter. Teams forgive a hard call faster than a slow series of them.",
+      read: "The Hard Thing About Hard Things, Ben Horowitz",
+      page: "runway",
+      skills: { A: { frugality: 1, hiring: -1 }, B: { integrity: 1, selfcare: -1 } },
+    },
+    dl_ppl_08: {
+      lesson: "Overruling your co-founder on a key hire spends trust you will need later. If you go ahead, agree on how you will both judge it.",
+      example: "Co-founder splits often start with a hire one of them never wanted. A shared 90-day scorecard turns the argument into a test.",
+      read: "The Founder's Dilemmas, Noam Wasserman",
+      page: "cofounder",
+      skills: { A: { fundraising: 1, hiring: -1 }, B: { hiring: 1 } },
+    },
+    dl_ppl_09: {
+      lesson: "A quiet complaint is a test of whether people can trust you with the next one. Protect the reporter first, then fix the behaviour.",
+      example: "Startups without HR often handle the first complaint informally. The ones that hired outside help early tended to avoid the second, louder one.",
+      read: "Radical Candor, Kim Scott",
+      page: "no_jerks",
+      skills: { A: { integrity: 1, frugality: -1 }, B: { frugality: 1, hiring: -1 } },
+    },
+    dl_ppl_10: {
+      lesson: "When your early people vest out, they become free agents. Refresh grants before the cliff, not after the resignation.",
+      example: "Many startups lost their first engineers right after full vesting. Refresh grants are standard practice in companies that kept them.",
+      read: "The Holloway Guide to Equity Compensation, Joshua Levy",
+      page: "vesting",
+      skills: { A: { hiring: 1, fundraising: -1 }, B: { fundraising: 1, hiring: -1 } },
+    },
+    dl_ppl_11: {
+      lesson: "A founder who can't pay rent makes desperate decisions. A modest salary is an operating cost, not a luxury.",
+      example: "Investors generally expect founders to draw a small salary. Founders who took nothing for years often burned out or took worse deals out of fear.",
+      read: "The Founder's Dilemmas, Noam Wasserman",
+      page: "family",
+      skills: { A: { selfcare: 1, frugality: -1 }, B: { frugality: 1, selfcare: -1 } },
+    },
+    dl_ppl_12: {
+      lesson: "A competitor's money comes with a competitor's attention. Ask what information rights they get before you ask about the valuation.",
+      example: "Strategic investments from rivals can scare off later investors and acquirers, who worry the rival already sees your numbers.",
+      read: "Venture Deals, Brad Feld and Jason Mendelson",
+      page: "term_sheet",
+      skills: { A: { fundraising: -1, frugality: 1 }, B: { fundraising: 1 } },
+    },
+    dl_ppl_13: {
+      lesson: "A personal guarantee moves company risk onto your home and your family. Only sign if you would still sign after the worst quarter.",
+      example: "Debt can be cheaper than equity for a startup with revenue. The founders who regretted it were the ones who put their home on the line.",
+      read: "The Founder's Dilemmas, Noam Wasserman",
+      page: "alt_funding",
+      skills: { A: { fundraising: 1, selfcare: -1 }, B: { selfcare: 1 } },
+    },
+    dl_ppl_14: {
+      lesson: "Early customers paying old prices are a thank-you that never ends. Raise with notice, a reason and a timeline, not a surprise invoice.",
+      example: "SaaS companies that gave loyal customers months of notice and a clear reason usually kept most of them through a price rise.",
+      read: "Monetizing Innovation, Madhavan Ramanujam and Georg Tacke",
+      page: "pricing",
+      skills: { A: { frugality: 1, integrity: -1 }, B: { integrity: 1, frugality: -1 } },
+    },
+    dl_ppl_15: {
+      lesson: "Revenue you collect in four months is a loan you give today. Model the cash gap before you celebrate the bigger contract.",
+      example: "Large retailers and government buyers in the region often pay late. Many profitable-on-paper startups ran out of cash waiting for invoices.",
+      read: "Default Alive or Default Dead?, Paul Graham",
+      page: "default_alive",
+      skills: { A: { frugality: -1, fundraising: 1 }, B: { frugality: 1 } },
+    },
+    dl_ppl_16: {
+      lesson: "Candidates judge the company by what they can see. Fix the pitch, the process and the people before you fix the furniture.",
+      example: "Senior hires usually turn down startups over role and pay, not desks. Still, a visit to a chaotic space can tip a close call.",
+      read: "Who, Geoff Smart and Randy Street",
+      page: "hire_slow",
+      skills: { A: { hiring: 1, frugality: -1 }, B: { frugality: 1, hiring: -1 } },
+    },
+    dl_ppl_17: {
+      lesson: "A bridge with a low cap prices your company before the market does. Compare it with cutting burn, not with running out.",
+      example: "Bridge notes with steep discounts often set the price the next lead investor anchors on. Some founders cut costs and raised later on better terms.",
+      read: "Venture Deals, Brad Feld and Jason Mendelson",
+      page: "dilution",
+      skills: { A: { fundraising: -1 }, B: { frugality: 1, hiring: -1 } },
+    },
+    dl_ppl_18: {
+      lesson: "In payments, the cheapest provider is the one that never freezes your money. Check their compliance team before their fees.",
+      example: "Founders in the region tell the same story: a cheaper processor, a sudden compliance review, and weeks of payouts held back.",
+      read: "Payments Systems in the U.S., Carol Coye Benson",
+      page: "mena_payments",
+      skills: { A: { frugality: 1, discovery: -1 }, B: { discovery: 1, frugality: -1 } },
+    },
+  };
+
+  const NOTES_B = {
+    dl_life_01: {
+      lesson: "A customer's numbers belong to the customer. Asking first costs a few days; using them without asking can cost the account and the reference.",
+      example: "Founders who ask usually get a yes, and often a quote too. Investors also notice when a deck shows data the customer clearly never cleared.",
+      read: "The Trusted Advisor, David Maister",
+      page: "transparency",
+      skills: { A: { integrity: -1 }, B: { integrity: 1, fundraising: -1 } },
+    },
+    dl_life_02: {
+      lesson: "Bending a date on an invoice is cheap once and expensive forever: it trains a client to expect it and puts your books on the wrong side of an audit.",
+      example: "Procurement teams ask for this more often than founders expect. A clear 'we can't, but here's a prepayment discount' usually keeps the deal.",
+      read: "The Hard Thing About Hard Things, Ben Horowitz",
+      page: "ethics",
+      skills: { A: { integrity: -1, frugality: 1 }, B: { integrity: 1 } },
+    },
+    dl_life_03: {
+      lesson: "Every number you give the press becomes a number you must beat later. Say the real one and explain the trend behind it.",
+      example: "Inflated launch numbers often resurface in due diligence, when an investor compares the old article with the dashboard.",
+      read: "Trust Me, I'm Lying, Ryan Holiday",
+      page: "vanity",
+      skills: { A: { integrity: -1 }, B: { integrity: 1, discovery: 1 } },
+    },
+    dl_life_04: {
+      lesson: "A cancellation flow that traps people lowers churn on paper and raises it in reputation. Ask leavers why instead of making them crawl out.",
+      example: "In 2023 the US FTC sued Amazon over how hard it was to cancel Prime. Regulators everywhere now treat cancellation friction as a consumer issue.",
+      read: "Deceptive Patterns, Harry Brignull",
+      page: "churn",
+      skills: { A: { integrity: -1, frugality: 1 }, B: { integrity: 1, discovery: 1 } },
+    },
+    dl_life_05: {
+      lesson: "Money you took by mistake is not revenue. Refunding before anyone asks turns a bug into the reason customers trust your billing.",
+      example: "Companies that email 'we overcharged you, it's already refunded' tend to get thank-you replies. The ones found out later get screenshots.",
+      read: "Radical Candor, Kim Scott",
+      page: "transparency",
+      skills: { A: { integrity: 1, frugality: -1 }, B: { frugality: 1, integrity: -1 } },
+    },
+    dl_life_06: {
+      lesson: "Investors remember how you talk about others and assume you'll talk about them the same way. Win on your own numbers.",
+      example: "Ecosystems in Riyadh, Dubai and Cairo are small; gossip about a rival's CTO tends to reach that CTO within a week, with your name attached.",
+      read: "Secrets of Sand Hill Road, Scott Kupor",
+      page: "fundraise_timing",
+      skills: { A: { fundraising: 1, integrity: -1 }, B: { integrity: 1 } },
+    },
+    dl_life_07: {
+      lesson: "Most meetings can move; most family moments can't. Ask before you assume the investor's calendar is fixed.",
+      example: "Partners reschedule all the time. A founder who says 'I have a family wedding, can we do Sunday?' rarely loses the deal over it.",
+      read: "Startup Life, Brad Feld and Amy Batchelor",
+      page: "family",
+      skills: { A: { fundraising: 1, selfcare: -1 }, B: { selfcare: 1 } },
+    },
+    dl_life_08: {
+      lesson: "A launch that can't survive two days without you is a launch with a single point of failure. Write the runbook, then actually leave.",
+      example: "Founders who practise short, real disconnections early tend to build teams that can run a launch without them in the room.",
+      read: "Startup Life, Brad Feld and Amy Batchelor",
+      page: "delegation",
+      skills: { A: { selfcare: 1, hiring: 1 }, B: { selfcare: -1 } },
+    },
+    dl_life_09: {
+      lesson: "Parents worry in the currency they know: salaries. Give them a timeline and a fallback, not a pitch deck.",
+      example: "Many founders in the region say the turning point with family was sharing a simple plan: 'if this isn't working by June, here's what I'll do'.",
+      read: "Crucial Conversations, Kerry Patterson et al.",
+      page: "family",
+      skills: { A: { integrity: 1 }, B: { selfcare: -1 } },
+    },
+    dl_life_10: {
+      lesson: "Chest pain isn't a calendar item to negotiate. Customers move calls; bodies don't reschedule.",
+      example: "A renewal call moved by two hours almost never costs a renewal. Founders who ignore symptoms for a year often lose months later.",
+      read: "Reboot, Jerry Colonna",
+      page: "burnout",
+      skills: { A: { selfcare: 1 }, B: { selfcare: -1, discovery: 1 } },
+    },
+    dl_life_11: {
+      lesson: "A founder who can't pay rent makes worse decisions. A small salary is a runway cost, not a luxury; family loans have terms even when unwritten.",
+      example: "Seed investors generally expect founders to pay themselves a modest living wage; it rarely raises an eyebrow in diligence.",
+      read: "The Psychology of Money, Morgan Housel",
+      page: "runway",
+      skills: { A: { frugality: 1, selfcare: -1 }, B: { selfcare: 1, frugality: -1 } },
+    },
+    dl_life_12: {
+      lesson: "Generosity compounds in small ecosystems, but your evenings are your company's scarcest resource. Give the highest-leverage hour, not the month.",
+      example: "A single warm introduction usually does more for a struggling founder than weeks of deck edits.",
+      read: "Give and Take, Adam Grant",
+      page: "mena_wasta",
+      skills: { A: { integrity: 1, selfcare: -1 }, B: { frugality: 1 } },
+    },
+    dl_life_13: {
+      lesson: "Sleep is a decision-making tool. A founder on five hours is negotiating the round with a worse brain than the investor across the table.",
+      example: "Research on sleep deprivation shows judgement degrades long before people notice it themselves.",
+      read: "Why We Sleep, Matthew Walker",
+      page: "burnout",
+      skills: { A: { selfcare: 1 }, B: { fundraising: 1, selfcare: -1 } },
+    },
+    dl_life_14: {
+      lesson: "Burnout named early is cheaper than burnout discovered in a board meeting. Treat support as infrastructure, not indulgence.",
+      example: "More founders now say openly they see a therapist or coach; several founder communities in the region run peer circles for this.",
+      read: "Reboot, Jerry Colonna",
+      page: "burnout",
+      skills: { A: { selfcare: 1, frugality: -1 }, B: { frugality: 1, selfcare: -1 } },
+    },
+    dl_life_15: {
+      lesson: "In an outage, the first job is honest communication, the second is diagnosis. Spending money before you know the cause often buys nothing.",
+      example: "In 2017 GitLab lost production data and live-streamed its recovery. Many users said the openness made them trust the company more.",
+      read: "Site Reliability Engineering, Beyer et al. (Google)",
+      page: "crisis",
+      skills: { A: { integrity: 1 }, B: { frugality: -1 } },
+    },
+    dl_life_16: {
+      lesson: "A co-founder's public words are the company's words. Deal with it privately and fast, and let the apology be theirs, not dictated.",
+      example: "Viral outrage usually fades in days, but candidates and customers search the company name for months afterward.",
+      read: "So You've Been Publicly Shamed, Jon Ronson",
+      page: "no_jerks",
+      skills: { A: { hiring: 1 }, B: { hiring: -1 } },
+    },
+    dl_life_17: {
+      lesson: "When customer data leaks, the cover-up is what people remember. Disclose quickly, say exactly what leaked and what you changed.",
+      example: "Uber concealed a 2016 breach and paid the hackers to stay quiet; its former security chief was later convicted over the cover-up.",
+      read: "The Hard Thing About Hard Things, Ben Horowitz",
+      page: "security",
+      skills: { A: { integrity: 1 }, B: { integrity: -1, frugality: 1 } },
+    },
+    dl_life_18: {
+      lesson: "If one person leaving breaks your demo, the problem is older than today. Show what works reliably and write down what only one head knows.",
+      example: "Investors rarely fund the feature they saw; they fund how the founder handled the day. A calm demo of the old version often lands fine.",
+      read: "The Hard Thing About Hard Things, Ben Horowitz",
+      page: "delegation",
+      skills: { A: { fundraising: 1, hiring: -1 }, B: { integrity: 1 } },
+    },
+    dl_life_19: {
+      lesson: "Payment providers can hold your money at any time. Keep a payroll buffer outside the processor, and ask about reserve terms before you sign.",
+      example: "Rolling reserves and review holds after refund spikes are standard processor policy, and they usually arrive with little warning.",
+      read: "Default Alive or Default Dead?, Paul Graham",
+      page: "default_alive",
+      skills: { A: { frugality: -1, hiring: 1 }, B: { integrity: 1, hiring: -1 } },
+    },
+    dl_life_20: {
+      lesson: "A regulator's letter is a deadline and a signal. Fix the product issue first; a good reply describes a change you've already shipped.",
+      example: "Authorities in the region increasingly enforce auto-renewal and refund rules; a prompt, specific reply often closes the file.",
+      read: "Regulatory Hacking, Evan Burfield",
+      page: "mena_regulation",
+      skills: { A: { frugality: -1, integrity: 1 }, B: { frugality: 1 } },
+    },
+    dl_life_21: {
+      lesson: "A disaster is a chance to test which parts of the office you actually need. Decide on purpose, not by default.",
+      example: "Plenty of teams discovered during forced remote periods that they needed a room twice a week, not five days.",
+      read: "Remote: Office Not Required, Jason Fried and David Heinemeier Hansson",
+      page: "culture",
+      skills: { A: { frugality: 1 }, B: { hiring: 1, frugality: -1 } },
+    },
+    dl_life_22: {
+      lesson: "Real reviews are an asset you build before you need them. Ask happy customers routinely, never only in a crisis, and never with rewards.",
+      example: "App stores remove review bombs when you document the pattern, but slowly. Apps with steady review requests recover faster.",
+      read: "Contagious, Jonah Berger",
+      page: "channels",
+      skills: { A: { integrity: 1 }, B: { discovery: 1 } },
+    },
+    dl_mena_01: {
+      lesson: "Wasta is a loan with no written terms. If you use it, know what you're willing to give back before the call is made.",
+      example: "Saudi, UAE and Egyptian registries have moved much of licensing online, which has made the queue shorter and the favour less necessary.",
+      read: "Wasta: The Hidden Force in Middle Eastern Society, Cunningham and Sarayrah",
+      page: "mena_wasta",
+      skills: { A: { selfcare: 1, integrity: -1 }, B: { integrity: 1, frugality: -1 } },
+    },
+    dl_mena_02: {
+      lesson: "In regulated finance, the licence is the moat. A sandbox is expensive, slow and the cheapest way to own the customer.",
+      example: "SAMA, the UAE central bank and Egypt's central bank all run fintech sandboxes; many regional payments startups used them as the road to a licence.",
+      read: "Regulatory Hacking, Evan Burfield",
+      page: "mena_regulation",
+      skills: { A: { fundraising: 1, frugality: -1 }, B: { frugality: 1 } },
+    },
+    dl_mena_03: {
+      lesson: "Data residency rules only tighten. Migrating early is costly; migrating late is costly and rushed.",
+      example: "Saudi's personal data law and cloud rules pushed global providers to open in-country regions; vendors already local won government tenders first.",
+      read: "Regulatory Hacking, Evan Burfield",
+      page: "mena_regulation",
+      skills: { A: { integrity: 1, frugality: -1 }, B: { discovery: 1 } },
+    },
+    dl_mena_04: {
+      lesson: "Renaming a product to dodge a regulator changes the label, not the risk. Decide what you are, then build the evidence for it.",
+      example: "Saudi's SFDA and UAE health regulators both regulate software as a medical device; a clinical study also becomes a strong sales asset with hospitals.",
+      read: "Regulatory Hacking, Evan Burfield",
+      page: "mena_regulation",
+      skills: { A: { integrity: 1, frugality: -1 }, B: { frugality: 1, integrity: -1 } },
+    },
+    dl_mena_05: {
+      lesson: "A Thursday freeze before a Sunday payroll is a calendar risk you can plan for. Keep one payroll in a bank you control.",
+      example: "Founders in Riyadh and Cairo learn that a Friday-Saturday weekend and slow corporate payments make a one-month cash buffer the minimum, not a luxury.",
+      read: "Default Alive or Default Dead?, Paul Graham",
+      page: "mena_payments",
+      skills: { A: { hiring: 1, selfcare: -1 }, B: { integrity: 1, hiring: -1 } },
+    },
+    dl_mena_06: {
+      lesson: "Cash on delivery is a trust gap, not a payment method. Close it with reasons to pay upfront before you add penalties.",
+      example: "Regional e-commerce players reduced COD mainly with card discounts, wallets and instalment options, while charging COD fees only on low-margin items.",
+      read: "Obviously Awesome, April Dunford",
+      page: "mena_payments",
+      skills: { A: { frugality: 1, discovery: -1 }, B: { discovery: 1, frugality: -1 } },
+    },
+    dl_mena_07: {
+      lesson: "Ramadan changes when people use your product, not just how much. Plan the month like a season: staffing, campaigns and rest.",
+      example: "Across the Gulf and Egypt, app usage and ad prices peak late at night in Ramadan; teams that plan night cover early avoid burning out by the last ten days.",
+      read: "The Culture Map, Erin Meyer",
+      page: "mena_seasons",
+      skills: { A: { discovery: 1, hiring: -1 }, B: { hiring: 1, discovery: -1 } },
+    },
+    dl_mena_08: {
+      lesson: "Customs become expectations. Whatever you decide about Eid, explain it in person, before Eid, with the numbers.",
+      example: "An Eid bonus is custom, not law, in most private companies in the region, but staff compare notes; silence reads as a cut.",
+      read: "The Culture Map, Erin Meyer",
+      page: "mena_seasons",
+      skills: { A: { hiring: 1, frugality: -1 }, B: { frugality: 1 } },
+    },
+    dl_mena_09: {
+      lesson: "In the Gulf, summer is a sales season with holes in it. Close before June or plan for September, and protect the weeks family will remember.",
+      example: "Experienced enterprise founders in Riyadh and Dubai build their pipeline to close by the second quarter and treat July and August as preparation months.",
+      read: "Four Thousand Weeks, Oliver Burkeman",
+      page: "mena_seasons",
+      skills: { A: { discovery: 1, selfcare: -1 }, B: { selfcare: 1 } },
+    },
+    dl_mena_10: {
+      lesson: "Your parents are buying security for you. Respect the offer, and show them what security looks like in your plan.",
+      example: "Across the region, government jobs still carry status and stability; founders who share a dated plan with parents usually get more patience.",
+      read: "Crucial Conversations, Kerry Patterson et al.",
+      page: "family",
+      skills: { A: { integrity: 1 }, B: { selfcare: 1 } },
+    },
+    dl_mena_11: {
+      lesson: "Hiring family to keep the peace usually just moves the conflict into the office. Help generously, but outside your payroll.",
+      example: "Family businesses in the Gulf are often built on relatives, but many founders find a first job elsewhere is the kinder gift to a cousin.",
+      read: "Who: The A Method for Hiring, Geoff Smart and Randy Street",
+      page: "hire_slow",
+      skills: { A: { hiring: -1 }, B: { hiring: 1 } },
+    },
+    dl_mena_12: {
+      lesson: "Government money has a price tag in conditions. Read the relocation and hiring clauses as carefully as the valuation.",
+      example: "Saudi programmes such as the regional HQ rules made Riyadh moves common; founders who budgeted for them early found the money worth it.",
+      read: "Secrets of Sand Hill Road, Scott Kupor",
+      page: "alt_funding",
+      skills: { A: { fundraising: 1, hiring: -1 }, B: { fundraising: -1, frugality: 1 } },
+    },
+    dl_mena_13: {
+      lesson: "Stage time is worth its cost only if you've booked the meetings around it. Plan the week, not the four minutes.",
+      example: "Founders who flew to Riyadh for demo days with 15 pre-booked meetings tended to get more from them than those who only pitched.",
+      read: "Pitch Anything, Oren Klaff",
+      page: "fundraise_timing",
+      skills: { A: { fundraising: 1, frugality: -1 }, B: { frugality: 1, discovery: 1 } },
+    },
+    dl_mena_14: {
+      lesson: "You can't outspend a sovereign fund. You can out-know your customers. Compete where money is not the advantage.",
+      example: "Heavily funded free-year launches often lose customers when the free year ends; incumbents who stayed close to users kept them.",
+      read: "Zero to One, Peter Thiel",
+      page: "pmf",
+      skills: { A: { discovery: 1, frugality: -1 }, B: { discovery: 1 } },
+    },
+    dl_mena_15: {
+      lesson: "Pick a second market for the customer you can serve best, not the map. Saudi rewards patience and presence; Egypt rewards scale and efficiency.",
+      example: "Saudi's Nitaqat quotas and entity setup take months; Egypt's 2022 to 2024 currency slide hurt firms pricing in pounds while paying costs in dollars.",
+      read: "The Culture Map, Erin Meyer",
+      page: "expansion",
+      skills: { A: { fundraising: 1, frugality: -1 }, B: { frugality: 1 } },
+    },
+    dl_mena_16: {
+      lesson: "Arabic-first is not a translation; it's a design decision about layout, dates, numbers and dialect. Users feel the difference immediately.",
+      example: "Regional apps that won Gulf users often wrote copy in neutral Modern Standard Arabic and tested right-to-left charts with real users.",
+      read: "Don't Make Me Think, Steve Krug",
+      page: "pmf",
+      skills: { A: { discovery: 1, frugality: -1 }, B: { frugality: 1, discovery: -1 } },
+    },
+    dl_mena_17: {
+      lesson: "An acqui-hire prices your team, not your company. Know who it really pays, and tell your investors before they hear it elsewhere.",
+      example: "In acqui-hires most of the value usually goes to retention packages; investors often get their money back and little more.",
+      read: "Venture Deals, Brad Feld and Jason Mendelson",
+      page: "exits",
+      skills: { A: { integrity: 1 }, B: { fundraising: 1 } },
+    },
+    dl_mena_18: {
+      lesson: "A merger of equals is rarely equal. Agree who runs what before you agree on the split, or the dinner becomes a long divorce.",
+      example: "Uber agreed in 2019 to buy its regional rival Careem rather than keep burning cash against it, and kept Careem's brand and founders.",
+      read: "Getting to Yes, Roger Fisher and William Ury",
+      page: "exits",
+      skills: { A: { fundraising: 1, frugality: 1 }, B: { frugality: -1 } },
+    },
+    dl_mena_19: {
+      lesson: "A modest secondary can make a founder braver, not lazier. Keep it small, disclose it to the board, and stop worrying about rent.",
+      example: "Founder secondaries are common in growth rounds; investors mostly worry when the founder sells a large slice early.",
+      read: "Secrets of Sand Hill Road, Scott Kupor",
+      page: "dilution",
+      skills: { A: { selfcare: 1, fundraising: -1 }, B: { fundraising: 1, selfcare: -1 } },
+    },
+    dl_mena_20: {
+      lesson: "Exclusivity is the buyer's strongest lever. Shorten it, tie it to milestones, and know your walk-away price before you sign.",
+      example: "Valuations in a letter of intent often drop during diligence, once competing bidders are locked out.",
+      read: "Venture Deals, Brad Feld and Jason Mendelson",
+      page: "exits",
+      skills: { A: { fundraising: -1 }, B: { fundraising: 1 } },
+    },
+    dl_mena_21: {
+      lesson: "A big licensing deal is revenue that can quietly become your whole company. Price the engineers' time and the exclusivity, not just the logo.",
+      example: "Startups that white-label for one national telecom often find their roadmap set by the telecom's procurement calendar.",
+      read: "The Innovator's Dilemma, Clayton Christensen",
+      page: "custom_work",
+      skills: { A: { frugality: 1, discovery: -1 }, B: { fundraising: 1, frugality: -1 } },
+    },
+  };
+
+  const NOTES_C = {
+    POP_001: {
+      lesson: "Vesting protects the founder who stays. A co-founder who leaves in month eight should not walk away owning half the company.",
+      example: "Four years with a one-year cliff is the norm, and most seed investors ask for founder vesting to be in place before they wire money.",
+      read: "Venture Deals, Brad Feld and Jason Mendelson",
+      page: "vesting",
+      skills: { A: { fundraising: -1 }, B: { fundraising: 1 } },
+    },
+    POP_002: {
+      lesson: "Launch early to learn, but sort bugs by what they break. Lost data and wrong invoices are never minor.",
+      example: "Reid Hoffman's line, that if your first version doesn't embarrass you, you launched too late, is about missing features, not broken payments.",
+      read: "The Lean Startup, Eric Ries",
+      page: "tech_debt",
+      skills: { A: { discovery: 1 }, B: { discovery: -1, integrity: 1 } },
+    },
+    POP_003: {
+      lesson: "Every week a bully stays, your quiet good people update their CVs. The numbers one person brings hide the people you lose.",
+      example: "Netflix's public culture deck put it bluntly: on a dream team there are no brilliant jerks, because the cost to teamwork is too high.",
+      read: "The No Asshole Rule, Robert Sutton",
+      page: "no_jerks",
+      skills: { A: { hiring: -1 }, B: { hiring: 1 } },
+    },
+    POP_004: {
+      lesson: "In an outage, the first honest update buys you hours of patience. A cover story buys you minutes, until someone checks.",
+      example: "Public post-mortems became standard at many infrastructure companies because users forgive downtime faster than they forgive spin.",
+      read: "Site Reliability Engineering, Betsy Beyer et al.",
+      page: "transparency",
+      skills: { A: { integrity: 1, frugality: -1 }, B: { integrity: -1 } },
+    },
+    POP_005: {
+      lesson: "Desperate money is the most expensive money. Read the control terms, vetoes and board seats, before you read the price.",
+      example: "Founders who gave away board control early often learned that the board, not the market, decided when they would be replaced.",
+      read: "Secrets of Sand Hill Road, Scott Kupor",
+      page: "term_sheet",
+      skills: { A: { fundraising: -1 }, B: { fundraising: 1, selfcare: -1 } },
+    },
+    POP_006: {
+      lesson: "A viral spike is a sample, not a channel. Check how many new users are still active two weeks later before you scale spend.",
+      example: "Spikes from one post or press hit usually fade within weeks. Teams that tracked cohort retention knew if they had growth or just a good day.",
+      read: "Traction, Gabriel Weinberg and Justin Mares",
+      page: "vanity",
+      skills: { A: { frugality: -1, discovery: 1 }, B: { frugality: 1 } },
+    },
+    POP_007: {
+      lesson: "A researcher who writes to you privately is doing you a favour. Thank her, pay her, fix it, and tell the customers affected.",
+      example: "Many software companies publish a disclosure policy, and enterprise security questionnaires now often ask whether you have one.",
+      read: "Security Engineering, Ross Anderson",
+      page: "security",
+      skills: { A: { integrity: 1, frugality: -1 }, B: { integrity: -1, frugality: 1 } },
+    },
+    POP_008: {
+      lesson: "Compliance is cheap before an audit and expensive during one. A short retention policy reviewed by a lawyer is money well spent.",
+      example: "Saudi Arabia, the UAE and Egypt have all passed personal data protection laws in recent years, and enterprise buyers now ask about them.",
+      read: "Privacy by Design, Ann Cavoukian",
+      page: "mena_regulation",
+      skills: { A: { frugality: -1, integrity: 1 }, B: { selfcare: -1, frugality: 1 } },
+    },
+    POP_009: {
+      lesson: "You can't win a salary war with a big company. Compete on scope, ownership and equity, and ask what she actually wants.",
+      example: "Startups that kept senior engineers often did it with a fresh equity grant and a bigger role, not by matching cash they couldn't sustain.",
+      read: "The Hard Thing About Hard Things, Ben Horowitz",
+      page: "culture",
+      skills: { A: { frugality: -1, hiring: 1 }, B: { frugality: 1 } },
+    },
+    POP_010: {
+      lesson: "Bespoke work for one logo is a services contract. Price it like one, or make sure it ends up in the product for everyone.",
+      example: "Many startups selling to businesses found their first enterprise pilot turned into a second product nobody else used, maintained by their best engineers.",
+      read: "Crossing the Chasm, Geoffrey Moore",
+      page: "custom_work",
+      skills: { A: { discovery: -1 }, B: { discovery: 1 } },
+    },
+    POP_011: {
+      lesson: "Your judgment is the company's scarcest resource. Rest is maintenance on it, scheduled before it breaks, not after.",
+      example: "Founders who took a planned week off usually found the team coped fine, and the absence showed which decisions really needed them.",
+      read: "Reboot, Jerry Colonna",
+      page: "burnout",
+      skills: { A: { selfcare: 1 }, B: { selfcare: -1, frugality: 1 } },
+    },
+    POP_012: {
+      lesson: "A prepayment is the cheapest financing you will find, but a 30% discount resets your price. Trade a smaller discount or a shorter term.",
+      example: "Annual prepay at a 10-20% discount is common in SaaS. Deeper cuts usually tell the buyer the seller needed cash more than they needed savings.",
+      read: "Monetizing Innovation, Madhavan Ramanujam and Georg Tacke",
+      page: "alt_funding",
+      skills: { A: { frugality: 1 }, B: { fundraising: 1 } },
+    },
+    ORG_BOARD: {
+      lesson: "A target you accept becomes your target. If you disagree, push back before the vote, with numbers, not after the miss.",
+      example: "Experienced CEOs send the board deck days early and call each director first, so nothing important gets decided for the first time in the room.",
+      read: "Startup Boards, Brad Feld and Mahendra Ramsinghani",
+      page: "board",
+      skills: { A: { fundraising: 1 }, B: { integrity: 1 } },
+    },
+    ORG_COFOUNDER: {
+      lesson: "Co-founder resentment rarely starts with equity. Ask what credit and voice they want first; shares and titles are the last tool.",
+      example: "Research on founding teams finds co-founder conflict among the most common reasons early startups fail, usually after months of unspoken grievances.",
+      read: "The Founder's Dilemmas, Noam Wasserman",
+      page: "cofounder",
+      skills: { A: { hiring: 1, fundraising: -1 }, B: { hiring: -1, integrity: 1 } },
+    },
+    ST_NOUR: {
+      lesson: "The company will ask for one more month forever. The people outside it can't wait forever. Book them like a board meeting.",
+      example: "Founders who kept their relationships through hard years often describe fixed, non-negotiable time: one evening a week, one weekend a month.",
+      read: "Startup Life, Brad Feld and Amy Batchelor",
+      page: "family",
+      skills: { A: { selfcare: 1 }, B: { selfcare: -1 } },
+    },
+  };
+
+  const PLAYBOOK = [
+    { id: "default_alive", icon: "🌱", title: "Default alive", body: "Paul Graham's question: if costs and revenue growth stay where they are today, do you reach profitability before the money runs out? If yes, you are default alive. If no, you are default dead and need a plan, not hope. Most founders don't know which one they are. This week, put the last 3 months of revenue growth and burn into a sheet and find the month the lines cross, or the month cash hits zero.", source: "Paul Graham, Default Alive or Default Dead? (2015)" },
+    { id: "runway", icon: "⏳", title: "Runway", body: "Runway is cash in the bank divided by net monthly burn. With $300,000 and a $25,000 burn you have 12 months, but a round takes 3 to 6 months to close, so your real deadline is month 6 to 9. Founders who start raising with less than 6 months left negotiate from fear. This week, recompute runway with next quarter's planned hires included, not just today's payroll.", source: "Paul Graham, Startups in 13 Sentences (2009)" },
+    { id: "burn_multiple", icon: "🔥", title: "Burn multiple", body: "Burn multiple is net burn divided by net new ARR. Burn $2M to add $1M of ARR and your multiple is 2. David Sacks rates under 1 as amazing and above 3 as bad. It shows investors how efficiently you turn cash into growth, and it exposes growth bought at any price. This week, calculate it for each of the last 2 quarters and see which way it is moving.", source: "David Sacks, The Burn Multiple (Craft Ventures, 2020)" },
+    { id: "unit_economics", icon: "🧾", title: "Unit economics", body: "Every customer should be worth more than they cost to win. A common rule of thumb is LTV at least 3 times CAC, with CAC paid back within 12 months. If a customer costs $400 to acquire and pays $30 a month at 80% gross margin, payback takes about 17 months. Growth on bad unit economics just loses money faster. This week, work out CAC for your last 20 customers, channel by channel.", source: "David Skok, SaaS Metrics 2.0 (For Entrepreneurs)" },
+    { id: "churn", icon: "📉", title: "Churn", body: "Churn is the share of customers who leave each month. 5% a month sounds small, but it means losing about 46% of your customers in a year, so you are refilling a leaking bucket before you can grow. High churn is usually a product problem, not a marketing one. This week, call 5 customers who cancelled in the last 90 days and ask what they were trying to do when they gave up.", source: "David Skok, SaaS Metrics 2.0 (For Entrepreneurs)" },
+    { id: "pmf", icon: "🎯", title: "Product-market fit", body: "Fit is when the market pulls the product out of you: usage grows without pushing and customers complain loudly when it breaks. Sean Ellis's test asks users how they would feel if they could no longer use your product. If 40% or more say very disappointed, you likely have fit. This week, send that one question to your 50 most active users and read every answer from the very disappointed group.", source: "Sean Ellis's 40% test; Marc Andreessen, The Only Thing That Matters (2007)" },
+    { id: "mom_test", icon: "🔍", title: "The Mom Test", body: "Rob Fitzpatrick's rule: ask questions even your mother couldn't lie to you about. Don't ask whether people would buy your idea. Ask about their life: the last time the problem happened, what they did about it, what it cost them. Compliments and promises about the future are noise; past behaviour and money already spent are data. This week, hold 3 customer conversations without mentioning your product until the last 5 minutes.", source: "The Mom Test, Rob Fitzpatrick (2013)" },
+    { id: "experiments", icon: "🧪", title: "Run small experiments", body: "Eric Ries frames a startup as a series of experiments: build the smallest thing, measure what people actually do, learn, repeat. What matters is the time each loop takes. A team that runs 1 test a week learns 4 times faster than a team that runs 1 a month. Write the hypothesis, and the number that would prove it wrong, before you build. This week, pick one belief and design a test that takes under 5 days.", source: "The Lean Startup, Eric Ries (2011)" },
+    { id: "pivot", icon: "🔄", title: "Pivot or persevere", body: "A pivot changes one part of the plan, such as the customer, the problem or the channel, while keeping what you have learned. Slack came out of a failed online game: the team kept the internal chat tool they had built for themselves. Pivot when the numbers have stalled for months despite honest effort, not after one bad week. This week, write down the metric that would make you pivot and the date you will check it.", source: "The Lean Startup, Eric Ries (2011)" },
+    { id: "do_things", icon: "🛠", title: "Do things that don't scale", body: "Early on, recruit users by hand and delight them one at a time. Airbnb's founders went door to door in New York and photographed hosts' apartments themselves. It doesn't scale, and that is the point: you learn what users need before you automate anything. This week, personally onboard your next 10 customers, on a call or in person, and write down every question they ask you.", source: "Paul Graham, Do Things That Don't Scale (2013)" },
+    { id: "pricing", icon: "🏷", title: "Pricing", body: "Most founders underprice because they fear hearing no. Price signals value and decides which customers you attract. A 10% price rise that loses no customers goes almost straight to profit, while a 10% discount has to be earned back with much more volume. If nobody ever pushes back on your price, it is too low. This week, quote your next 5 prospects 20% more than usual and count how many still say yes.", source: "Monetizing Innovation, Madhavan Ramanujam & Georg Tacke (2016)" },
+    { id: "channels", icon: "📡", title: "Find one channel that works", body: "Gabriel Weinberg and Justin Mares list 19 traction channels, from content and SEO to sales and partnerships, and argue that most startups grow through one dominant channel. Their Bullseye method: brainstorm all 19 channels and test the 3 most promising cheaply, then pour your effort into the winner. Spreading a small team across six channels usually means none of them works. This week, run one $200 test in a channel you have never tried.", source: "Traction, Gabriel Weinberg & Justin Mares (2014)" },
+    { id: "vanity", icon: "📊", title: "Vanity metrics", body: "Eric Ries warns against vanity metrics: total sign-ups, downloads, page views. They only go up, feel good and tell you nothing about what to do next. Actionable metrics compare cohorts: of the users who joined in March, how many still use the product in week 4? A chart showing 10,000 downloads can hide that 9,000 people opened the app once. This week, replace one total on your dashboard with a cohort retention number.", source: "The Lean Startup, Eric Ries (2011)" },
+    { id: "hire_slow", icon: "👥", title: "Hire slowly, part ways quickly", body: "A bad early hire costs far more than a salary: months of lost work, a team that has to compensate, and a hard conversation you keep postponing. One wrong person in a team of 5 is 20% of the company. Hire for the problem you will have in the next 6 months, check references you were not given, and act within weeks when it is clearly not working. This week, write the 3 outcomes your next hire must deliver in their first 90 days.", source: "The Hard Thing About Hard Things, Ben Horowitz (2014)" },
+    { id: "culture", icon: "🧩", title: "Culture is what you do", body: "Culture is not the values on the wall. It is how people behave when nobody is watching, and what the founder tolerates. Ben Horowitz argues it is set by concrete actions, especially rules so unusual that people ask why they exist. The first 10 people copy whatever you reward. This week, name one behaviour you want and one you have been quietly tolerating, and act on the second one.", source: "What You Do Is Who You Are, Ben Horowitz (2019)" },
+    { id: "no_jerks", icon: "⚠", title: "No brilliant jerks", body: "A brilliant person who belittles others costs more than they deliver: good people stop speaking up, then they leave. Netflix's culture deck put it plainly: on a dream team, there are no brilliant jerks. In a small startup, one such person can quietly drive out 2 or 3 others before you notice. This week, ask each team member privately who they avoid working with, and listen for a pattern.", source: "Netflix Culture: Freedom & Responsibility (2009)" },
+    { id: "vesting", icon: "🔒", title: "Vesting", body: "Founder shares should vest, usually over 4 years with a 1-year cliff: nothing before month 12 and monthly after that. It protects everyone. A co-founder who leaves in month 8 does not walk away with a quarter of the company while you keep doing the work. Investors will insist on it anyway. This week, check that every founder and early employee has a signed vesting schedule, including you.", source: "Venture Deals, Brad Feld & Jason Mendelson" },
+    { id: "cofounder", icon: "🤝", title: "The co-founder relationship", body: "Conflict between co-founders is one of the most common ways startups die. Noam Wasserman's research attributes about 65% of failures among high-potential startups to people problems inside the founding team. Agree early on roles, who decides what, and what happens if someone leaves. This week, book 1 hour with your co-founder to talk only about how you work together, not about the product.", source: "The Founder's Dilemmas, Noam Wasserman (2012)" },
+    { id: "delegation", icon: "🧠", title: "Delegate outcomes, not tasks", body: "As the team grows, your output is your team's output. Andy Grove's idea of task-relevant maturity: how closely you manage someone depends on their experience with that specific task, not on their seniority. Hand over whole outcomes with a clear deadline, then check in at agreed points instead of hovering. This week, list what you did last week and give away 2 tasks you assumed only you could do.", source: "High Output Management, Andy Grove (1983)" },
+    { id: "term_sheet", icon: "📝", title: "Reading a term sheet", body: "A term sheet has two kinds of terms: economics (valuation, option pool, liquidation preference) and control (board seats, protective provisions, vetoes). Founders fixate on valuation and sign away control. A higher price with a 2x preference and an investor veto on hiring can be worse than a lower, clean offer. This week, read the term sheet chapters of Venture Deals and mark every clause that lets someone else say no.", source: "Venture Deals, Brad Feld & Jason Mendelson" },
+    { id: "liq_pref", icon: "💸", title: "Liquidation preference", body: "A liquidation preference decides who gets paid first when the company is sold. With a 1x non-participating preference, an investor who put in $5M takes back the first $5M or converts to their share, whichever is larger. Sell for $8M and that investor takes $5M before anyone else sees a dollar. Many founders only read this clause at the exit. This week, model your cap table at 3 sale prices: low, medium and high.", source: "Venture Deals, Brad Feld & Jason Mendelson" },
+    { id: "board", icon: "🏛", title: "Working with a board", body: "A board can hire and fire the CEO. Treat it as a group you lead, not an exam you sit. Send materials 3 days before the meeting, put bad news on the first page, and use the meeting for decisions rather than reporting. Surprises destroy trust; bad news delivered early usually doesn't. This week, call each board member for 15 minutes with no agenda except asking what worries them.", source: "Startup Boards, Brad Feld & Mahendra Ramsinghani (2014)" },
+    { id: "dilution", icon: "💼", title: "Dilution", body: "Every round sells part of the company. Selling 20% at seed, 20% at Series A and 15% at Series B leaves founders with roughly half of what they started with, before the option pool grows. Dilution is fine when the company grows faster than your stake shrinks. It hurts when you raise more than you need at a low price. This week, model your ownership after each of the next 3 rounds.", source: "Venture Deals, Brad Feld & Jason Mendelson" },
+    { id: "alt_funding", icon: "🏦", title: "Funding without VCs", body: "Venture capital suits companies that can grow 10 times in a few years. Most good businesses can't, and that is fine. Alternatives include customer revenue, revenue-based financing, grants and government programmes. Mailchimp grew for about 20 years without venture money before Intuit bought it in 2021 for about $12 billion. This week, list 3 non-dilutive funding sources you qualify for, with their deadlines.", source: "Rework, Jason Fried & David Heinemeier Hansson (2010)" },
+    { id: "fundraise_timing", icon: "📅", title: "When to raise", body: "Raise when you have momentum and at least 6 months of runway, not when you are desperate. A round usually takes 3 to 6 months from first meeting to money in the bank, and investors can sense a deadline. Run a tight process: meet many investors in a short window so offers arrive together. This week, write down the 3 numbers that would make your next round easy, and when you expect to hit them.", source: "Paul Graham, How to Raise Money (2013)" },
+    { id: "investor_updates", icon: "📨", title: "Investor updates", body: "A short monthly update keeps investors on your side: key numbers, wins, problems and specific asks. Investors who hear bad news in month 3 tend to help; investors who first hear it in month 9 tend to panic. Updates also make the next raise easier, because your track record is already in their inbox. This week, send an update with 5 numbers, 2 wins, 1 problem and 1 clear ask.", source: "Venture Deals, Brad Feld & Jason Mendelson" },
+    { id: "transparency", icon: "🫶", title: "Tell the team the truth", body: "When things go wrong, the team usually senses it already, and silence makes them imagine something worse. Ben Horowitz argues that a CEO who tells the truth earns more trust and gets more brains working on the problem. You don't have to share every number, but never say something you know to be false. This week, share one real problem with the whole team and ask them for ideas.", source: "The Hard Thing About Hard Things, Ben Horowitz (2014)" },
+    { id: "security", icon: "🛡", title: "Security is a feature", body: "Startups treat security as a later problem until one leak ends a contract. IBM's yearly Cost of a Data Breach report puts the average cost of a breach in the millions of dollars. The basics prevent most incidents: two-factor login everywhere, no shared passwords, backups you have actually restored, and access removed the day someone leaves. This week, turn on 2FA for every company account.", source: "IBM, Cost of a Data Breach Report (annual)" },
+    { id: "tech_debt", icon: "💻", title: "Tech debt", body: "Ward Cunningham coined the term: shipping fast is borrowing, and messy code charges interest on every future change. Some debt is smart, because early speed matters. The danger is debt nobody tracks, until a simple feature takes 3 weeks. Many teams reserve about 20% of each sprint to pay it down. This week, ask your engineers to name the 3 parts of the code they are most afraid to touch.", source: "Ward Cunningham, The WyCash Portfolio Management System (1992)" },
+    { id: "custom_work", icon: "🕳", title: "Custom work for one customer", body: "A big customer asking for custom features is both a gift and a trap. Saying yes brings revenue now; it also puts their name on your roadmap and leaves code that only they use. Agree to custom work only if it is paid separately, fits where the product is going anyway, or at least 3 other customers want it too. This week, tag every open feature request with how many customers asked for it.", source: "Inspired, Marty Cagan" },
+    { id: "burnout", icon: "🔋", title: "Burnout", body: "Founder burnout is a slow leak, not a single crash: short nights, no exercise, every evening on Slack. Research by Michael Freeman and colleagues found that entrepreneurs report mental health struggles more often than the general population. A tired founder makes worse decisions and hides it well. This week, block 2 evenings with no work at all and protect 7 hours of sleep every night.", source: "Michael A. Freeman et al., Are Entrepreneurs Touched with Fire? (2015)" },
+    { id: "family", icon: "🏠", title: "Family and partner", body: "The people at home pay for your startup too: missed dinners, money worries, a partner who hears more about the company than about you. Brad Feld and his wife Amy Batchelor wrote a whole book on keeping a relationship alive while building companies. Their habits are simple: a weekly date, a phone-free dinner and real time off. This week, plan 1 full evening for the person who supports you most.", source: "Startup Life, Brad Feld & Amy Batchelor (2013)" },
+    { id: "ethics", icon: "⚖", title: "Ethics under pressure", body: "Most ethical failures in startups start small: a metric rounded up for investors, a customer told a feature exists when it doesn't. Each step feels harmless; together they become how the company works. Theranos is the extreme case of where that road ends. A useful test: would you be comfortable seeing the decision on a news site tomorrow? This week, check your latest pitch deck for any number you could not defend.", source: "Bad Blood, John Carreyrou (2018)" },
+    { id: "crisis", icon: "🚨", title: "Managing a crisis", body: "In a crisis, speed and honesty beat polish. Acknowledge what happened within hours, say what you know and what you don't, and give a time for the next update. Ben Horowitz describes the wartime CEO: focused, direct, willing to break routines to survive. Customers forgive an outage more easily than silence. This week, write a one-page plan for your worst outage: who decides, who speaks, and what is said in the first hour.", source: "The Hard Thing About Hard Things, Ben Horowitz (2014)" },
+    { id: "mena_regulation", icon: "🏢", title: "Regulation in the region", body: "In the Gulf and Egypt, many sectors need a licence before you can operate: fintech, health, education and parts of e-commerce. Several regulators, such as the Saudi Central Bank and ADGM in Abu Dhabi, run sandboxes that let startups test under supervision, and talking to them early saves months. Building first and asking later can force a costly rebuild. This week, find out which regulator covers your sector and whether it runs a sandbox.", source: "Common practice in the region" },
+    { id: "mena_payments", icon: "💳", title: "Payments in the region", body: "In much of the region, cash on delivery was long the default for online shopping, especially in Egypt, and it still shapes behaviour. Cash on delivery means refusals at the door, cash collected late and couriers holding your money for days. Wallets, cards and buy-now-pay-later have grown fast. This week, measure what share of your orders is paid in cash and how many days that cash takes to reach your account.", source: "Common practice in the region" },
+    { id: "mena_seasons", icon: "🌅", title: "Ramadan and the regional calendar", body: "The year moves differently here. Ramadan shifts working hours and can lift consumer sales while business buyers decide more slowly; Gulf summers empty offices as families travel; Eid holidays can pause deals for a week or more. Because Ramadan comes about 11 days earlier each year, last year's plan won't fit this year. This week, mark Ramadan, both Eids and the summer on your sales and cash plan for the next 12 months.", source: "Common practice in the region" },
+    { id: "mena_wasta", icon: "👔", title: "Relationships and wasta", body: "In the region, a warm introduction often opens a door that a cold email never will, and trust is built over coffee before it is written into contracts. Relationships are real leverage, but a deal won through a connection still has to deliver, and a favour usually comes with an expectation attached. This week, list the 10 people who could introduce you to your next 3 customers, and ask 2 of them.", source: "Common practice in the region" },
+    { id: "expansion", icon: "⛰", title: "Expanding to a new market", body: "The Arab world looks like one market of more than 400 million people. In practice it is many markets, with different laws, payment habits, dialects and buyers. Saudi Arabia, the UAE and Egypt each tend to need their own entity, local partners and often their own pricing. Expanding before the home market works spreads a small team thin. This week, write what must be true at home before you open a second market.", source: "Common practice in the region" },
+    { id: "exits", icon: "🏆", title: "Exits", body: "Most startups that exit are acquired rather than listed, and the price depends on how many buyers want you at the same time. Careem's sale to Uber for $3.1 billion in 2019 showed investors that large exits are possible in the region. Build relationships with likely acquirers years before you need them. This week, list 5 companies that might one day buy yours, and why each would.", source: "Public reporting on Uber's acquisition of Careem (2019)" },
+  ];
+  const GLOSSARY = [
+    { term: "MRR", def: "Monthly recurring revenue: what customers pay you every month, without one-off sales." },
+    { term: "ARR", def: "Annual recurring revenue: your MRR multiplied by 12 and the figure subscription investors quote most." },
+    { term: "Burn", def: "The net cash you lose each month: everything you spend minus everything that comes in." },
+    { term: "Runway", def: "How many months you can survive: cash in the bank divided by monthly net burn." },
+    { term: "Churn", def: "The share of customers, or of revenue, that you lose each month." },
+    { term: "CAC", def: "Customer acquisition cost: total sales and marketing spend divided by the new customers it won." },
+    { term: "LTV", def: "Lifetime value: the gross profit a customer brings over the whole time they stay with you." },
+    { term: "ARPU", def: "Average revenue per user: monthly revenue divided by the number of active paying users." },
+    { term: "Product-market fit", def: "When a clear market wants your product so much that demand pulls you forward, instead of you pushing." },
+    { term: "Dilution", def: "The drop in your ownership percentage when new shares are issued to investors or employees." },
+    { term: "Valuation", def: "What investors agree the company is worth: pre-money before their cash arrives, post-money after." },
+    { term: "Liquidation preference", def: "Investors' right to get their money back, or a multiple of it, before others when the company is sold." },
+    { term: "Vesting", def: "Earning your shares over time, usually 4 years with a 1-year cliff, so someone who leaves early can't keep it all." },
+    { term: "Default alive", def: "On current growth and costs, you reach profitability before the cash runs out." },
+    { term: "Tech debt", def: "Shortcuts in code that speed you up today and slow down every future change until you repay them." },
+  ];
+  const SKILL_ADVICE = {
+    discovery: ["A veteran would have talked to 5 customers before building anything, and asked about their past, not about your idea.", "Watch what users do, not what they say. One cancelled subscription teaches more than ten compliments."],
+    frugality: ["Every fixed cost is a monthly promise. A veteran rents before buying and hires only when the pain is daily.", "Know your runway to the week. Cut early and small, so you never have to cut late and deep."],
+    hiring: ["Hire for the next 6 months, check references you weren't given, and part ways quickly when it clearly isn't working.", "Culture is what you tolerate. A veteran deals with the brilliant jerk in the first week, not in the sixth month."],
+    fundraising: ["Start raising with 6 months of runway left, not 2. Desperation shows in every meeting and in every clause.", "Read the control terms as carefully as the price. A veto you sign today settles arguments for years."],
+    selfcare: ["Sleep, exercise and one protected evening a week are not luxuries; they are how you keep making good decisions.", "The people at home are part of what the company costs. A veteran makes time for them before they have to ask."],
+    integrity: ["Tell investors bad news early and in writing. Trust lost to a surprise is very hard to win back.", "Never promise a customer a feature that doesn't exist. Say what is true, then say what you will do about it."],
+  };
+  const END_LESSONS = {
+    bank: "Companies rarely die from one bad decision; they die when the cash runs out before the plan works. Know your runway to the week, and raise or cut early.",
+    burn: "The company needed you clear-headed more than it needed one more all-nighter. Founders who last treat sleep and rest as part of the job.",
+    exit: "A $100M valuation is a milestone, not a finish line. What got you here was learning faster than the money ran out. Keep doing that.",
+    board: "Boards rarely replace a CEO over one bad quarter; they do it after a run of surprises. Bring bad news early and you keep the room.",
+    cofounder: "Co-founder splits kill more startups than competitors do. The talk about roles, equity and how you disagree is cheapest in the first month.",
+    alone: "You can rebuild a company. Rebuilding what you had with the people who stood by you is much harder. Protect home as carefully as runway.",
+    challenge: "You beat the scenario by making trade-offs on purpose, not by avoiding them. That habit carries over to every company you will run.",
+    challenge_failed: "The scenario won this time. Find the one decision where you spent the most cash, people or trust, and ask what you would do differently.",
+  };
+
+  // ================================================================ teach
+  // Phase 5 of the content plan: the player can name what they learned.
+  //   * a mentor note after every dilemma (lesson, real-world example, reading)
+  //     that also unlocks a page of the Founder Playbook
+  //   * the Founder Playbook: 40 pages collected across runs, plus a glossary
+  //   * an end-of-run founder report card: the ending's lesson, the turning
+  //     point, six skill grades, what a veteran would have done, a shareable card
+  //   * scenario challenges: short runs with one goal
+  // Content lives in content/notes_*.js and content/playbook.js.
+  // shares App's scope (see economy.js and the other modules).
+
+  const NOTES = Object.assign({}, NOTES_A, NOTES_B, NOTES_C);
+  const PAGE_BY_ID = {};
+  PLAYBOOK.forEach((p) => (PAGE_BY_ID[p.id] = p));
+  const SKILLS = [
+    { id: "discovery", icon: "🔍", name: "Discovery" },
+    { id: "frugality", icon: "🧾", name: "Frugality" },
+    { id: "hiring", icon: "👥", name: "Hiring" },
+    { id: "fundraising", icon: "💼", name: "Fundraising" },
+    { id: "selfcare", icon: "🧘", name: "Self-care" },
+    { id: "integrity", icon: "🛡", name: "Integrity" },
+  ];
+
+  // ------------------------------------------------- playbook (across runs)
+  const BOOK_KEY = "founderFog.playbook",
+    MENTOR_KEY = "founderFog.mentorNotes";
+  function readBook() {
+    try {
+      return new Set(JSON.parse(window.localStorage.getItem(BOOK_KEY) || "[]"));
+    } catch (e) {
+      return new Set();
+    }
+  }
+  const BOOK = readBook();
+  function unlockPage(s, id) {
+    if (!PAGE_BY_ID[id]) return false;
+    const t = ensureTeach(s);
+    if (!t.pages.includes(id)) t.pages.push(id);
+    if (BOOK.has(id)) return false;
+    BOOK.add(id);
+    try {
+      window.localStorage.setItem(BOOK_KEY, JSON.stringify([...BOOK]));
+    } catch (e) {}
+    return true;
+  }
+  function mentorOn() {
+    try {
+      return window.localStorage.getItem(MENTOR_KEY) !== "off";
+    } catch (e) {
+      return true;
+    }
+  }
+  function setMentor(on) {
+    try {
+      window.localStorage.setItem(MENTOR_KEY, on ? "on" : "off");
+    } catch (e) {}
+  }
+
+  // ------------------------------------------------------------ challenges
+  const CHALLENGES = {
+    winter26: { icon: "🧊", name: "Survive the funding winter", goal: "Still running at week 26, in a downturn.", mode: "winter", deadline: 26, done: (s) => s.week >= 26 },
+    fit20: { icon: "🔍", name: "Find fit in 20 weeks", goal: "Reach 40% product-market fit by week 20.", mode: "venture", deadline: 20, done: (s) => s.mkt && s.mkt.pmf >= 40 },
+    control30: {
+      icon: "🪑",
+      name: "Raise and keep control",
+      goal: "Close a round by week 30, keep 70% of the company and control of the board.",
+      mode: "venture",
+      deadline: 30,
+      done: (s) => (s.rounds || []).some((r) => !r.pending) && (s.equity == null ? 100 : s.equity) >= 70 && !boardControl(s),
+    },
+    boot40: { icon: "🌱", name: "Default alive, bootstrapped", goal: "Reach default alive by week 40 without investors.", mode: "bootstrapped", deadline: 40, done: (s) => !!s.defaultAlive },
+  };
+
+  // --------------------------------------------------------------- tracking
+  function ensureTeach(s) {
+    if (!s.teach)
+      s.teach = { talks: 0, builds: 0, hunches: 0, experiments: 0, rests: 0, contacts: 0, traps: 0, clarity: 0, weeks: 0, peakPmf: 0, everAlive: false, skill: {}, decisions: [], pages: [], note: null };
+    return s.teach;
+  }
+  const W = { cash: 1 / 2000, monthlyRevenue: 1 / 400, mrrPct: 40, pmf: 0.5, clarity: 0.25, mentalClarity: 0.25, morale: 0.2, teamMorale: 0.2, equity: 1, churn: 2, churnRate: 2, trust: 0.2, investorTrust: 0.2, techDebt: 0.2, baseBurn: 1 / 300, cofounder: 0.2, partner: 0.2, family: 0.2, culture: 0.3, users: 1 / 200, activeUsers: 1 / 200, valuation: 1 / 100000 };
+  const weightOf = (fx) => Object.keys(fx || {}).reduce((a, k) => a + Math.abs(fx[k]) * (W[k] || 0), 0);
+
+  (function () {
+    const P = Engine.StartupEngine.prototype;
+    if (P.__teach) return;
+    P.__teach = true;
+    const count = (name, key, when) => {
+      const orig = P[name];
+      P[name] = function (...args) {
+        const res = orig.apply(this, args);
+        if (res && res.success !== false && (!when || when(args, this.state))) ensureTeach(this.state)[key] += 1;
+        return res;
+      };
+    };
+    count("talkToCustomers", "talks");
+    count("buildProduct", "builds", (a) => a[0] != null);
+    count("buildProduct", "hunches", (a) => a[0] == null);
+    count("runExperiment", "experiments");
+    count("executeActivity", "rests", (a) => a[0] && /Wellness|\u0627\u0644\u0639\u0627\u0641\u064a\u0629/.test(a[0].category || ""));
+    count("contactRelationship", "contacts");
+    count("signTermSheet", "traps", (a) => a[0] && a[0].control);
+
+    const resolve = P.resolveEventChoice;
+    P.resolveEventChoice = function (key = "option_A") {
+      const s = this.state,
+        t = ensureTeach(s),
+        ev = s.pendingEvent;
+      const res = resolve.call(this, key);
+      if (ev && ev.id) {
+        const note = NOTES[ev.id],
+          side = key === "option_A" ? "A" : "B",
+          lib = LIBRARY.find((d) => d.id === ev.id),
+          fx = lib ? lib[side].fx : (ev[key] && ev[key].effects) || {};
+        t.decisions.push({ week: s.week, id: ev.id, title: ev.title, choice: ev[key] && ev[key].title, weight: weightOf(fx) });
+        if (note) {
+          const sk = (note.skills || {})[side] || {};
+          for (const k in sk) t.skill[k] = (t.skill[k] || 0) + sk[k];
+          const fresh = unlockPage(s, note.page);
+          t.note = { id: ev.id, fresh: fresh };
+        }
+      }
+      return res;
+    };
+
+    const advance = P.advanceWeek;
+    P.advanceWeek = function () {
+      advance.call(this);
+      const s = this.state,
+        t = ensureTeach(s);
+      t.weeks += 1;
+      t.clarity += s.mentalClarity;
+      t.peakPmf = Math.max(t.peakPmf, (s.mkt && s.mkt.pmf) || 0);
+      if (s.defaultAlive && !t.everAlive) {
+        t.everAlive = true;
+        unlockPage(s, "default_alive");
+      }
+      if ((s.rounds || []).some((r) => !r.pending)) unlockPage(s, "term_sheet");
+      // challenges
+      const c = s.challenge && CHALLENGES[s.challenge];
+      if (c && !s.gameOver && !s.victory) {
+        if (c.done(s)) {
+          s.victory = !0;
+          s.overType = "challenge";
+          s.endReason = `Challenge complete: ${c.name}.`;
+        } else if (s.week >= c.deadline) {
+          s.gameOver = !0;
+          s.overType = "challenge_failed";
+          s.endReason = `Challenge failed: ${c.name}.`;
+        }
+      }
+      return s;
+    };
+  })();
+
+  // ----------------------------------------------------------- report card
+  const grade = (v) => (v >= 85 ? "A" : v >= 70 ? "B" : v >= 55 ? "C" : v >= 40 ? "D" : "F");
+  function skillScores(s) {
+    const t = ensureTeach(s),
+      o = s.org || {},
+      wk = Math.max(1, t.weeks),
+      sk = (k) => (t.skill[k] || 0) * 6,
+      nour = rel(s, "nour"),
+      fam = rel(s, "fam"),
+      end = s.overType;
+    const v = {
+      discovery: 35 + Math.min(30, (t.talks / wk) * 45) + t.builds * 3 + t.experiments * 2 - t.hunches * 3 + (t.peakPmf - 30) * 0.6 + sk("discovery"),
+      frugality: 50 + (t.everAlive ? 20 : 0) - (end === "bank" ? 25 : 0) + Math.min(10, wk / 5) + sk("frugality"),
+      hiring: 45 + ((o.culture == null ? 60 : o.culture) - 60) * 0.8 + (o.cofounderGone ? -12 : 10) + sk("hiring") - (end === "cofounder" ? 20 : 0),
+      fundraising: 50 + (s.rounds || []).filter((r) => !r.pending).length * 8 - t.traps * 12 + ((s.equity == null ? 100 : s.equity) - 60) * 0.3 + (o.board ? (o.board.trust - 50) * 0.3 : 0) + sk("fundraising") - (end === "board" ? 30 : 0),
+      selfcare: t.clarity / wk - 15 + ((nour ? nour.health : 60) + (fam ? fam.health : 60) - 100) * 0.2 + t.rests * 2 + sk("selfcare") - (end === "burn" || end === "alone" ? 25 : 0),
+      integrity: 60 + sk("integrity") * 1.3,
+    };
+    const out = {};
+    for (const k in v) out[k] = clamp(Math.round(v[k]), 0, 100);
+    return out;
+  }
+  function turningPoint(s) {
+    const t = ensureTeach(s),
+      hits = (s.echoLog || []).map((e) => ({ week: e.from, weight: weightOf(e.fx) * 1.5 }));
+    let best = null;
+    t.decisions.forEach((d) => {
+      const echo = hits.filter((h) => h.week === d.week).reduce((a, h) => a + h.weight, 0);
+      const w = d.weight + echo;
+      if (!best || w > best.w) best = { ...d, w: w };
+    });
+    return best;
+  }
+
+  function ReportCard({ S, onEnding, onRestart }) {
+    const sc = skillScores(S),
+      t = ensureTeach(S),
+      tp = turningPoint(S),
+      weakest = SKILLS.slice().sort((a, b) => sc[a.id] - sc[b.id]).slice(0, 2),
+      c = S.challenge && CHALLENGES[S.challenge],
+      win = !!S.victory,
+      tpTitle = tp ? leadEmoji(String(tp.title || ""))[1] : "";
+    const share = () => shareCard(S, sc);
+    return jsx(Screen, {
+      style: { flex: 1, backgroundColor: COLOR.ink },
+      children: jsx(ScrollView, {
+        contentContainerStyle: tst.wrap,
+        children: [
+          jsx(Text, { style: [tst.kicker, { color: win ? COLOR.gold : COLOR.crit }], children: "FOUNDER REPORT CARD" }, "k"),
+          jsx(Text, { style: tst.title, children: S.companyName }, "t"),
+          jsx(Text, { style: tst.sub, children: `${S.founderName} · ${S.week} weeks · ${(MODES[S.mode] || MODES.venture).name}` + (c ? " · " + c.name : "") }, "s"),
+          jsxs(
+            View,
+            {
+              style: [tst.endBox, { borderColor: win ? COLOR.gold : COLOR.crit }],
+              children: [jsx(Text, { style: tst.endTitle, children: S.endReason || "" }), END_LESSONS[S.overType] ? jsx(Text, { style: tst.endLesson, children: END_LESSONS[S.overType] }) : null],
+            },
+            "end",
+          ),
+          tp &&
+            jsxs(
+              View,
+              {
+                style: tst.card,
+                children: [
+                  jsx(Text, { style: tst.cardKicker, children: "THE TURNING POINT" }),
+                  jsx(Text, { style: tst.cardTitle, children: `Week ${tp.week}: ${tpTitle}` }),
+                  tp.choice ? jsx(Text, { style: tst.cardText, children: "You chose: " + tp.choice }) : null,
+                  jsx(Text, { style: tst.hint, children: "The decision that moved your company most, including what came back later." }),
+                ],
+              },
+              "tp",
+            ),
+          jsxs(
+            View,
+            {
+              style: tst.card,
+              children: [
+                jsx(Text, { style: tst.cardKicker, children: "SKILLS" }),
+                ...SKILLS.map((k) =>
+                  jsxs(
+                    View,
+                    {
+                      style: tst.skillRow,
+                      children: [
+                        jsx(Pic, { e: k.icon, size: 24 }),
+                        jsx(Text, { style: tst.skillName, children: k.name }),
+                        jsx(View, { style: tst.track, children: jsx(View, { style: [tst.fill, { width: Math.max(4, sc[k.id]) + "%", backgroundColor: sc[k.id] >= 70 ? COLOR.vital : sc[k.id] >= 40 ? COLOR.fog : COLOR.crit }] }) }),
+                        jsx(Text, { style: [tst.grade, { color: sc[k.id] >= 70 ? COLOR.vital : sc[k.id] >= 40 ? COLOR.fog : COLOR.crit }], children: grade(sc[k.id]) }),
+                      ],
+                    },
+                    k.id,
+                  ),
+                ),
+              ],
+            },
+            "sk",
+          ),
+          jsxs(
+            View,
+            {
+              style: tst.card,
+              children: [
+                jsx(Text, { style: tst.cardKicker, children: "WHAT A VETERAN WOULD HAVE DONE" }),
+                ...weakest.map((k) => jsxs(View, { style: tst.advice, children: [jsx(Pic, { e: k.icon, size: 22 }), jsx(Text, { style: tst.cardText, children: SKILL_ADVICE[k.id][0] })] }, k.id)),
+              ],
+            },
+            "adv",
+          ),
+          jsx(Text, { style: tst.hint, children: `Playbook: ${t.pages.length} pages this run · ${BOOK.size}/${PLAYBOOK.length} collected` }, "pb"),
+          jsx(Touchable, { style: tst.primary, activeOpacity: 0.85, onPress: share, children: jsx(Text, { style: tst.primaryTxt, children: "📤  Share my card" }) }, "sh"),
+          jsx(Touchable, { style: tst.secondary, activeOpacity: 0.85, onPress: onEnding, children: jsx(Text, { style: tst.secondaryTxt, children: "See the ending" }) }, "en"),
+          jsx(Touchable, { style: tst.secondary, activeOpacity: 0.85, onPress: onRestart, children: jsx(Text, { style: tst.secondaryTxt, children: "Play again" }) }, "re"),
+        ],
+      }),
+    });
+  }
+
+  // a 1080x1350 image of the report card, shared or downloaded
+  function shareCard(S, sc) {
+    try {
+      const W = 1080,
+        H = 1350,
+        cv = document.createElement("canvas");
+      cv.width = W;
+      cv.height = H;
+      const g = cv.getContext("2d"),
+        rtl = IS_AR,
+        x0 = rtl ? W - 90 : 90;
+      g.direction = rtl ? "rtl" : "ltr";
+      g.textAlign = rtl ? "right" : "left";
+      const bg = g.createLinearGradient(0, 0, 0, H);
+      bg.addColorStop(0, "#CFE3FF");
+      bg.addColorStop(1, "#F7F9FC");
+      g.fillStyle = bg;
+      g.fillRect(0, 0, W, H);
+      g.fillStyle = "#1C2430";
+      g.font = "600 40px Archivo_600SemiBold, sans-serif";
+      g.fillText("FOUNDER FOG", x0, 120);
+      g.font = "600 76px Archivo_600SemiBold, sans-serif";
+      g.fillText(S.companyName, x0, 230);
+      g.font = "500 40px Archivo_500Medium, sans-serif";
+      g.fillStyle = "#4E5A6B";
+      g.fillText(`${S.founderName} · ${S.week} weeks`, x0, 300);
+      g.fillStyle = S.victory ? "#B07D00" : "#E5484D";
+      g.font = "600 46px Archivo_600SemiBold, sans-serif";
+      const words = String(S.endReason || "").split(" ");
+      let line = "",
+        y = 400;
+      words.forEach((w) => {
+        if (g.measureText(line + w).width > W - 180) {
+          g.fillText(line.trim(), x0, y);
+          line = "";
+          y += 60;
+        }
+        line += w + " ";
+      });
+      g.fillText(line.trim(), x0, y);
+      y += 110;
+      SKILLS.forEach((k) => {
+        g.fillStyle = "#FFFFFF";
+        g.fillRect(90, y - 60, W - 180, 96);
+        g.fillStyle = "#1C2430";
+        g.font = "500 42px Archivo_500Medium, sans-serif";
+        g.textAlign = rtl ? "right" : "left";
+        g.fillText(k.name, rtl ? W - 130 : 130, y);
+        g.font = "600 56px AzeretMono_600SemiBold, monospace";
+        g.fillStyle = sc[k.id] >= 70 ? "#22A559" : sc[k.id] >= 40 ? "#E38A00" : "#E5484D";
+        g.textAlign = rtl ? "left" : "right";
+        g.fillText(grade(sc[k.id]), rtl ? 130 : W - 130, y + 6);
+        y += 120;
+      });
+      g.textAlign = "center";
+      g.fillStyle = "#4E5A6B";
+      g.font = "500 34px Archivo_500Medium, sans-serif";
+      g.fillText("Can you do better? Play Founder Fog.", W / 2, H - 70);
+      cv.toBlob((blob) => {
+        if (!blob) return;
+        const file = new File([blob], "founder-fog-report.png", { type: "image/png" });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) navigator.share({ files: [file], title: "Founder Fog" }).catch(() => {});
+        else {
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = "founder-fog-report.png";
+          a.click();
+        }
+      }, "image/png");
+    } catch (e) {}
+  }
+
+  // ------------------------------------------------------------ mentor note
+  function MentorModal({ S, onClose }) {
+    const t = ensureTeach(S),
+      n = t.note && NOTES[t.note.id],
+      page = n && PAGE_BY_ID[n.page];
+    if (!n) return null;
+    return jsx(Modal, {
+      visible: !0,
+      transparent: !0,
+      animationType: "fade",
+      onRequestClose: () => onClose(true),
+      children: jsx(View, {
+        style: tst.overlay,
+        children: jsxs(View, {
+          style: tst.note,
+          dataSet: { ff: "pop" },
+          children: [
+            jsxs(View, { style: tst.noteTop, children: [jsx(Pic, { e: "🎓", size: 40 }), jsx(Text, { style: [tst.kicker, { color: COLOR.act }], children: "MENTOR NOTE" })] }),
+            jsx(Text, { style: tst.lesson, children: n.lesson }),
+            jsx(Text, { style: tst.example, children: n.example }),
+            jsx(Text, { style: tst.read, children: "📚 " + n.read }),
+            page && jsx(View, { style: tst.unlock, children: jsx(Text, { style: tst.unlockTxt, children: (t.note.fresh ? "📖 New playbook page: " : "📖 Playbook: ") + page.title }) }),
+            jsx(Touchable, { style: tst.primary, activeOpacity: 0.85, onPress: () => onClose(true), children: jsx(Text, { style: tst.primaryTxt, children: "Got it" }) }),
+            jsx(Touchable, { style: { alignSelf: "center", padding: 8 }, onPress: () => (setMentor(false), onClose(false)), children: jsx(Text, { style: tst.off, children: "Turn off mentor notes" }) }),
+          ],
+        }),
+      }),
+    });
+  }
+
+  // --------------------------------------------------------------- playbook
+  function PlaybookModal({ onClose, notify }) {
+    const [tab, setTab] = React.useState("pages"),
+      [open, setOpen] = React.useState(null),
+      [on, setOn] = React.useState(mentorOn());
+    const page = open && PAGE_BY_ID[open];
+    return jsx(Modal, {
+      visible: !0,
+      transparent: !0,
+      animationType: "fade",
+      onRequestClose: onClose,
+      children: jsx(Touchable, {
+        activeOpacity: 1,
+        style: est.overlay,
+        onPress: onClose,
+        children: jsx(Touchable, {
+          activeOpacity: 1,
+          onPress: () => {},
+          style: est.sheet,
+          dataSet: { ff: "pop" },
+          children: page
+            ? jsx(ScrollView, {
+                children: [
+                  jsx(Touchable, { onPress: () => setOpen(null), style: { paddingVertical: 6 }, children: jsx(Text, { style: tst.back, children: "‹ All pages" }) }, "b"),
+                  jsx(Pic, { e: page.icon, size: 56 }, "i"),
+                  jsx(Text, { style: est.title, children: page.title }, "t"),
+                  jsx(Text, { style: tst.pageBody, children: page.body }, "p"),
+                  jsx(Text, { style: tst.read, children: "📚 " + page.source }, "s"),
+                ],
+              })
+            : jsx(ScrollView, {
+                children: [
+                  jsx(Text, { style: est.kicker, children: `FOUNDER PLAYBOOK · ${BOOK.size}/${PLAYBOOK.length}` }, "k"),
+                  jsx(Text, { style: est.title, children: tab === "pages" ? "What you've learned" : "Glossary" }, "t"),
+                  jsx(
+                    View,
+                    {
+                      style: tst.tabs,
+                      children: [
+                        ["pages", "Pages"],
+                        ["glossary", "Glossary"],
+                      ].map(([k, l]) => jsx(Touchable, { style: [tst.tab, tab === k && tst.tabOn], onPress: () => setTab(k), children: jsx(Text, { style: [tst.tabTxt, tab === k && { color: "#fff" }], children: l }) }, k)),
+                    },
+                    "tabs",
+                  ),
+                  ...(tab === "pages"
+                    ? PLAYBOOK.map((p) => {
+                        const got = BOOK.has(p.id);
+                        return jsxs(
+                          Touchable,
+                          {
+                            style: [tst.pageRow, !got && { opacity: 0.5 }],
+                            activeOpacity: 0.85,
+                            onPress: () => (got ? setOpen(p.id) : notify("Unlock it by facing the dilemma that teaches it.", "info")),
+                            children: [jsx(Pic, { e: got ? p.icon : "🔒", size: 26 }), jsx(Text, { style: tst.pageTitle, children: p.title })],
+                          },
+                          p.id,
+                        );
+                      })
+                    : GLOSSARY.map((g) => jsxs(View, { style: tst.gloss, children: [jsx(Text, { style: tst.term, children: g.term }), jsx(Text, { style: tst.cardText, children: g.def })] }, g.term))),
+                  jsx(
+                    Touchable,
+                    {
+                      style: [tst.secondary, { marginTop: 16 }],
+                      onPress: () => (setMentor(!on), setOn(!on)),
+                      children: jsx(Text, { style: tst.secondaryTxt, children: on ? "Mentor notes: on" : "Mentor notes: off" }),
+                    },
+                    "mn",
+                  ),
+                ],
+              }),
+        }),
+      }),
+    });
+  }
+  const glossaryDef = (term) => (GLOSSARY.find((g) => g.term === term) || {}).def;
+
+  const tst = StyleSheet.create({
+    wrap: { padding: 20, paddingBottom: 40, maxWidth: 600, width: "100%", alignSelf: "center" },
+    kicker: { fontFamily: "AzeretMono_500Medium", fontSize: 11, letterSpacing: 1.2, color: COLOR.text3 },
+    title: { fontFamily: "Archivo_600SemiBold", fontSize: 30, letterSpacing: -0.6, color: COLOR.text, marginTop: 6 },
+    sub: { fontFamily: "Archivo_500Medium", fontSize: 13.5, color: COLOR.text2, marginTop: 4 },
+    endBox: { backgroundColor: COLOR.panel, borderRadius: 18, padding: 16, marginTop: 16, borderLeftWidth: 4, borderWidth: 1 },
+    endTitle: { fontFamily: "Archivo_600SemiBold", fontSize: 19, lineHeight: 25, color: COLOR.text },
+    endLesson: { fontFamily: "Archivo_400Regular", fontSize: 14.5, lineHeight: 21, color: COLOR.text2, marginTop: 8, fontStyle: "italic" },
+    card: { backgroundColor: COLOR.panel, borderRadius: 18, padding: 16, marginTop: 12, borderWidth: 1, borderColor: COLOR.line },
+    cardKicker: { fontFamily: "AzeretMono_500Medium", fontSize: 10, letterSpacing: 1.2, color: COLOR.text3, marginBottom: 8 },
+    cardTitle: { fontFamily: "Archivo_600SemiBold", fontSize: 16, lineHeight: 22, color: COLOR.text },
+    cardText: { flex: 1, fontFamily: "Archivo_400Regular", fontSize: 14, lineHeight: 20, color: COLOR.text2, marginTop: 4 },
+    hint: { fontFamily: "Archivo_400Regular", fontSize: 12.5, lineHeight: 18, color: COLOR.text3, marginTop: 8 },
+    skillRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 6 },
+    skillName: { width: 92, fontFamily: "Archivo_500Medium", fontSize: 14, color: COLOR.text },
+    track: { flex: 1, height: 10, borderRadius: 5, backgroundColor: COLOR.panel2, overflow: "hidden" },
+    fill: { height: 10, borderRadius: 5 },
+    grade: { width: 28, textAlign: "center", fontFamily: "AzeretMono_600SemiBold", fontSize: 20 },
+    advice: { flexDirection: "row", gap: 10, alignItems: "flex-start", marginTop: 6 },
+    primary: { backgroundColor: COLOR.accent, borderRadius: 14, minHeight: 50, alignItems: "center", justifyContent: "center", marginTop: 16 },
+    primaryTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 15.5, color: "#fff" },
+    secondary: { backgroundColor: COLOR.panel, borderRadius: 14, minHeight: 46, alignItems: "center", justifyContent: "center", marginTop: 10, borderWidth: 1, borderColor: COLOR.line },
+    secondaryTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 14.5, color: COLOR.text },
+    overlay: { flex: 1, backgroundColor: "rgba(24,34,48,0.45)", justifyContent: "center", alignItems: "center", padding: 16 },
+    note: { backgroundColor: COLOR.panel, borderRadius: 22, padding: 20, width: "100%", maxWidth: 460, borderTopWidth: 3, borderTopColor: COLOR.act },
+    noteTop: { flexDirection: "row", alignItems: "center", gap: 10 },
+    lesson: { fontFamily: "Archivo_600SemiBold", fontSize: 19, lineHeight: 26, color: COLOR.text, marginTop: 12 },
+    example: { fontFamily: "Archivo_400Regular", fontSize: 14.5, lineHeight: 21, color: COLOR.text2, marginTop: 10 },
+    read: { fontFamily: "Archivo_500Medium", fontSize: 13, color: COLOR.text3, marginTop: 12 },
+    unlock: { backgroundColor: "#FFF4D6", borderRadius: 12, padding: 10, marginTop: 12 },
+    unlockTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 13.5, color: COLOR.gold },
+    off: { fontFamily: "Archivo_500Medium", fontSize: 12.5, color: COLOR.text3 },
+    tabs: { flexDirection: "row", gap: 8, marginBottom: 8 },
+    tab: { flex: 1, borderRadius: 999, paddingVertical: 8, alignItems: "center", backgroundColor: COLOR.panel2 },
+    tabOn: { backgroundColor: COLOR.act },
+    tabTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 13.5, color: COLOR.text2 },
+    pageRow: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: COLOR.line },
+    pageTitle: { flex: 1, fontFamily: "Archivo_500Medium", fontSize: 15, color: COLOR.text },
+    pageBody: { fontFamily: "Archivo_400Regular", fontSize: 15.5, lineHeight: 24, color: COLOR.text, marginTop: 6 },
+    back: { fontFamily: "Archivo_600SemiBold", fontSize: 14, color: COLOR.act },
+    gloss: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: COLOR.line },
+    term: { fontFamily: "Archivo_600SemiBold", fontSize: 15, color: COLOR.text },
+  });
+
 
   function buildReport(before, after) {
     const rows = [
@@ -4047,7 +5287,9 @@ __d(function (g, r, i, a, m, _e, d) {
       [inboxOpen, setInboxOpen] = React.useState(false),
       [pitchOpen, setPitchOpen] = React.useState(false),
       [moneyOpen, setMoneyOpen] = React.useState(false),
-      [custOpen, setCustOpen] = React.useState(false);
+      [custOpen, setCustOpen] = React.useState(false),
+      [bookOpen, setBookOpen] = React.useState(false),
+      [endingOpen, setEndingOpen] = React.useState(false);
     const toastTimer = React.useRef(null);
     const feedRef = React.useRef(null);
     // keep the life log scrolled to the latest week, BitLife style
@@ -4112,11 +5354,13 @@ __d(function (g, r, i, a, m, _e, d) {
         children: jsx(StatusBar, { barStyle: "dark-content" }),
       });
 
-    const start = ({ founderName, companyName, sectorId, avatar, mode }) => {
+    const start = ({ founderName, companyName, sectorId, avatar, mode, challenge }) => {
       const eng = new Engine.StartupEngine(founderName, companyName, sectorId);
       eng.state.avatar = avatar || "avatar_m1";
       ensureFeatureState(eng.state);
-      applyMode(eng, mode);
+      if (challenge && CHALLENGES[challenge]) eng.state.challenge = challenge;
+      applyMode(eng, challenge && CHALLENGES[challenge] ? CHALLENGES[challenge].mode : mode);
+      setEndingOpen(false);
       dealInbox(eng.state, 1);
       clearSave();
       setSaved(null);
@@ -4159,10 +5403,13 @@ __d(function (g, r, i, a, m, _e, d) {
         ],
       });
 
+    // the report card first, then the original ending screen
+    if ((S.gameOver || S.victory) && !endingOpen)
+      return jsxs(View, { style: { flex: 1 }, children: [jsx(StatusBar, { barStyle: "dark-content" }), jsx(ReportCard, { S: S, onEnding: () => setEndingOpen(true), onRestart: () => (setEndingOpen(false), restart()) })] });
     if (S.gameOver || S.victory)
       return jsxs(Screen, {
         style: st.container,
-        children: [jsx(StatusBar, { barStyle: "dark-content" }), jsx(GameOver.GameOverScreen, { gameState: S, onRestart: restart })],
+        children: [jsx(StatusBar, { barStyle: "dark-content" }), jsx(GameOver.GameOverScreen, { gameState: S, onRestart: () => (setEndingOpen(false), restart()) })],
       });
 
     // ---------- derived ----------
@@ -4387,6 +5634,8 @@ __d(function (g, r, i, a, m, _e, d) {
         tile("m", "💵", "Money", S.defaultAlive ? "Default alive" : runwayLabel + " runway", "#E2F6EA", () => setMoneyOpen(true), null, false),
         tile("a", fogged && !S.slotUsed ? "🧘" : "⚡", fogged && !S.slotUsed ? "Rest now" : "Your action", S.slotUsed ? "used" : "1 left", "#E3F7EA", () => setTab("actions"), null, S.slotUsed),
         tile("p", "💼", "Fundraise", raisedThisStage(S) ? "Raised ✓" : canPitch(S) ? roundName : S.week < pitchFrom(S) ? `Week ${pitchFrom(S)}+` : "Not now", "#E5EEFF", () => (canPitch(S) ? setPitchOpen(true) : notify(raisedThisStage(S) ? "Next round opens at the next milestone." : S.slotUsed ? "Pitching needs this week's action." : S.week < pitchFrom(S) ? `Investors take meetings from week ${pitchFrom(S)}.` : "Investors will take a meeting in " + pitchCooldown(S) + " wk.", "info")), null, !canPitch(S)),
+        S.challenge && CHALLENGES[S.challenge] && tile("g", CHALLENGES[S.challenge].icon, "Challenge", `Week ${S.week}/${CHALLENGES[S.challenge].deadline}`, "#E2F6EA", () => notify("🎯 " + CHALLENGES[S.challenge].goal, "info"), null, false),
+        tile("b", "📓", "Playbook", BOOK.size + "/" + PLAYBOOK.length + " pages", "#FFF4D6", () => setBookOpen(true), null, false),
         tile("c", "🤝", "Circle", weakTie ? "Needs you" : "All good", "#F1E8FF", () => setTab("circle"), weakTie ? "!" : null, false),
       ],
     });
@@ -4441,11 +5690,14 @@ __d(function (g, r, i, a, m, _e, d) {
     });
 
     // BitLife-style stat bars
-    const statBar = (icon, label, pct, valueText, fogMe) =>
+    // tap a bar with a glossary entry to see what the number means
+    const statBar = (icon, label, pct, valueText, fogMe, gloss) =>
       jsxs(
-        View,
+        Touchable,
         {
           style: st.statRow,
+          activeOpacity: gloss == null ? 1 : 0.7,
+          onPress: () => gloss != null && GLOSSARY[gloss] && notify("📖 " + GLOSSARY[gloss].term + ": " + GLOSSARY[gloss].def, "info"),
           children: [
             jsx(Pic, { e: icon, size: 22 }),
             jsx(Text, { style: st.statLabel, numberOfLines: 1, children: label }),
@@ -4465,8 +5717,8 @@ __d(function (g, r, i, a, m, _e, d) {
       children: [
         statBar("🧠", "Clarity", S.mentalClarity, Math.round(S.mentalClarity) + "%"),
         statBar("🤝", "Morale", S.teamMorale, Math.round(S.teamMorale) + "%"),
-        statBar("⏳", "Runway", runwayPct, ft(S.defaultAlive ? "Default alive" : runwayLabel, "runway"), true),
-        statBar("🔍", "Fit", S.mkt && S.mkt.seen ? S.mkt.seen.value : 0, S.mkt && S.mkt.seen ? "~" + Math.round(S.mkt.seen.value / 5) * 5 + "%" : "?"),
+        statBar("⏳", "Runway", runwayPct, ft(S.defaultAlive ? "Default alive" : runwayLabel, "runway"), true, 3),
+        statBar("🔍", "Fit", S.mkt && S.mkt.seen ? S.mkt.seen.value : 0, S.mkt && S.mkt.seen ? "~" + Math.round(S.mkt.seen.value / 5) * 5 + "%" : "?", false, 8),
         statBar("💼", "Trust", S.investorTrust == null ? 80 : S.investorTrust, Math.round(S.investorTrust == null ? 80 : S.investorTrust) + "%"),
         fogged && jsx(View, { pointerEvents: "none", dataSet: { ff: "fog" }, style: [st.fogLayer, { opacity: 0.2 + 0.4 * fogAmt }] }),
       ],
@@ -4834,6 +6086,15 @@ __d(function (g, r, i, a, m, _e, d) {
         guideModal,
         S.perkChoice && !report && !S.pendingEvent && jsx(PerkModal, { S: S, onPick: pickPerk }),
         inboxOpen && !report && !S.pendingEvent && !S.perkChoice && jsx(InboxModal, { S: S, onChoose: chooseMail, onClose: () => setInboxOpen(false) }),
+        bookOpen && jsx(PlaybookModal, { onClose: () => setBookOpen(false), notify: notify }),
+        S.teach && S.teach.note && !report && !S.pendingEvent && mentorOn() &&
+          jsx(MentorModal, {
+            S: S,
+            onClose: () => {
+              engine.state.teach.note = null;
+              setS({ ...engine.state });
+            },
+          }),
         custOpen && !report && !S.pendingEvent && jsx(CustomersModal, { S: S, onClose: () => setCustOpen(false), onDo: doCustomer }),
         moneyOpen && !report && !S.pendingEvent && jsx(MoneyModal, { S: S, ft: ft, onClose: () => setMoneyOpen(false), onDo: doCustomer }),
         pitchOpen &&
@@ -5266,13 +6527,19 @@ __d(function (g, r, i, a, m, _e, d) {
     healthtech: "Trust builds slowly: growth runs 15% slower, churn settles 1.5% lower.",
     edtech: "Seasons: back-to-school weeks grow 40% faster, summer 30% slower. Churn settles 1% higher.",
   };
+  const CHALLENGES = [
+    { id: "winter26", icon: "🧊", name: "Survive the funding winter", goal: "Still running at week 26, in a downturn.", mode: "winter" },
+    { id: "fit20", icon: "🔍", name: "Find fit in 20 weeks", goal: "Reach 40% product-market fit by week 20.", mode: "venture" },
+    { id: "control30", icon: "🪑", name: "Raise and keep control", goal: "Close a round by week 30, keep 70% of the company and control of the board.", mode: "venture" },
+    { id: "boot40", icon: "🌱", name: "Default alive, bootstrapped", goal: "Reach default alive by week 40 without investors.", mode: "bootstrapped" },
+  ];
   function sectorNumbers(s, cashMult) {
     const monthlyBurn = 2e3 * (s.burn_multiplier || 1) + 1500,
       cash = Math.round(s.initial_cash * (cashMult || 1));
     return { cash: cash, burnWeek: monthlyBurn / 4, runway: cash / monthlyBurn };
   }
 
-  function Title({ saved, onNew, onResume, onDiscard }) {
+  function Title({ saved, onNew, onResume, onDiscard, onChallenges }) {
     return jsxs(View, {
       style: st.titleWrap,
       dataSet: { ff: "sky" },
@@ -5341,6 +6608,13 @@ __d(function (g, r, i, a, m, _e, d) {
               dataSet: { ff: "rise2" },
               children: jsx(Text, { style: [st.primaryTxt, saved && st.secondaryTxt], children: saved ? "Start a new company" : "Start your company ▸" }),
             }),
+            jsx(Touchable, {
+              style: [st.primaryBtn, st.secondaryBtn],
+              onPress: onChallenges,
+              activeOpacity: 0.85,
+              dataSet: { ff: "rise3" },
+              children: jsx(Text, { style: [st.primaryTxt, st.secondaryTxt], children: "🎯 Challenges" }),
+            }),
             saved &&
               jsx(Touchable, {
                 onPress: onDiscard,
@@ -5380,10 +6654,43 @@ __d(function (g, r, i, a, m, _e, d) {
       [founder, setFounder] = React.useState("Ahmed"),
       [company, setCompany] = React.useState("Adamos AI"),
       [avatar, setAvatar] = React.useState("avatar_m1"),
-      [mode, setMode] = React.useState("venture");
+      [mode, setMode] = React.useState("venture"),
+      [challenge, setChallenge] = React.useState(null);
 
     if (step === 0)
-      return jsx(Title, { saved: saved, onResume: onResume, onDiscard: onDiscard, onNew: () => setStep(1) });
+      return jsx(Title, { saved: saved, onResume: onResume, onDiscard: onDiscard, onNew: () => (setChallenge(null), setStep(1)), onChallenges: () => setStep("ch") });
+
+    // scenario challenges: one goal, a deadline, a fixed difficulty (rules in App's teach.js)
+    if (step === "ch")
+      return jsxs(View, {
+        style: st.container,
+        children: [
+          jsx(StepHeader, { step: 1, title: "Challenges", sub: "Short runs with one goal. Good for a class or a coffee break.", onBack: () => setStep(0) }),
+          jsx(ScrollView, {
+            style: { flex: 1 },
+            contentContainerStyle: st.list,
+            children: CHALLENGES.map((c, idx) =>
+              jsxs(
+                Touchable,
+                {
+                  style: st.sector,
+                  activeOpacity: 0.85,
+                  dataSet: { ff: "rise" + Math.min(idx + 1, 4) },
+                  onPress: () => (setChallenge(c.id), setMode(c.mode), setStep(1)),
+                  children: [
+                    jsxs(View, {
+                      style: st.sectorTop,
+                      children: [jsx(View, { style: st.sectorIcon, children: jsx(Pic, { e: c.icon, size: 36 }) }), jsx(Text, { style: [st.sectorName, { flex: 1 }], children: c.name })],
+                    }),
+                    jsx(Text, { style: st.desc, children: c.goal }),
+                  ],
+                },
+                c.id,
+              ),
+            ),
+          }),
+        ],
+      });
 
     const sector = Engine.SECTORS.find((s) => s.id === sectorId) || Engine.SECTORS[0];
     const modeInfo = MODES.find((m) => m.id === mode) || MODES[0];
@@ -5483,8 +6790,10 @@ __d(function (g, r, i, a, m, _e, d) {
             jsx(TextInput, { style: st.input, value: founder, onChangeText: setFounder, placeholder: "Your name", placeholderTextColor: COLOR.text3, maxLength: 24 }),
             jsx(Text, { style: st.inputLabel, children: "COMPANY" }),
             jsx(TextInput, { style: st.input, value: company, onChangeText: setCompany, placeholder: "Company name", placeholderTextColor: COLOR.text3, maxLength: 28 }),
-            jsx(Text, { style: st.inputLabel, children: "DIFFICULTY" }),
-            jsx(View, {
+            challenge && jsx(Text, { style: st.inputLabel, children: "CHALLENGE" }),
+            challenge && jsx(Text, { style: st.modeDesc, children: "🎯 " + (CHALLENGES.find((c) => c.id === challenge) || {}).goal }),
+            !challenge && jsx(Text, { style: st.inputLabel, children: "DIFFICULTY" }),
+            !challenge && jsx(View, {
               style: st.modes,
               children: MODES.map((m) =>
                 jsxs(
@@ -5499,7 +6808,7 @@ __d(function (g, r, i, a, m, _e, d) {
                 ),
               ),
             }),
-            jsx(Text, { style: st.modeDesc, children: modeInfo.desc }),
+            !challenge && jsx(Text, { style: st.modeDesc, children: modeInfo.desc }),
             jsxs(View, {
               style: st.brief,
               dataSet: { ff: "rise1" },
@@ -5542,7 +6851,7 @@ __d(function (g, r, i, a, m, _e, d) {
           children: jsx(Touchable, {
             style: [st.primaryBtn, !ready && { opacity: 0.4 }],
             disabled: !ready,
-            onPress: () => onStartGame({ founderName: founder.trim(), companyName: company.trim(), sectorId: sector.id, avatar: avatar, mode: mode }),
+            onPress: () => onStartGame({ founderName: founder.trim(), companyName: company.trim(), sectorId: sector.id, avatar: avatar, mode: mode, challenge: challenge }),
             activeOpacity: 0.85,
             children: jsx(Text, { style: st.primaryTxt, children: "Found " + (company.trim() || "the company") + " ▸" }),
           }),
@@ -5696,7 +7005,7 @@ __d(function(g,r,i,a,m,_e,d){"use strict";function e(e){return e&&e.__esModule?e
 __d(function(g,r,i,a,m,e,d){"use strict";Object.defineProperty(e,'__esModule',{value:!0}),Object.defineProperty(e,"default",{enumerable:!0,get:function(){return t}});var t=class{static alert(){}}},300,[]);
 __d(function(g,r,i,_a,m,_e,d){"use strict";function e(e){return e&&e.__esModule?e:{default:e}}Object.defineProperty(_e,'__esModule',{value:!0}),_e.ActivitiesScreen=function({onSelectActivity:e,gameState:a}){const C=a?.cash??0,b=!!a?.slotUsed,v=[...new Set(c.FOUNDER_ACTIVITIES.map(e=>e.category))];return(0,u.jsxs)(l.default,{style:y.container,children:[(0,u.jsx)(o.default,{style:y.title,children:"Founder Actions"}),(0,u.jsx)(o.default,{style:y.subtitle,children:b?"This week's action is used. It refills on Advance week.":"One action available this week."}),v.map(a=>(0,u.jsxs)(t.default,{children:[(0,u.jsx)(o.default,{style:[y.categoryLabel,{color:f[a]||s.COLOR.text3}],children:a.toUpperCase()}),c.FOUNDER_ACTIVITIES.filter(e=>e.category===a).map(l=>{const c=C>=l.cost_usd,v=!c||b;return(0,u.jsxs)(n.default,{style:[y.activityBox,{borderLeftColor:f[a]||s.COLOR.line},v&&y.activityBoxDisabled],disabled:v,onPress:()=>e(l),children:[(0,u.jsxs)(t.default,{style:y.activityMain,children:[(0,u.jsx)(o.default,{style:[y.activityName,v&&y.dimmed],children:l.name}),(0,u.jsx)(o.default,{style:y.activityEffects,children:O(l.kpi_effects)})]}),(0,u.jsx)(o.default,{style:[y.activityCost,!c&&y.unaffordable],children:0===l.cost_usd?'Free':`$${l.cost_usd.toLocaleString()}`})]},l.id)})]},a))]})},r(d[0]);var t=e(r(d[1])),o=e(r(d[2])),a=e(r(d[3])),l=e(r(d[4])),n=e(r(d[5])),c=r(d[6]),s=r(d[7]),u=r(d[8]);const f={Wellness:s.COLOR.vital,Network:s.COLOR.act,Governance:s.COLOR.fog,Crisis:s.COLOR.crit};function O(e={}){const t={mental_clarity:'Clarity',team_morale:'Morale',investor_trust:'Trust',tech_debt:'Tech Debt',churn_rate:'Churn',active_users:'Users'};return Object.entries(e).map(([e,o])=>`${t[e]||e} ${o>0?'+':''}${o}`).join('  \xb7  ')}const y=a.default.create({container:{flex:1,backgroundColor:s.COLOR.ink,padding:12},title:{...s.TYPE.screenTitle,color:s.COLOR.text,marginBottom:2},subtitle:{...s.TYPE.bodySmall,color:s.COLOR.text3,marginBottom:14},categoryLabel:{...s.TYPE.label,marginTop:10,marginBottom:6},activityBox:{backgroundColor:s.COLOR.panel,padding:12,borderRadius:8,marginBottom:8,borderWidth:1,borderColor:s.COLOR.line,borderLeftWidth:2,flexDirection:'row',justifyContent:'space-between',alignItems:'center',minHeight:44},activityBoxDisabled:{opacity:.38},activityMain:{flex:1,paddingRight:10},activityName:{...s.TYPE.sectionHeading,color:s.COLOR.text},activityEffects:{...s.TYPE.bodySmall,color:s.COLOR.text2,marginTop:3},activityCost:{...s.TYPE.figureInline,color:s.COLOR.vital},unaffordable:{color:s.COLOR.crit},dimmed:{color:s.COLOR.text3}})},301,[38,175,145,46,186,177,302,267,268]);
 __d(function(g,r,i,a,m,e,d){"use strict";Object.defineProperty(e,'__esModule',{value:!0}),Object.defineProperty(e,"FOUNDER_ACTIVITIES",{enumerable:!0,get:function(){return t}});const t=[{id:"ACT_WELL_01",name:"Take a Weekend Off",category:"Wellness",cost_usd:500,kpi_effects:{mental_clarity:18,team_morale:5},log_description_en:"Closed the laptop for two days. Nothing burned down and your head is clearer"},{id:"ACT_WELL_02",name:"Gym Workout",category:"Wellness",cost_usd:100,kpi_effects:{mental_clarity:6},log_description_en:"An hour of training. Small, cheap, and it compounds if you keep doing it"},{id:"ACT_WELL_03",name:"Executive Coaching Session",category:"Wellness",cost_usd:1500,kpi_effects:{mental_clarity:25,investor_trust:5},log_description_en:"Worked through the decisions you had been avoiding with someone who has seen it before"},{id:"ACT_WELL_04",name:"Therapy Session",category:"Wellness",cost_usd:400,kpi_effects:{mental_clarity:15},log_description_en:"Talked about the part of this that is not a business problem"},{id:"ACT_NET_01",name:"Attend a Global Tech Conference",category:"Network",cost_usd:2500,kpi_effects:{investor_trust:15,active_users:200,mental_clarity:-5},log_description_en:"Four days of hallway conversations. Exhausting, and two of them will matter"},{id:"ACT_NET_02",name:"Coffee with a VC Partner",category:"Network",cost_usd:100,kpi_effects:{investor_trust:10},log_description_en:"No ask, no deck. Just kept the relationship warm before you need it"},{id:"ACT_NET_03",name:"Founder Dinner",category:"Network",cost_usd:300,kpi_effects:{mental_clarity:10,investor_trust:5},log_description_en:"Spent an evening with people carrying the same weight. It helps more than it should"},{id:"ACT_GOV_01",name:"Expand the ESOP Equity Pool",category:"Governance",cost_usd:1e3,kpi_effects:{team_morale:20,investor_trust:-5},log_description_en:"Widened the option pool. The team noticed, and so did your cap table"},{id:"ACT_GOV_02",name:"Publish an Investor Update",category:"Governance",cost_usd:0,kpi_effects:{investor_trust:12,mental_clarity:-3},log_description_en:"Wrote the honest version, numbers included. Free, and it buys you patience later"},{id:"ACT_CRIS_01",name:"Codebase Refactoring Sprint",category:"Crisis",cost_usd:2e3,kpi_effects:{tech_debt:-25,churn_rate:-.5},log_description_en:"Froze features for a week and paid down the mess"},{id:"ACT_CRIS_02",name:"Execute Partial Layoffs",category:"Crisis",cost_usd:5e3,kpi_effects:{team_morale:-30,mental_clarity:-15},log_description_en:"Cut the team to survive. Severance paid, payroll lighter, and the room is very quiet"},{id:"ACT_CRIS_03",name:"Emergency All-Hands",category:"Crisis",cost_usd:0,kpi_effects:{team_morale:12,mental_clarity:-5},log_description_en:"Told the team the truth about the runway before the rumour did it for you"}]},302,[]);
-__d(function(g,r,i,a,m,_e,d){"use strict";function e(e){return e&&e.__esModule?e:{default:e}}Object.defineProperty(_e,'__esModule',{value:!0}),_e.GameOverScreen=function({gameState:e,onRestart:n}){const b=f[e?.overType||'bank']||f.bank,y=e?.mentalClarity??0,O=e?.week??0,C=b.lift?100:y,p=(e,t)=>(0,c.fogText)(e,C,t,O),k={opacity:(0,c.fogOpacity)(C)},x=[{label:'Weeks survived',value:`${O}`},{label:'Cash',value:p(`$${Math.round(e?.cash??0).toLocaleString()}`,'cash'),fogged:!0},{label:'Valuation',value:p(`$${Math.round(e?.valuation??0).toLocaleString()}`,'valuation'),fogged:!0},{label:'Clarity',value:`${Math.round(y)}%`},{label:'Morale',value:`${Math.round(e?.teamMorale??0)}%`}];return(0,u.jsxs)(t.default,{style:[h.container,{backgroundColor:b.ground}],children:[(0,u.jsx)(o.default,{style:[h.kicker,{color:b.accent}],children:b.kicker}),(0,u.jsx)(t.default,{style:[h.rule,{backgroundColor:b.accent}]}),(0,u.jsx)(o.default,{style:h.endTitle,children:b.title}),(0,u.jsx)(o.default,{style:h.endBody,children:b.body}),(0,u.jsx)(t.default,{style:h.ledger,children:x.map(e=>(0,u.jsxs)(t.default,{style:h.ledgerRow,children:[(0,u.jsx)(o.default,{style:h.ledgerLabel,children:e.label}),(0,u.jsx)(o.default,{style:[h.ledgerValue,e.fogged&&k],children:e.value})]},e.label))}),(0,u.jsx)(o.default,{style:[h.closing,{color:b.accent}],children:b.closing}),(0,u.jsx)(l.default,{style:[h.restartBtn,{backgroundColor:s.COLOR.panel2,borderColor:b.accent}],onPress:n,children:(0,u.jsx)(o.default,{style:h.restartTxt,children:"Start again"})})]})},r(d[0]);var t=e(r(d[1])),o=e(r(d[2])),n=e(r(d[3])),l=e(r(d[4])),c=r(d[5]),s=r(d[6]),u=r(d[7]);const f={bank:{ground:s.COLOR.ink,accent:s.COLOR.crit,kicker:'ENDING \xb7 OUT OF CASH',title:'The account is empty.',body:'Payroll does not clear this week. The company is done, and the people who worked for you found out from a bounced transfer, not from you.',closing:'The numbers resolve now. There is nothing left to misread.',lift:!0},burn:{ground:s.COLOR.burnoutGround,accent:s.COLOR.fog,kicker:'ENDING \xb7 OUT OF YOURSELF',title:'You ran out of yourself.',body:'The company is solvent. Revenue is growing. None of that is why you stopped being able to run it.',closing:'This is not a business failure. It is the one the category never shows you.',lift:!1},board:{ground:s.COLOR.ink,accent:s.COLOR.crit,kicker:'ENDING \xb7 REPLACED',title:'The board replaced you.',body:'They thanked you for everything you built and asked for your laptop by Friday. You gave away control one reasonable-looking term sheet at a time.',closing:'Read the board clause before you read the valuation.',lift:!0},cofounder:{ground:s.COLOR.ink,accent:s.COLOR.crit,kicker:'ENDING \xb7 CO-FOUNDER BREAKUP',title:'Tariq left, and the company went with him.',body:'Half the code, half the late nights and most of the reasons early customers trusted you walked out of the same door.',closing:'Most young startups die of founder problems, not market problems.',lift:!0},alone:{ground:s.COLOR.burnoutGround,accent:s.COLOR.fog,kicker:'ENDING \xb7 ALONE',title:'You built a company, and lost everyone who would have celebrated it.',body:'Nour moved out in the spring. Your parents stopped asking how it was going. The company is still running. You are not sure who it is for.',closing:'The people outside the company are not a distraction from it.',lift:!1},exit:{ground:s.COLOR.ink,accent:s.COLOR.gold,kicker:'ENDING \xb7 EXIT',title:'A hundred million dollars.',body:'You could read the number the whole way.',closing:'A hundred million dollars.',lift:!0}};const h=n.default.create({container:{flex:1,padding:24,justifyContent:'center'},kicker:{fontSize:9.5,fontWeight:'500',letterSpacing:1.3,textTransform:'uppercase'},rule:{height:2,width:32,marginTop:8,marginBottom:16},endTitle:{fontSize:25,fontWeight:'600',color:s.COLOR.text,letterSpacing:-.5,marginBottom:12},endBody:{fontSize:12.5,color:s.COLOR.text2,lineHeight:19,marginBottom:24},ledger:{borderTopWidth:1,borderTopColor:s.COLOR.line,borderBottomWidth:1,borderBottomColor:s.COLOR.line,paddingVertical:4,marginBottom:24},ledgerRow:{flexDirection:'row',justifyContent:'space-between',paddingVertical:8,borderBottomWidth:1,borderBottomColor:s.COLOR.line},ledgerLabel:{fontSize:11,color:s.COLOR.text3,letterSpacing:.4},ledgerValue:{fontSize:14,fontWeight:'600',color:s.COLOR.text,fontVariant:['tabular-nums']},closing:{fontSize:12.5,fontWeight:'500',lineHeight:19,marginBottom:28},restartBtn:{minHeight:48,borderRadius:8,borderWidth:1,alignItems:'center',justifyContent:'center'},restartTxt:{fontSize:13,fontWeight:'600',color:s.COLOR.text}})},303,[38,175,145,46,177,296,267,268]);
+__d(function(g,r,i,a,m,_e,d){"use strict";function e(e){return e&&e.__esModule?e:{default:e}}Object.defineProperty(_e,'__esModule',{value:!0}),_e.GameOverScreen=function({gameState:e,onRestart:n}){const b=f[e?.overType||'bank']||f.bank,y=e?.mentalClarity??0,O=e?.week??0,C=b.lift?100:y,p=(e,t)=>(0,c.fogText)(e,C,t,O),k={opacity:(0,c.fogOpacity)(C)},x=[{label:'Weeks survived',value:`${O}`},{label:'Cash',value:p(`$${Math.round(e?.cash??0).toLocaleString()}`,'cash'),fogged:!0},{label:'Valuation',value:p(`$${Math.round(e?.valuation??0).toLocaleString()}`,'valuation'),fogged:!0},{label:'Clarity',value:`${Math.round(y)}%`},{label:'Morale',value:`${Math.round(e?.teamMorale??0)}%`}];return(0,u.jsxs)(t.default,{style:[h.container,{backgroundColor:b.ground}],children:[(0,u.jsx)(o.default,{style:[h.kicker,{color:b.accent}],children:b.kicker}),(0,u.jsx)(t.default,{style:[h.rule,{backgroundColor:b.accent}]}),(0,u.jsx)(o.default,{style:h.endTitle,children:b.title}),(0,u.jsx)(o.default,{style:h.endBody,children:b.body}),(0,u.jsx)(t.default,{style:h.ledger,children:x.map(e=>(0,u.jsxs)(t.default,{style:h.ledgerRow,children:[(0,u.jsx)(o.default,{style:h.ledgerLabel,children:e.label}),(0,u.jsx)(o.default,{style:[h.ledgerValue,e.fogged&&k],children:e.value})]},e.label))}),(0,u.jsx)(o.default,{style:[h.closing,{color:b.accent}],children:b.closing}),(0,u.jsx)(l.default,{style:[h.restartBtn,{backgroundColor:s.COLOR.panel2,borderColor:b.accent}],onPress:n,children:(0,u.jsx)(o.default,{style:h.restartTxt,children:"Start again"})})]})},r(d[0]);var t=e(r(d[1])),o=e(r(d[2])),n=e(r(d[3])),l=e(r(d[4])),c=r(d[5]),s=r(d[6]),u=r(d[7]);const f={bank:{ground:s.COLOR.ink,accent:s.COLOR.crit,kicker:'ENDING \xb7 OUT OF CASH',title:'The account is empty.',body:'Payroll does not clear this week. The company is done, and the people who worked for you found out from a bounced transfer, not from you.',closing:'The numbers resolve now. There is nothing left to misread.',lift:!0},burn:{ground:s.COLOR.burnoutGround,accent:s.COLOR.fog,kicker:'ENDING \xb7 OUT OF YOURSELF',title:'You ran out of yourself.',body:'The company is solvent. Revenue is growing. None of that is why you stopped being able to run it.',closing:'This is not a business failure. It is the one the category never shows you.',lift:!1},board:{ground:s.COLOR.ink,accent:s.COLOR.crit,kicker:'ENDING \xb7 REPLACED',title:'The board replaced you.',body:'They thanked you for everything you built and asked for your laptop by Friday. You gave away control one reasonable-looking term sheet at a time.',closing:'Read the board clause before you read the valuation.',lift:!0},cofounder:{ground:s.COLOR.ink,accent:s.COLOR.crit,kicker:'ENDING \xb7 CO-FOUNDER BREAKUP',title:'Tariq left, and the company went with him.',body:'Half the code, half the late nights and most of the reasons early customers trusted you walked out of the same door.',closing:'Most young startups die of founder problems, not market problems.',lift:!0},alone:{ground:s.COLOR.burnoutGround,accent:s.COLOR.fog,kicker:'ENDING \xb7 ALONE',title:'You built a company, and lost everyone who would have celebrated it.',body:'Nour moved out in the spring. Your parents stopped asking how it was going. The company is still running. You are not sure who it is for.',closing:'The people outside the company are not a distraction from it.',lift:!1},challenge:{ground:s.COLOR.ink,accent:s.COLOR.gold,kicker:'CHALLENGE \xb7 COMPLETE',title:'Challenge complete.',body:'You set one goal and hit it before the deadline. Real companies rarely get one clear goal at a time, which is why practising with one helps.',closing:'Try a harder challenge, or play a full run.',lift:!0},challenge_failed:{ground:s.COLOR.ink,accent:s.COLOR.crit,kicker:'CHALLENGE \xb7 FAILED',title:'The deadline came first.',body:'The goal was within reach, but not this time. Look at the report card: the turning point is usually earlier than it feels.',closing:'Every founder fails a few deadlines. The good ones know why.',lift:!0},exit:{ground:s.COLOR.ink,accent:s.COLOR.gold,kicker:'ENDING \xb7 EXIT',title:'A hundred million dollars.',body:'You could read the number the whole way.',closing:'A hundred million dollars.',lift:!0}};const h=n.default.create({container:{flex:1,padding:24,justifyContent:'center'},kicker:{fontSize:9.5,fontWeight:'500',letterSpacing:1.3,textTransform:'uppercase'},rule:{height:2,width:32,marginTop:8,marginBottom:16},endTitle:{fontSize:25,fontWeight:'600',color:s.COLOR.text,letterSpacing:-.5,marginBottom:12},endBody:{fontSize:12.5,color:s.COLOR.text2,lineHeight:19,marginBottom:24},ledger:{borderTopWidth:1,borderTopColor:s.COLOR.line,borderBottomWidth:1,borderBottomColor:s.COLOR.line,paddingVertical:4,marginBottom:24},ledgerRow:{flexDirection:'row',justifyContent:'space-between',paddingVertical:8,borderBottomWidth:1,borderBottomColor:s.COLOR.line},ledgerLabel:{fontSize:11,color:s.COLOR.text3,letterSpacing:.4},ledgerValue:{fontSize:14,fontWeight:'600',color:s.COLOR.text,fontVariant:['tabular-nums']},closing:{fontSize:12.5,fontWeight:'500',lineHeight:19,marginBottom:28},restartBtn:{minHeight:48,borderRadius:8,borderWidth:1,alignItems:'center',justifyContent:'center'},restartTxt:{fontSize:13,fontWeight:'600',color:s.COLOR.text}})},303,[38,175,145,46,177,296,267,268]);
 __r(3);
 __r(0);
 </script>

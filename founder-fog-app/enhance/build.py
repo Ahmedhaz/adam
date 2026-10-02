@@ -132,6 +132,12 @@ ENDINGS_PATCH = (
     "alone:{ground:s.COLOR.burnoutGround,accent:s.COLOR.fog,kicker:'ENDING \\xb7 ALONE',title:'You built a company, and lost everyone who would have celebrated it.',"
     "body:'Nour moved out in the spring. Your parents stopped asking how it was going. The company is still running. You are not sure who it is for.',"
     "closing:'The people outside the company are not a distraction from it.',lift:!1},"
+    "challenge:{ground:s.COLOR.ink,accent:s.COLOR.gold,kicker:'CHALLENGE \\xb7 COMPLETE',title:'Challenge complete.',"
+    "body:'You set one goal and hit it before the deadline. Real companies rarely get one clear goal at a time, which is why practising with one helps.',"
+    "closing:'Try a harder challenge, or play a full run.',lift:!0},"
+    "challenge_failed:{ground:s.COLOR.ink,accent:s.COLOR.crit,kicker:'CHALLENGE \\xb7 FAILED',title:'The deadline came first.',"
+    "body:'The goal was within reach, but not this time. Look at the report card: the turning point is usually earlier than it feels.',"
+    "closing:'Every founder fails a few deadlines. The good ones know why.',lift:!0},"
     "exit:{ground:s.COLOR.ink,accent:s.COLOR.gold,kicker:'ENDING \\xb7 EXIT'",
 )
 

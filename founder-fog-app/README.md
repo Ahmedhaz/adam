@@ -58,6 +58,12 @@ any repo. Enhancements are applied on top of it:
   outside work; the content itself lives in `enhance/content/` (one JS pack
   plus its Arabic per theme; `content/check.mjs` validates a pack and
   `content/BRIEF.md` is the writing brief)
+- `enhance/teach.js` is the teaching layer: mentor notes after each
+  dilemma, the Founder Playbook (40 pages kept across runs, plus a
+  glossary), the end-of-run report card and scenario challenges; its
+  content is `content/notes_*.js` and `content/playbook.js`
+  (`content/check_teach.mjs` validates them, `content/BRIEF_TEACH.md`
+  is the brief)
 - `enhance/build.py` applies small patches to the game engine and wraps the
   page for mobile (PWA head, safe areas)
 
