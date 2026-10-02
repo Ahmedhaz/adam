@@ -284,7 +284,10 @@
       const c = cardById(m.id);
       if (!c) return;
       ignored++;
-      if (c.ignore && !has(s, "delegator")) applyEffects(engine, c.title, "Ignored", fx(c.ignore, s), c.ignore.log);
+      if (c.ignore && !has(s, "delegator")) {
+        applyEffects(engine, c.title, "Ignored", fx(c.ignore, s), c.ignore.log);
+        if (c.ignore.mx) applyFx(engine, c.ignore.mx);
+      }
     });
     s.inbox = [];
     return ignored;
@@ -392,14 +395,22 @@
   const raisedThisStage = (s) => (s.rounds || []).some((r) => r.stage === s.stage);
   const canPitch = (s) => s.week >= pitchFrom(s) && !s.slotUsed && pitchCooldown(s) === 0 && !raisedThisStage(s);
   // the market mood moves every investor: hot markets add interest, winters take it away
-  const baseInterest = (s) => Math.round(((s.investorTrust == null ? 80 : s.investorTrust) - 60) / 10) + ((MOODS[s.econ && s.econ.mood] || {}).interest || 0);
+  const baseInterest = (s) =>
+    Math.round(((s.investorTrust == null ? 80 : s.investorTrust) - 60) / 10) + ((MOODS[s.econ && s.econ.mood] || {}).interest || 0) - (s.org && s.org.passUntil > s.week ? 1 : 0); // a recent pass is a signal
 
   function termSheet(s, inv, interest) {
     const over = Math.max(0, interest - inv.bar);
     const pct = inv.pct;
     const pre = s.valuation * inv.premium * (1 + over * 0.05);
     const amount = Math.round((pre * pct) / (1 - pct) / 500) * 500;
-    return { amount: amount, pct: pct, post: Math.round(pre + amount) };
+    // angels don't take seats; funds do. 1x non-participating preference is the clean standard.
+    return { amount: amount, pct: pct, post: Math.round(pre + amount), pref: 1, seat: inv.id !== "angel", control: false };
+  }
+  // the classic trap: a bigger number with terms that cost you the company
+  function trapSheet(sheet) {
+    const pre = (sheet.post - sheet.amount) * 1.35,
+      amount = Math.round((pre * sheet.pct) / (1 - sheet.pct) / 500) * 500;
+    return { amount: amount, pct: sheet.pct, post: Math.round(pre + amount), pref: 2, seat: true, control: true };
   }
 
   // -------------------------------------------------------------- UI: inbox
@@ -446,7 +457,7 @@
                 style: fst.fromRow,
                 children: [jsx(Pic, { e: leadEmoji(card.from)[0] || "📧", size: 52 }), jsx(Text, { style: [fst.from, { flex: 1 }], children: leadEmoji(card.from)[1] })],
               }),
-              jsx(Text, { style: fst.mailTitle, children: card.title }),
+              jsx(Text, { style: fst.mailTitle, children: Fog.isFogged(S.mentalClarity) ? Fog.fogText(card.title, S.mentalClarity, "mail" + card.id, S.week) : card.title }),
               jsx(Text, { style: fst.mailBody, children: card.body }),
               card.ignore && jsx(Text, { style: fst.warn, children: has(S, "delegator") ? "Ignoring is safe (Delegator)." : "⚠️ Ignoring this has consequences." }),
               jsx(Text, { style: fst.swipeHint, children: "← swipe or tap →" }),
@@ -463,7 +474,7 @@
                   onPress: () => choose(side),
                   children: [
                     jsx(Text, { style: fst.choiceLabel, children: (side === "left" ? "← " : "") + card[side].label + (side === "right" ? " →" : "") }),
-                    jsx(Chips, { items: effectChips(fx(card[side], S)), style: { marginTop: 8, justifyContent: "center" } }),
+                    jsx(Chips, { items: card[side].mx ? previewChips(previewOf(card[side].mx)) : effectChips(fx(card[side], S)), style: { marginTop: 8, justifyContent: "center" } }),
                   ],
                 },
                 side,
@@ -618,23 +629,31 @@
       ];
     } else if (phase === "sheet") {
       const odds = clamp(0.35 + (interest - inv.bar) * 0.1 + closer * 0.15, 0.1, 0.85);
-      body = [
-        jsx(Text, { style: [fst.kicker, { color: COLOR.vital }], children: "📝 TERM SHEET" }, "k"),
-        jsx(Text, { style: fst.panelTitle, children: inv.name + " is in." }, "t"),
-        jsxs(
+      const trap = trapSheet(sheet);
+      const terms = (t) => [
+        ["Investment", money(t.amount), "#1f7a4a"],
+        ["Equity", Math.round(t.pct * 100) + "%", "#b33a2a"],
+        ["Post-money", compact(t.post), "#1b1712"],
+        ["Preference", t.pref + "×", t.pref > 1 ? "#b33a2a" : "#1b1712"],
+        ["Board", t.control ? "Investors control" : t.seat ? "1 investor seat" : "No seat", t.control ? "#b33a2a" : "#1b1712"],
+      ];
+      const box = (t, key) =>
+        jsx(
           View,
           {
             style: fst.sheetBox,
             dataSet: { ff: "pop" },
-            children: [
-              [["Investment", money(sheet.amount), "#1f7a4a"], ["Equity", Math.round(sheet.pct * 100) + "%", "#b33a2a"], ["Post-money", compact(sheet.post), "#1b1712"], ["You'd own", (S.equity * (1 - sheet.pct)).toFixed(1) + "%", "#7a5d00"]].map(([l, v, c]) =>
-                jsxs(View, { style: fst.sheetRow, children: [jsx(Text, { style: fst.sheetL, children: l }), jsx(Text, { style: [fst.sheetV, { color: c }], children: v })] }, l),
-              ),
-            ],
+            children: terms(t).map(([l, v, c]) => jsxs(View, { style: fst.sheetRow, children: [jsx(Text, { style: fst.sheetL, children: l }), jsx(Text, { style: [fst.sheetV, { color: c }], children: v })] }, l)),
           },
-          "b",
-        ),
-        jsx(Touchable, { style: fst.primary, activeOpacity: 0.85, onPress: () => (onSign(inv, sheet), setResult({ ok: true, sheet: sheet }), setPhase("result")), children: jsx(Text, { style: fst.primaryTxt, children: "Sign it · " + compact(sheet.amount) }) }, "sign"),
+          key,
+        );
+      const sign = (t, negotiated) => (onSign(inv, t, negotiated), setResult({ ok: true, sheet: t, negotiated: negotiated }), setPhase("result"));
+      body = [
+        jsx(Text, { style: [fst.kicker, { color: COLOR.vital }], children: "📝 TERM SHEET" }, "k"),
+        jsx(Text, { style: fst.panelTitle, children: inv.name + " is in." }, "t"),
+        jsx(Text, { style: fst.panelSub, children: "Clean terms. You'd own " + (S.equity * (1 - sheet.pct)).toFixed(1) + "% after it closes." }, "s1"),
+        box(sheet, "b"),
+        jsx(Touchable, { style: fst.primary, activeOpacity: 0.85, onPress: () => sign(sheet, false), children: jsx(Text, { style: fst.primaryTxt, children: "Sign clean terms · " + compact(sheet.amount) }) }, "sign"),
         jsx(
           Touchable,
           {
@@ -644,30 +663,33 @@
               if (Math.random() < odds) {
                 const better = { ...sheet, amount: Math.round((sheet.amount * 1.3) / 500) * 500, post: Math.round(sheet.post + sheet.amount * 0.3) };
                 buzz(20);
-                onSign(inv, better, true);
-                setResult({ ok: true, sheet: better, negotiated: true });
+                sign(better, true);
               } else {
                 buzz(40);
                 onWalk(inv);
                 setResult({ ok: false, walked: true });
+                setPhase("result");
               }
-              setPhase("result");
             },
             children: jsx(Text, { style: fst.secondaryTxt, children: "Push for 30% more · " + Math.round(odds * 100) + "% chance" }),
           },
           "neg",
         ),
+        jsx(Text, { style: [fst.kicker, { marginTop: 18, color: COLOR.crit }], children: "⚠️ THEIR OTHER OFFER" }, "k2"),
+        jsx(Text, { style: fst.panelSub, children: "35% higher valuation. Read the last two lines." }, "s2"),
+        box(trap, "b2"),
+        jsx(Touchable, { style: fst.secondary, activeOpacity: 0.85, onPress: () => sign(trap, false), children: jsx(Text, { style: fst.secondaryTxt, children: "Take the higher valuation · " + compact(trap.amount) }) }, "trap"),
       ];
     } else {
       body = [
         jsx(Text, { style: fst.bigIcon, children: result.ok ? "🎉" : "🚪" }, "i"),
-        jsx(Text, { style: [fst.panelTitle, { textAlign: "center" }], children: result.ok ? (result.negotiated ? "You pushed. They paid." : "Round closed.") : result.walked ? "They walked away." : "They passed." }, "t"),
+        jsx(Text, { style: [fst.panelTitle, { textAlign: "center" }], children: result.ok ? (result.negotiated ? "You pushed. They agreed." : "Term sheet signed.") : result.walked ? "They walked away." : "They passed." }, "t"),
         jsx(
           Text,
           {
             style: [fst.panelSub, { textAlign: "center" }],
             children: result.ok
-              ? money(result.sheet.amount) + " is in the bank. You own " + S.equity.toFixed(1) + "% of the company."
+              ? "Term sheet signed for " + money(result.sheet.amount) + ". The money lands after due diligence, in 3 to 6 weeks. Keep the numbers steady until then."
               : result.walked
                 ? "You asked for too much. Trust took a hit."
                 : "“Come back when the numbers say it for you.” Trust and clarity took a hit.",

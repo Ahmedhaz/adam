@@ -1,0 +1,230 @@
+[
+ {
+  "id": "POP_001",
+  "category": "Governance & Equity",
+  "title": "Co-Founder Equity Split Dilemma",
+  "desc": "Your co-founder demands an immediate 50/50 equity split with NO vesting schedule, insisting that true founders trust each other completely.",
+  "A": {
+   "title": "Agree 50/50 without Vesting",
+   "preview": "Morale +10% | Clarity -15% | Investor Trust -25%",
+   "log": "You agreed to an immediate 50/50 equity split without vesting. The co-founder is satisfied, but future investors will raise serious governance concerns."
+  },
+  "B": {
+   "title": "Insist on 4-Year Vesting with 1-Year Cliff",
+   "preview": "Morale -5% | Clarity +15% | Investor Trust +20%",
+   "log": "You stood firm on a professional 4-year vesting schedule with a 1-year cliff. Minor tension ensued, but the startup's cap table is protected."
+  }
+ },
+ {
+  "id": "POP_002",
+  "category": "Product & Engineering",
+  "title": "MVP Launch: Speed vs Quality",
+  "desc": "The MVP is ready but contains minor technical bugs. Marketing urges an immediate launch to capture hype; the CTO insists on delaying 2 weeks to refactor.",
+  "A": {
+   "title": "Launch Immediately (Fast & Buggy)",
+   "preview": "MRR +$3,500 | Tech Debt +25% | Churn Rate +3.5%",
+   "log": "Launched the MVP immediately! Generated +$3,500 MRR, but accumulated +25% tech debt and early customer churn spiked."
+  },
+  "B": {
+   "title": "Delay 2 Weeks & Polish Codebase",
+   "preview": "Cash -$2,000 | Tech Debt -15% | Churn Rate -1.5%",
+   "log": "Delayed the launch and stabilized the core codebase. Spent $2,000 runway, but customer satisfaction and retention are rock-solid."
+  }
+ },
+ {
+  "id": "POP_003",
+  "category": "People Ops & Culture",
+  "title": "The Toxic High Performer",
+  "desc": "Your top growth engineer is crushing customer acquisition numbers, but repeatedly bullies junior team members, triggering resignation threats.",
+  "A": {
+   "title": "Keep Them for Growth Metrics",
+   "preview": "MRR +$4,000 | Morale -25% | Tech Debt +5%",
+   "log": "Kept the toxic engineer to hit growth targets. Revenue rose, but team morale plummeted and culture suffered severe damage."
+  },
+  "B": {
+   "title": "Fire Immediately to Protect Culture",
+   "preview": "Morale +30% | Clarity +15% | MRR -$1,000",
+   "log": "Fired the toxic engineer on the spot. The team rallied behind your principled leadership with a massive +30% morale boost."
+  }
+ },
+ {
+  "id": "POP_004",
+  "category": "Infrastructure & Crisis",
+  "title": "Server Crash on Major Campaign Day",
+  "desc": "Due to accumulated tech debt, the primary database servers crashed just as a major tech publication featured your product.",
+  "A": {
+   "title": "Issue Transparent Public Apology & Credits",
+   "preview": "Cash -$3,000 | Brand Trust +15% | Churn -2%",
+   "log": "Published an honest post-mortem and refunded affected users. The transparency turned an outage into a public relations triumph."
+  },
+  "B": {
+   "title": "Claim Scheduled Routine Maintenance",
+   "preview": "Cash $0 | Churn +5% | Morale -15%",
+   "log": "Blamed the outage on routine maintenance. Tech-savvy users caught the deception, doubling churn on social channels."
+  }
+ },
+ {
+  "id": "POP_005",
+  "category": "Finance & Fundraising",
+  "title": "Predatory VC Term Sheet Offer",
+  "desc": "With limited runway remaining, an aggressive venture fund offers $250,000 in emergency funding, but demands 35% equity and 2 board veto seats.",
+  "A": {
+   "title": "Accept Term Sheet to Guarantee Survival",
+   "preview": "Cash +$250,000 | Valuation +$500k | Board Control -25%",
+   "log": "Accepted the predatory term sheet. Solved the immediate cash crisis with +$250k, but surrendered significant strategic board control."
+  },
+  "B": {
+   "title": "Reject Offer & Commit to Wartime Bootstrapping",
+   "preview": "Clarity +20% | Morale +15% | Cash $0",
+   "log": "Rejected the predatory term sheet. The team rallied in wartime mode, determined to reach profitability independently."
+  }
+ },
+ {
+  "id": "POP_006",
+  "category": "Growth & Virality",
+  "title": "Viral AI Influencer Endorsement",
+  "desc": "A prominent AI tech influencer posted a glowing organic review of your startup on YouTube and X, causing a massive surge of 25,000 signups.",
+  "A": {
+   "title": "Scale Cloud Tier Immediately ($4,000)",
+   "preview": "Cash -$4,000 | MRR +$8,000 | Active Users +5,000",
+   "log": "Scaled cloud servers dynamically to absorb the viral traffic! Converted thousands of trial users and unlocked +$8,000 MRR!"
+  },
+  "B": {
+   "title": "Throttle Signups with a VIP Waitlist",
+   "preview": "Cash $0 | MRR +$2,500 | Tech Debt -10%",
+   "log": "Introduced an exclusive waitlist. Protected server stability and created strong artificial scarcity among enterprise buyers."
+  }
+ },
+ {
+  "id": "POP_007",
+  "category": "Security & Compliance",
+  "title": "Researcher Discloses an API Vulnerability",
+  "desc": "An independent security researcher emails you privately: your API leaks customer records to any authenticated account. She gives you 30 days before public disclosure.",
+  "A": {
+   "title": "Pay the Bounty & Patch in the Open",
+   "preview": "Cash -$6,000 | Investor Trust +25% | Tech Debt -10%",
+   "log": "Paid the bounty, patched inside a week, and published the post-mortem. Enterprise buyers now cite your disclosure policy in their security reviews."
+  },
+  "B": {
+   "title": "Quietly Patch & Say Nothing",
+   "preview": "Cash $0 | Churn +4% | Investor Trust -20%",
+   "log": "Patched silently and never disclosed. The researcher published anyway. Two enterprise deals stalled in security review and churn climbed."
+  }
+ },
+ {
+  "id": "POP_008",
+  "category": "Security & Compliance",
+  "title": "Data Protection Audit Lands",
+  "desc": "A regulator opens a routine data-protection audit. Your data retention policy was written in a weekend and has never been reviewed by counsel.",
+  "A": {
+   "title": "Engage Counsel & Remediate Properly",
+   "preview": "Cash -$8,000 | Investor Trust +20% | Clarity +10%",
+   "log": "Brought in real counsel and rebuilt the retention policy. Expensive, but the audit closed clean and enterprise procurement got easier."
+  },
+  "B": {
+   "title": "Answer It Yourself Over a Weekend",
+   "preview": "Cash $0 | Clarity -20% | Investor Trust -15%",
+   "log": "Answered the audit yourself at 3am for two weeks. It closed with findings, and you have not slept properly since."
+  }
+ },
+ {
+  "id": "POP_009",
+  "category": "People Ops & Culture",
+  "title": "Your Best Engineer Gets an Offer",
+  "desc": "A large tech company offers your strongest engineer double her salary. She tells you before accepting, which is itself a sign of how much she wants to stay.",
+  "A": {
+   "title": "Counter with Cash You Do Not Have",
+   "preview": "Cash -$9,000 | Morale +15% | Runway shortens",
+   "log": "Countered hard and she stayed. The team saw you fight for someone, and it cost you a month of runway."
+  },
+  "B": {
+   "title": "Let Her Go Well & Keep the Relationship",
+   "preview": "Morale -15% | Clarity -10% | Cash $0",
+   "log": "Wished her well and wrote the reference yourself. The team understood, but her half of the codebase is now nobody's."
+  }
+ },
+ {
+  "id": "POP_010",
+  "category": "Growth & Virality",
+  "title": "Enterprise Pilot with a Brutal Requirement",
+  "desc": "A large enterprise wants a paid pilot. They need one feature your product does not have, and it is six weeks of work that no other customer will ever use.",
+  "A": {
+   "title": "Build It & Take the Logo",
+   "preview": "MRR +$12,000 | Tech Debt +20% | Clarity -10%",
+   "log": "Built the bespoke feature and landed the logo. The revenue is real and so is the six weeks of code only one customer will ever touch."
+  },
+  "B": {
+   "title": "Decline & Stay on Roadmap",
+   "preview": "Clarity +15% | Tech Debt -5% | MRR $0",
+   "log": "Turned down the pilot and kept the roadmap intact. Painful in the moment, and the product stayed one product."
+  }
+ },
+ {
+  "id": "POP_011",
+  "category": "Founder Health",
+  "title": "You Have Not Taken a Day Off in Four Months",
+  "desc": "Your co-founder pulls you aside. You have been short with the team, you missed two obvious bugs last week, and you cannot remember the last full night of sleep.",
+  "A": {
+   "title": "Take a Real Week Off",
+   "preview": "Cash -$2,000 | Clarity +30% | MRR flat for a week",
+   "log": "Took a genuine week off and left your laptop closed. Nothing burned down. You came back able to read your own numbers again."
+  },
+  "B": {
+   "title": "Push Through to the Next Milestone",
+   "preview": "Clarity -20% | Morale -10% | Tech Debt +10%",
+   "log": "Pushed through. You hit the milestone and paid for it in judgment, and the team started routing around you."
+  }
+ },
+ {
+  "id": "POP_012",
+  "category": "Finance & Fundraising",
+  "title": "A Customer Asks to Prepay a Year",
+  "desc": "Your largest customer offers to prepay twelve months up front in exchange for a 30% discount. It solves this quarter and costs you next year.",
+  "A": {
+   "title": "Take the Cash Now",
+   "preview": "Cash +$40,000 | MRR -$1,500 | Runway extends",
+   "log": "Took the prepayment. Runway extended dramatically, and you sold next year's revenue at a discount to survive this one."
+  },
+  "B": {
+   "title": "Hold the Price & Stay Monthly",
+   "preview": "Investor Trust +15% | Clarity -10% | Cash $0",
+   "log": "Held the line on price. The revenue quality stayed clean and the cash crunch stayed exactly where it was."
+  }
+ },
+ {
+  "id": "ORG_BOARD",
+  "category": "Board & Team",
+  "title": "Board meeting",
+  "desc": "Every 12 weeks the board reviews the target you committed to and sets a new one (grow MRR, cut burn, or reach fit).",
+  "A": {
+   "title": "Commit to their target"
+  },
+  "B": {
+   "title": "Push back with your own plan"
+  }
+ },
+ {
+  "id": "ORG_COFOUNDER",
+  "category": "Board & Team",
+  "title": "Tariq wants to talk",
+  "desc": "He says he's doing half the work for none of the credit, and he's not sure he still believes in the plan.",
+  "A": {
+   "title": "More equity and the CTO title, publicly"
+  },
+  "B": {
+   "title": "Tell him the plan isn't changing"
+  }
+ },
+ {
+  "id": "ST_NOUR",
+  "category": "Personal",
+  "title": "Nour asks you to choose",
+  "desc": "\"I'm not asking you to quit. I'm asking whether there's still room for us in this.\" Nour has packed a bag for the weekend, for two.",
+  "A": {
+   "title": "Go. Phone off for 48 hours"
+  },
+  "B": {
+   "title": "Ask for one more month"
+  }
+ }
+]

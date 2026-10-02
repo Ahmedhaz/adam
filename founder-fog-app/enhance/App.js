@@ -221,6 +221,18 @@ function (g, r, i, a, m, _e, d) {
 // @include features.js
 // @include economy.js
 // @include market.js
+// @include org.js
+// @include content/dl_product.js
+// @include content/dl_people.js
+// @include content/dl_life.js
+// @include content/dl_mena.js
+// @include content/mail.js
+// @include stories.js
+// @include content/notes_a.js
+// @include content/notes_b.js
+// @include content/notes_c.js
+// @include content/playbook.js
+// @include teach.js
 
   function buildReport(before, after) {
     const rows = [
@@ -263,7 +275,9 @@ function (g, r, i, a, m, _e, d) {
       [inboxOpen, setInboxOpen] = React.useState(false),
       [pitchOpen, setPitchOpen] = React.useState(false),
       [moneyOpen, setMoneyOpen] = React.useState(false),
-      [custOpen, setCustOpen] = React.useState(false);
+      [custOpen, setCustOpen] = React.useState(false),
+      [bookOpen, setBookOpen] = React.useState(false),
+      [endingOpen, setEndingOpen] = React.useState(false);
     const toastTimer = React.useRef(null);
     const feedRef = React.useRef(null);
     // keep the life log scrolled to the latest week, BitLife style
@@ -328,11 +342,13 @@ function (g, r, i, a, m, _e, d) {
         children: jsx(StatusBar, { barStyle: "dark-content" }),
       });
 
-    const start = ({ founderName, companyName, sectorId, avatar, mode }) => {
+    const start = ({ founderName, companyName, sectorId, avatar, mode, challenge }) => {
       const eng = new Engine.StartupEngine(founderName, companyName, sectorId);
       eng.state.avatar = avatar || "avatar_m1";
       ensureFeatureState(eng.state);
-      applyMode(eng, mode);
+      if (challenge && CHALLENGES[challenge]) eng.state.challenge = challenge;
+      applyMode(eng, challenge && CHALLENGES[challenge] ? CHALLENGES[challenge].mode : mode);
+      setEndingOpen(false);
       dealInbox(eng.state, 1);
       clearSave();
       setSaved(null);
@@ -375,10 +391,13 @@ function (g, r, i, a, m, _e, d) {
         ],
       });
 
+    // the report card first, then the original ending screen
+    if ((S.gameOver || S.victory) && !endingOpen)
+      return jsxs(View, { style: { flex: 1 }, children: [jsx(StatusBar, { barStyle: "dark-content" }), jsx(ReportCard, { S: S, onEnding: () => setEndingOpen(true), onRestart: () => (setEndingOpen(false), restart()) })] });
     if (S.gameOver || S.victory)
       return jsxs(Screen, {
         style: st.container,
-        children: [jsx(StatusBar, { barStyle: "dark-content" }), jsx(GameOver.GameOverScreen, { gameState: S, onRestart: restart })],
+        children: [jsx(StatusBar, { barStyle: "dark-content" }), jsx(GameOver.GameOverScreen, { gameState: S, onRestart: () => (setEndingOpen(false), restart()) })],
       });
 
     // ---------- derived ----------
@@ -441,7 +460,9 @@ function (g, r, i, a, m, _e, d) {
     const chooseMail = (card, side) => {
       const s = engine.state;
       s.inbox = s.inbox.filter((m) => m.id !== card.id);
-      const next = applyEffects(engine, card.title, card[side].label, fx(card[side], s), card[side].log);
+      s.mailLog = { ...(s.mailLog || {}), [card.id]: { side: side, week: s.week } }; // threads remember
+      let next = applyEffects(engine, card.title, card[side].label, fx(card[side], s), card[side].log);
+      if (card[side].mx) applyFx(engine, card[side].mx), (next = engine.state);
       setS({ ...next });
       buzz(12);
       notify(card[side].log, "info");
@@ -474,15 +495,13 @@ function (g, r, i, a, m, _e, d) {
       s.lastPitchWeek = s.week;
       setS({ ...applyEffects(engine, title, "Pitch", effects, log) });
     };
+    // the money lands after due diligence (org.js closes the round)
     const signRound = (inv, sheet, negotiated) => {
-      const s = engine.state;
-      s.equity = s.equity * (1 - sheet.pct);
-      s.valuation = Math.max(s.valuation, sheet.post);
-      s.rounds.push({ week: s.week, stage: s.stage, name: roundName, amount: sheet.amount, pct: sheet.pct, investor: inv.name });
+      engine.signTermSheet({ ...sheet, investor: inv.name, round: roundName });
       pitchDone(
-        "💼 Closed a " + roundName + " round",
-        { cash: sheet.amount, investorTrust: 10, founderExp: 120 },
-        inv.name + " invested " + money(sheet.amount) + " for " + Math.round(sheet.pct * 100) + "%" + (negotiated ? " after you pushed for more" : "") + ". You now own " + s.equity.toFixed(1) + "%.",
+        "💼 " + roundName + " term sheet signed",
+        { investorTrust: 10, founderExp: 120 },
+        inv.name + " offered " + money(sheet.amount) + " for " + Math.round(sheet.pct * 100) + "%" + (negotiated ? " after you pushed for more" : "") + ". Due diligence starts now.",
       );
     };
 
@@ -603,6 +622,8 @@ function (g, r, i, a, m, _e, d) {
         tile("m", "💵", "Money", S.defaultAlive ? "Default alive" : runwayLabel + " runway", "#E2F6EA", () => setMoneyOpen(true), null, false),
         tile("a", fogged && !S.slotUsed ? "🧘" : "⚡", fogged && !S.slotUsed ? "Rest now" : "Your action", S.slotUsed ? "used" : "1 left", "#E3F7EA", () => setTab("actions"), null, S.slotUsed),
         tile("p", "💼", "Fundraise", raisedThisStage(S) ? "Raised ✓" : canPitch(S) ? roundName : S.week < pitchFrom(S) ? `Week ${pitchFrom(S)}+` : "Not now", "#E5EEFF", () => (canPitch(S) ? setPitchOpen(true) : notify(raisedThisStage(S) ? "Next round opens at the next milestone." : S.slotUsed ? "Pitching needs this week's action." : S.week < pitchFrom(S) ? `Investors take meetings from week ${pitchFrom(S)}.` : "Investors will take a meeting in " + pitchCooldown(S) + " wk.", "info")), null, !canPitch(S)),
+        S.challenge && CHALLENGES[S.challenge] && tile("g", CHALLENGES[S.challenge].icon, "Challenge", `Week ${S.week}/${CHALLENGES[S.challenge].deadline}`, "#E2F6EA", () => notify("🎯 " + CHALLENGES[S.challenge].goal, "info"), null, false),
+        tile("b", "📓", "Playbook", BOOK.size + "/" + PLAYBOOK.length + " pages", "#FFF4D6", () => setBookOpen(true), null, false),
         tile("c", "🤝", "Circle", weakTie ? "Needs you" : "All good", "#F1E8FF", () => setTab("circle"), weakTie ? "!" : null, false),
       ],
     });
@@ -657,11 +678,14 @@ function (g, r, i, a, m, _e, d) {
     });
 
     // BitLife-style stat bars
-    const statBar = (icon, label, pct, valueText, fogMe) =>
+    // tap a bar with a glossary entry to see what the number means
+    const statBar = (icon, label, pct, valueText, fogMe, gloss) =>
       jsxs(
-        View,
+        Touchable,
         {
           style: st.statRow,
+          activeOpacity: gloss == null ? 1 : 0.7,
+          onPress: () => gloss != null && GLOSSARY[gloss] && notify("📖 " + GLOSSARY[gloss].term + ": " + GLOSSARY[gloss].def, "info"),
           children: [
             jsx(Pic, { e: icon, size: 22 }),
             jsx(Text, { style: st.statLabel, numberOfLines: 1, children: label }),
@@ -681,8 +705,8 @@ function (g, r, i, a, m, _e, d) {
       children: [
         statBar("🧠", "Clarity", S.mentalClarity, Math.round(S.mentalClarity) + "%"),
         statBar("🤝", "Morale", S.teamMorale, Math.round(S.teamMorale) + "%"),
-        statBar("⏳", "Runway", runwayPct, ft(S.defaultAlive ? "Default alive" : runwayLabel, "runway"), true),
-        statBar("🔍", "Fit", S.mkt && S.mkt.seen ? S.mkt.seen.value : 0, S.mkt && S.mkt.seen ? "~" + Math.round(S.mkt.seen.value / 5) * 5 + "%" : "?"),
+        statBar("⏳", "Runway", runwayPct, ft(S.defaultAlive ? "Default alive" : runwayLabel, "runway"), true, 3),
+        statBar("🔍", "Fit", S.mkt && S.mkt.seen ? S.mkt.seen.value : 0, S.mkt && S.mkt.seen ? "~" + Math.round(S.mkt.seen.value / 5) * 5 + "%" : "?", false, 8),
         statBar("💼", "Trust", S.investorTrust == null ? 80 : S.investorTrust, Math.round(S.investorTrust == null ? 80 : S.investorTrust) + "%"),
         fogged && jsx(View, { pointerEvents: "none", dataSet: { ff: "fog" }, style: [st.fogLayer, { opacity: 0.2 + 0.4 * fogAmt }] }),
       ],
@@ -715,6 +739,7 @@ function (g, r, i, a, m, _e, d) {
             jsx(Text, { style: st.levelPerks, children: "you own " + ltr((S.equity == null ? 100 : S.equity).toFixed(S.equity < 100 ? 1 : 0) + "%") + " · valuation " + compact(S.valuation) }),
           ],
         }),
+        jsx(BoardCard, { S: S }),
         jsx(View, { style: { flex: 1 }, children: jsx(Assets.AssetsScreen, { gameState: S }) }),
       ],
     });
@@ -726,12 +751,21 @@ function (g, r, i, a, m, _e, d) {
     else if (tab === "circle")
       content = jsx(Circle.RelationshipsScreen, { gameState: S, onContact: (id) => act(engine.contactRelationship(id), "Reached out. Relationship +11.") });
     else if (tab === "team")
-      content = jsx(Team.DepartmentsScreen, {
-        gameState: S,
-        onHire: (id) => act(engine.hireCandidate(id), "Welcome to the team."),
-        onFire: (id) => act(engine.fireEmployee(id), "Let go. Morale −10%."),
-        onRefreshCandidates: () => act(engine.refreshCandidatePool(), "3 new candidates sourced."),
-        onRunDeptAction: (id) => act(engine.executeDepartmentAction("dept", id), "Done. Logged in your journal."),
+      content = jsxs(View, {
+        style: { flex: 1 },
+        children: [
+          jsx(TeamCard, { S: S }),
+          jsx(View, {
+            style: { flex: 1 },
+            children: jsx(Team.DepartmentsScreen, {
+              gameState: S,
+              onHire: (id) => act(engine.hireCandidate(id), "Welcome to the team. Full speed in 4 weeks."),
+              onFire: (id) => act(engine.fireEmployee(id), "Let go. Morale −10%."),
+              onRefreshCandidates: () => act(engine.refreshCandidatePool(), "3 new candidates sourced."),
+              onRunDeptAction: (id) => act(engine.executeDepartmentAction("dept", id), "Done. Logged in your journal."),
+            }),
+          }),
+        ],
       });
     else if (tab === "actions")
       content = jsx(Actions.ActivitiesScreen, {
@@ -863,7 +897,9 @@ function (g, r, i, a, m, _e, d) {
                             jsx(Text, { style: st.optionTitle, children: S.pendingEvent[key].title }),
                           ],
                         }),
-                        jsx(Chips, { items: previewChips(S.pendingEvent[key].preview), style: { marginTop: 10 } }),
+                        S.mentalClarity < 30
+                          ? jsx(Text, { style: [st.optionFog], children: "🌫️ Too foggy to read the consequences." })
+                          : jsx(View, { style: fogged && { opacity: fogOp }, children: jsx(Chips, { items: previewChips(S.pendingEvent[key].preview), style: { marginTop: 10 } }) }),
                       ],
                     },
                     key,
@@ -1038,14 +1074,23 @@ function (g, r, i, a, m, _e, d) {
         guideModal,
         S.perkChoice && !report && !S.pendingEvent && jsx(PerkModal, { S: S, onPick: pickPerk }),
         inboxOpen && !report && !S.pendingEvent && !S.perkChoice && jsx(InboxModal, { S: S, onChoose: chooseMail, onClose: () => setInboxOpen(false) }),
+        bookOpen && jsx(PlaybookModal, { onClose: () => setBookOpen(false), notify: notify }),
+        S.teach && S.teach.note && !report && !S.pendingEvent && mentorOn() &&
+          jsx(MentorModal, {
+            S: S,
+            onClose: () => {
+              engine.state.teach.note = null;
+              setS({ ...engine.state });
+            },
+          }),
         custOpen && !report && !S.pendingEvent && jsx(CustomersModal, { S: S, onClose: () => setCustOpen(false), onDo: doCustomer }),
-        moneyOpen && !report && !S.pendingEvent && jsx(MoneyModal, { S: S, ft: ft, onClose: () => setMoneyOpen(false) }),
+        moneyOpen && !report && !S.pendingEvent && jsx(MoneyModal, { S: S, ft: ft, onClose: () => setMoneyOpen(false), onDo: doCustomer }),
         pitchOpen &&
           jsx(PitchModal, {
             S: S,
             onClose: () => setPitchOpen(false),
             onSign: signRound,
-            onFail: () => pitchDone("💼 Pitch went nowhere", { investorTrust: -8, mentalClarity: -5 }, "They passed. “Come back when the numbers say it for you.”"),
+            onFail: () => (engine.passedOn(), pitchDone("💼 Pitch went nowhere", { investorTrust: -8, mentalClarity: -5 }, "They passed. “Come back when the numbers say it for you.”")),
             onWalk: () => pitchDone("💼 Investor walked", { investorTrust: -5, mentalClarity: -3 }, "You pushed for more and they walked."),
           }),
       ],
@@ -1214,6 +1259,7 @@ function (g, r, i, a, m, _e, d) {
     optionTop: { flexDirection: "row", alignItems: "center", gap: 10 },
     optionKey: { width: 28, height: 28, borderRadius: 8, backgroundColor: COLOR.ink, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: COLOR.lineHot },
     optionKeyTxt: { fontFamily: "AzeretMono_600SemiBold", fontSize: 13, color: COLOR.text },
+    optionFog: { fontFamily: "Archivo_500Medium", fontSize: 12.5, color: COLOR.text3, marginTop: 10 },
     optionTitle: { flex: 1, fontFamily: "Archivo_600SemiBold", fontSize: 15, color: COLOR.text },
     noRight: { fontFamily: "AzeretMono_500Medium", fontSize: 10, letterSpacing: 1.5, color: COLOR.text3, textAlign: "center", marginTop: 6 },
     why: { backgroundColor: COLOR.panel2, borderRadius: 14, padding: 12, marginBottom: 14 },

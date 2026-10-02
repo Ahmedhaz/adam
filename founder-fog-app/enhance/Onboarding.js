@@ -63,13 +63,19 @@ function (g, r, i, a, m, _e, d) {
     healthtech: "Trust builds slowly: growth runs 15% slower, churn settles 1.5% lower.",
     edtech: "Seasons: back-to-school weeks grow 40% faster, summer 30% slower. Churn settles 1% higher.",
   };
+  const CHALLENGES = [
+    { id: "winter26", icon: "🧊", name: "Survive the funding winter", goal: "Still running at week 26, in a downturn.", mode: "winter" },
+    { id: "fit20", icon: "🔍", name: "Find fit in 20 weeks", goal: "Reach 40% product-market fit by week 20.", mode: "venture" },
+    { id: "control30", icon: "🪑", name: "Raise and keep control", goal: "Close a round by week 30, keep 70% of the company and control of the board.", mode: "venture" },
+    { id: "boot40", icon: "🌱", name: "Default alive, bootstrapped", goal: "Reach default alive by week 40 without investors.", mode: "bootstrapped" },
+  ];
   function sectorNumbers(s, cashMult) {
     const monthlyBurn = 2e3 * (s.burn_multiplier || 1) + 1500,
       cash = Math.round(s.initial_cash * (cashMult || 1));
     return { cash: cash, burnWeek: monthlyBurn / 4, runway: cash / monthlyBurn };
   }
 
-  function Title({ saved, onNew, onResume, onDiscard }) {
+  function Title({ saved, onNew, onResume, onDiscard, onChallenges }) {
     return jsxs(View, {
       style: st.titleWrap,
       dataSet: { ff: "sky" },
@@ -138,6 +144,13 @@ function (g, r, i, a, m, _e, d) {
               dataSet: { ff: "rise2" },
               children: jsx(Text, { style: [st.primaryTxt, saved && st.secondaryTxt], children: saved ? "Start a new company" : "Start your company ▸" }),
             }),
+            jsx(Touchable, {
+              style: [st.primaryBtn, st.secondaryBtn],
+              onPress: onChallenges,
+              activeOpacity: 0.85,
+              dataSet: { ff: "rise3" },
+              children: jsx(Text, { style: [st.primaryTxt, st.secondaryTxt], children: "🎯 Challenges" }),
+            }),
             saved &&
               jsx(Touchable, {
                 onPress: onDiscard,
@@ -177,10 +190,43 @@ function (g, r, i, a, m, _e, d) {
       [founder, setFounder] = React.useState("Ahmed"),
       [company, setCompany] = React.useState("Adamos AI"),
       [avatar, setAvatar] = React.useState("avatar_m1"),
-      [mode, setMode] = React.useState("venture");
+      [mode, setMode] = React.useState("venture"),
+      [challenge, setChallenge] = React.useState(null);
 
     if (step === 0)
-      return jsx(Title, { saved: saved, onResume: onResume, onDiscard: onDiscard, onNew: () => setStep(1) });
+      return jsx(Title, { saved: saved, onResume: onResume, onDiscard: onDiscard, onNew: () => (setChallenge(null), setStep(1)), onChallenges: () => setStep("ch") });
+
+    // scenario challenges: one goal, a deadline, a fixed difficulty (rules in App's teach.js)
+    if (step === "ch")
+      return jsxs(View, {
+        style: st.container,
+        children: [
+          jsx(StepHeader, { step: 1, title: "Challenges", sub: "Short runs with one goal. Good for a class or a coffee break.", onBack: () => setStep(0) }),
+          jsx(ScrollView, {
+            style: { flex: 1 },
+            contentContainerStyle: st.list,
+            children: CHALLENGES.map((c, idx) =>
+              jsxs(
+                Touchable,
+                {
+                  style: st.sector,
+                  activeOpacity: 0.85,
+                  dataSet: { ff: "rise" + Math.min(idx + 1, 4) },
+                  onPress: () => (setChallenge(c.id), setMode(c.mode), setStep(1)),
+                  children: [
+                    jsxs(View, {
+                      style: st.sectorTop,
+                      children: [jsx(View, { style: st.sectorIcon, children: jsx(Pic, { e: c.icon, size: 36 }) }), jsx(Text, { style: [st.sectorName, { flex: 1 }], children: c.name })],
+                    }),
+                    jsx(Text, { style: st.desc, children: c.goal }),
+                  ],
+                },
+                c.id,
+              ),
+            ),
+          }),
+        ],
+      });
 
     const sector = Engine.SECTORS.find((s) => s.id === sectorId) || Engine.SECTORS[0];
     const modeInfo = MODES.find((m) => m.id === mode) || MODES[0];
@@ -280,8 +326,10 @@ function (g, r, i, a, m, _e, d) {
             jsx(TextInput, { style: st.input, value: founder, onChangeText: setFounder, placeholder: "Your name", placeholderTextColor: COLOR.text3, maxLength: 24 }),
             jsx(Text, { style: st.inputLabel, children: "COMPANY" }),
             jsx(TextInput, { style: st.input, value: company, onChangeText: setCompany, placeholder: "Company name", placeholderTextColor: COLOR.text3, maxLength: 28 }),
-            jsx(Text, { style: st.inputLabel, children: "DIFFICULTY" }),
-            jsx(View, {
+            challenge && jsx(Text, { style: st.inputLabel, children: "CHALLENGE" }),
+            challenge && jsx(Text, { style: st.modeDesc, children: "🎯 " + (CHALLENGES.find((c) => c.id === challenge) || {}).goal }),
+            !challenge && jsx(Text, { style: st.inputLabel, children: "DIFFICULTY" }),
+            !challenge && jsx(View, {
               style: st.modes,
               children: MODES.map((m) =>
                 jsxs(
@@ -296,7 +344,7 @@ function (g, r, i, a, m, _e, d) {
                 ),
               ),
             }),
-            jsx(Text, { style: st.modeDesc, children: modeInfo.desc }),
+            !challenge && jsx(Text, { style: st.modeDesc, children: modeInfo.desc }),
             jsxs(View, {
               style: st.brief,
               dataSet: { ff: "rise1" },
@@ -339,7 +387,7 @@ function (g, r, i, a, m, _e, d) {
           children: jsx(Touchable, {
             style: [st.primaryBtn, !ready && { opacity: 0.4 }],
             disabled: !ready,
-            onPress: () => onStartGame({ founderName: founder.trim(), companyName: company.trim(), sectorId: sector.id, avatar: avatar, mode: mode }),
+            onPress: () => onStartGame({ founderName: founder.trim(), companyName: company.trim(), sectorId: sector.id, avatar: avatar, mode: mode, challenge: challenge }),
             activeOpacity: 0.85,
             children: jsx(Text, { style: st.primaryTxt, children: "Found " + (company.trim() || "the company") + " ▸" }),
           }),
