@@ -221,6 +221,7 @@ function (g, r, i, a, m, _e, d) {
 // @include features.js
 // @include economy.js
 // @include market.js
+// @include org.js
 
   function buildReport(before, after) {
     const rows = [
@@ -474,15 +475,13 @@ function (g, r, i, a, m, _e, d) {
       s.lastPitchWeek = s.week;
       setS({ ...applyEffects(engine, title, "Pitch", effects, log) });
     };
+    // the money lands after due diligence (org.js closes the round)
     const signRound = (inv, sheet, negotiated) => {
-      const s = engine.state;
-      s.equity = s.equity * (1 - sheet.pct);
-      s.valuation = Math.max(s.valuation, sheet.post);
-      s.rounds.push({ week: s.week, stage: s.stage, name: roundName, amount: sheet.amount, pct: sheet.pct, investor: inv.name });
+      engine.signTermSheet({ ...sheet, investor: inv.name, round: roundName });
       pitchDone(
-        "💼 Closed a " + roundName + " round",
-        { cash: sheet.amount, investorTrust: 10, founderExp: 120 },
-        inv.name + " invested " + money(sheet.amount) + " for " + Math.round(sheet.pct * 100) + "%" + (negotiated ? " after you pushed for more" : "") + ". You now own " + s.equity.toFixed(1) + "%.",
+        "💼 " + roundName + " term sheet signed",
+        { investorTrust: 10, founderExp: 120 },
+        inv.name + " offered " + money(sheet.amount) + " for " + Math.round(sheet.pct * 100) + "%" + (negotiated ? " after you pushed for more" : "") + ". Due diligence starts now.",
       );
     };
 
@@ -715,6 +714,7 @@ function (g, r, i, a, m, _e, d) {
             jsx(Text, { style: st.levelPerks, children: "you own " + ltr((S.equity == null ? 100 : S.equity).toFixed(S.equity < 100 ? 1 : 0) + "%") + " · valuation " + compact(S.valuation) }),
           ],
         }),
+        jsx(BoardCard, { S: S }),
         jsx(View, { style: { flex: 1 }, children: jsx(Assets.AssetsScreen, { gameState: S }) }),
       ],
     });
@@ -726,12 +726,21 @@ function (g, r, i, a, m, _e, d) {
     else if (tab === "circle")
       content = jsx(Circle.RelationshipsScreen, { gameState: S, onContact: (id) => act(engine.contactRelationship(id), "Reached out. Relationship +11.") });
     else if (tab === "team")
-      content = jsx(Team.DepartmentsScreen, {
-        gameState: S,
-        onHire: (id) => act(engine.hireCandidate(id), "Welcome to the team."),
-        onFire: (id) => act(engine.fireEmployee(id), "Let go. Morale −10%."),
-        onRefreshCandidates: () => act(engine.refreshCandidatePool(), "3 new candidates sourced."),
-        onRunDeptAction: (id) => act(engine.executeDepartmentAction("dept", id), "Done. Logged in your journal."),
+      content = jsxs(View, {
+        style: { flex: 1 },
+        children: [
+          jsx(TeamCard, { S: S }),
+          jsx(View, {
+            style: { flex: 1 },
+            children: jsx(Team.DepartmentsScreen, {
+              gameState: S,
+              onHire: (id) => act(engine.hireCandidate(id), "Welcome to the team. Full speed in 4 weeks."),
+              onFire: (id) => act(engine.fireEmployee(id), "Let go. Morale −10%."),
+              onRefreshCandidates: () => act(engine.refreshCandidatePool(), "3 new candidates sourced."),
+              onRunDeptAction: (id) => act(engine.executeDepartmentAction("dept", id), "Done. Logged in your journal."),
+            }),
+          }),
+        ],
       });
     else if (tab === "actions")
       content = jsx(Actions.ActivitiesScreen, {
@@ -1039,13 +1048,13 @@ function (g, r, i, a, m, _e, d) {
         S.perkChoice && !report && !S.pendingEvent && jsx(PerkModal, { S: S, onPick: pickPerk }),
         inboxOpen && !report && !S.pendingEvent && !S.perkChoice && jsx(InboxModal, { S: S, onChoose: chooseMail, onClose: () => setInboxOpen(false) }),
         custOpen && !report && !S.pendingEvent && jsx(CustomersModal, { S: S, onClose: () => setCustOpen(false), onDo: doCustomer }),
-        moneyOpen && !report && !S.pendingEvent && jsx(MoneyModal, { S: S, ft: ft, onClose: () => setMoneyOpen(false) }),
+        moneyOpen && !report && !S.pendingEvent && jsx(MoneyModal, { S: S, ft: ft, onClose: () => setMoneyOpen(false), onDo: doCustomer }),
         pitchOpen &&
           jsx(PitchModal, {
             S: S,
             onClose: () => setPitchOpen(false),
             onSign: signRound,
-            onFail: () => pitchDone("💼 Pitch went nowhere", { investorTrust: -8, mentalClarity: -5 }, "They passed. “Come back when the numbers say it for you.”"),
+            onFail: () => (engine.passedOn(), pitchDone("💼 Pitch went nowhere", { investorTrust: -8, mentalClarity: -5 }, "They passed. “Come back when the numbers say it for you.”")),
             onWalk: () => pitchDone("💼 Investor walked", { investorTrust: -5, mentalClarity: -3 }, "You pushed for more and they walked."),
           }),
       ],

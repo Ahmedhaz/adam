@@ -60,9 +60,10 @@
   function moneyFlows(s) {
     const ops = Math.round(s.monthlyRevenue * 0.12 + s.activeUsers * 0.5),
       gm = (s.sector && s.sector.gross_margin) || 1,
-      out = s.baseBurn + s.teamPayroll + ops,
+      debt = debtMonthly(s),
+      out = s.baseBurn + s.teamPayroll + ops + debt,
       inflow = s.monthlyRevenue * gm;
-    return { ops: ops, gm: gm, out: out, inflow: inflow, surplus: inflow - out };
+    return { ops: ops, debt: debt, gm: gm, out: out, inflow: inflow, surplus: inflow - out };
   }
 
   function valuationParts(s) {
@@ -190,7 +191,7 @@
     }
 
     // support load: too many users per person and churn starts creeping
-    const capacity = 400 * Math.max(1, s.team.length);
+    const capacity = supportCapacity(s);
     if (s.activeUsers > capacity) {
       s.churnRate = Math.min(25, s.churnRate + 0.3);
       s.teamMorale = Math.max(0, s.teamMorale - 1.5); // overworked
@@ -253,7 +254,7 @@
   })();
 
   // -------------------------------------------------------------- UI: money
-  function MoneyModal({ S, ft, onClose }) {
+  function MoneyModal({ S, ft, onClose, onDo }) {
     const f = moneyFlows(S),
       v = valuationParts(S),
       e = ensureEcon(S),
@@ -301,6 +302,7 @@
               row("Rent, tools & base costs", money(S.baseBurn), null, false, "base"),
               row("Servers, support & fees", money(f.ops), null, false, "ops"),
               jsx(Text, { style: est.hint, children: "Grows with revenue and users." }, "h1"),
+              f.debt > 0 && row("Loan repayment", money(f.debt), null, false, "debt"),
               row("Total spend", money(f.out), COLOR.crit, true, "out"),
               row("Revenue after " + Math.round((1 - f.gm) * 100) + "% costs", money(f.inflow), COLOR.vital, false, "in"),
               row(f.surplus >= 0 ? "Monthly surplus" : "Net burn", money(Math.abs(f.surplus)), f.surplus >= 0 ? COLOR.vital : COLOR.crit, true, "net"),
@@ -314,6 +316,7 @@
                 : jsx(Text, { style: est.hint, children: "Too little revenue to value on numbers yet. Investors are pricing the team and the story." }, "vb"),
               premium > 1000 && jsx(Text, { style: est.hint, children: `+ ${compact(premium)} premium from deals and buzz. It fades unless the numbers catch up.` }, "vp"),
               jsx(Text, { style: est.hint, children: `Monthly growth ${v.growth.toFixed(1)}% · churn ${S.churnRate.toFixed(1)}%. Faster growth and lower churn raise the multiple.` }, "vg"),
+              jsx(FundingOptions, { S: S, onDo: onDo }, "fund"),
               jsx(Touchable, { style: est.btn, onPress: onClose, activeOpacity: 0.85, children: jsx(Text, { style: est.btnTxt, children: "Got it" }) }, "b"),
             ],
           }),

@@ -50,6 +50,9 @@ any repo. Enhancements are applied on top of it:
 - `enhance/market.js` is product-market fit: a hidden fit score that scales
   every revenue gain, customer talks and insight cards, experiments, pivots,
   competitors and per-sector rules
+- `enhance/org.js` is people and capital: hires with jobs and a ramp-up,
+  culture, term sheets that close after due diligence, revenue-based
+  financing, a grant, angel bridges, the board and the co-founder
 - `enhance/build.py` applies small patches to the game engine and wraps the
   page for mobile (PWA head, safe areas)
 

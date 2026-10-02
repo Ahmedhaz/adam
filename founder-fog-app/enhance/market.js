@@ -125,7 +125,7 @@
   function scaleGains(engine, before, isMarketing) {
     const s = engine.state,
       d = s.monthlyRevenue - before;
-    if (d > 0) s.monthlyRevenue = Math.round(before + d * growthMult(s));
+    if (d > 0) s.monthlyRevenue = Math.round(before + d * growthMult(s) * teamMult(s, isMarketing));
     // before fit, paid users don't stick
     if (isMarketing && ensureMarket(s).pmf < 40) s.churnRate = Math.min(25, s.churnRate + 0.4);
   }

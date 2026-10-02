@@ -74,6 +74,11 @@ ENGINE_PATCHES = [
         "",
     ),
     (
+        "low morale makes employees resign, not the co-founder; he leaves over the relationship (org.js)",
+        'const e=this.state.team.filter(e=>"emp_founder"!==e.id);',
+        'const e=this.state.team.filter(e=>"emp_founder"!==e.id&&"emp_cto"!==e.id);',
+    ),
+    (
         "stage logs: no more automatic valuation upgrades (seed)",
         'logText:"MRR surpassed $5,000! Company valuation upgraded to $1.5M!"',
         'logText:"MRR surpassed $5,000! You\'re a seed-stage company now. Investors will judge you on growth from here."',
@@ -114,6 +119,18 @@ ENGINE_PATCHES = [
         'health:Math.max(0,e.health-((this.state.perks||[]).includes("magnetic")?1:2))',
     ),
 ]
+
+# New endings from org.js (board replaces you, co-founder breakup) for the original game-over screen.
+ENDINGS_PATCH = (
+    "exit:{ground:s.COLOR.ink,accent:s.COLOR.gold,kicker:'ENDING \\xb7 EXIT'",
+    "board:{ground:s.COLOR.ink,accent:s.COLOR.crit,kicker:'ENDING \\xb7 REPLACED',title:'The board replaced you.',"
+    "body:'They thanked you for everything you built and asked for your laptop by Friday. You gave away control one reasonable-looking term sheet at a time.',"
+    "closing:'Read the board clause before you read the valuation.',lift:!0},"
+    "cofounder:{ground:s.COLOR.ink,accent:s.COLOR.crit,kicker:'ENDING \\xb7 CO-FOUNDER BREAKUP',title:'Tariq left, and the company went with him.',"
+    "body:'Half the code, half the late nights and most of the reasons early customers trusted you walked out of the same door.',"
+    "closing:'Most young startups die of founder problems, not market problems.',lift:!0},"
+    "exit:{ground:s.COLOR.ink,accent:s.COLOR.gold,kicker:'ENDING \\xb7 EXIT'",
+)
 
 # Code-level tweaks that only the Arabic build needs.
 ARABIC_PATCHES = [
@@ -236,6 +253,8 @@ def main():
         bundle = bundle.replace(old, new)
     for old, new in BADGE_COLORS.items():
         bundle = bundle.replace(old, new)
+    assert bundle.count(ENDINGS_PATCH[0]) == 1, "endings patch"
+    bundle = bundle.replace(ENDINGS_PATCH[0], ENDINGS_PATCH[1])
     for why, old, new in ENGINE_PATCHES:
         n = bundle.count(old)
         assert n == 1, f"patch '{why}' matched {n} times"
