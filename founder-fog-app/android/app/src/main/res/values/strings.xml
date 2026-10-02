@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Founder Fog</string>
+    <string name="title_activity_main">Founder Fog</string>
+    <string name="package_name">com.ahmedhaz.founderfog</string>
+    <string name="custom_url_scheme">com.ahmedhaz.founderfog</string>
+</resources>
