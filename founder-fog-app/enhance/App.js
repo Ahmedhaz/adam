@@ -1,7 +1,11 @@
-// Founder Fog — main game screen (replaces Metro module 144 of the original build).
-// Written against the same dependency list as the original module, so the
-// require indices below match: React, StyleSheet, Text, View, SafeAreaView,
-// TouchableOpacity, StatusBar, Modal, ScrollView, fonts, engine, screens, fog, theme, jsx.
+// Founder Fog — main game shell (replaces Metro module 144 of the original build).
+// Same dependency list as the original module, so the require indices match:
+// React, StyleSheet, Text, View, SafeAreaView, TouchableOpacity, StatusBar, Modal,
+// ScrollView, fonts, engine, screens, fog helpers, theme, jsx runtime.
+//
+// Layout: a persistent HUD (hidden on HQ, which shows the full dashboard), one
+// content area per tab, an "End week" bar and a bottom nav. Animations and the
+// fog itself are CSS, attached through dataSet (see HEAD in build.py).
 function (g, r, i, a, m, _e, d) {
   "use strict";
   function e(e) {
@@ -39,12 +43,13 @@ function (g, r, i, a, m, _e, d) {
     jsxs = J.jsxs;
 
   const TABS = [
-    { key: "Journal", mono: "JRN", label: "Journal" },
-    { key: "Assets", mono: "AST", label: "Assets" },
-    { key: "Relationships", mono: "REL", label: "Circle" },
-    { key: "Departments", mono: "TEAM", label: "Team" },
-    { key: "Activities", mono: "ACT", label: "Actions" },
+    { key: "HQ", icon: "🏢", label: "HQ" },
+    { key: "Journal", icon: "📓", label: "Journal" },
+    { key: "Departments", icon: "👥", label: "Team" },
+    { key: "Relationships", icon: "🤝", label: "Circle" },
+    { key: "Activities", icon: "⚡", label: "Actions" },
   ];
+  const STAGE_NAMES = { 1: "Pre-seed", 2: "Seed", 3: "Series A", 4: "Unicorn" };
 
   // ---------- persistence ----------
   const SAVE_KEY = "founderFog.save.v1";
@@ -80,32 +85,120 @@ function (g, r, i, a, m, _e, d) {
     } catch (err) {}
   }
 
+  // ---------- formatting ----------
   const money = (v) => (v < 0 ? "−$" : "$") + Math.abs(Math.round(v)).toLocaleString();
+  const compact = (v) => {
+    const a = Math.abs(v),
+      s = v < 0 ? "−$" : "$";
+    if (a >= 1e6) return s + (a / 1e6).toFixed(a >= 1e7 ? 0 : 1) + "M";
+    if (a >= 1e4) return s + Math.round(a / 1e3) + "k";
+    return s + Math.round(a).toLocaleString();
+  };
   const signed = (v, unit) => (v > 0 ? "+" : "−") + Math.abs(Math.round(v)).toLocaleString() + (unit || "");
   const signedMoney = (v) => (v > 0 ? "+$" : "−$") + Math.abs(Math.round(v)).toLocaleString();
 
-  function weekSummary(before, after) {
-    const parts = [];
-    const dCash = after.cash - before.cash;
-    if (Math.round(dCash) !== 0) parts.push("Cash " + signedMoney(dCash));
-    const dMrr = after.monthlyRevenue - before.monthlyRevenue;
-    if (Math.abs(dMrr) >= 25) parts.push("MRR " + signedMoney(dMrr));
-    const dClarity = after.mentalClarity - before.mentalClarity;
-    if (Math.round(dClarity) !== 0) parts.push("Clarity " + signed(dClarity, "%"));
-    const dMorale = after.teamMorale - before.teamMorale;
-    if (Math.round(dMorale) !== 0) parts.push("Morale " + signed(dMorale, "%"));
-    if (after.team.length < before.team.length) parts.push("Someone quit");
-    return parts.join(" · ") || "A quiet week.";
+  // Higher is worse for these metrics, so their "+" is shown in red.
+  const BAD_UP = /tech debt|churn|cac|burn/i;
+  const EFFECT_LABELS = {
+    cash: ["Cash", "$"],
+    monthlyRevenue: ["MRR", "$"],
+    mentalClarity: ["Clarity", "%"],
+    teamMorale: ["Morale", "%"],
+    investorTrust: ["Trust", "%"],
+    techDebt: ["Tech debt", ""],
+    churnRate: ["Churn", "%"],
+    activeUsers: ["Users", ""],
+    arpu: ["ARPU", "$"],
+    cac: ["CAC", "$"],
+    founderExp: ["EXP", ""],
+  };
+
+  function effectChips(effects) {
+    const out = [];
+    Object.keys(effects || {}).forEach((k) => {
+      const v = effects[k];
+      if (k === "hire" && v && v.count) {
+        out.push({ text: "+" + v.count + " " + (v.seniority === "senior" ? "senior" : "junior") + " hire", tone: 0 });
+        return;
+      }
+      const meta = EFFECT_LABELS[k];
+      if (!meta || typeof v !== "number" || v === 0) return;
+      const label = meta[0],
+        unit = meta[1];
+      const txt = unit === "$" ? label + " " + signedMoney(v) : label + " " + signed(v, unit);
+      const good = BAD_UP.test(label) ? v < 0 : v > 0;
+      out.push({ text: txt, tone: k === "founderExp" ? 2 : good ? 1 : -1 });
+    });
+    return out;
+  }
+
+  // "MRR +$3,500 | Tech Debt +25% | Cash $0" -> coloured chips
+  function previewChips(preview) {
+    return String(preview || "")
+      .split("|")
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .map((p) => {
+        const m = p.match(/[+\-−]/);
+        if (!m || /\$0\b/.test(p)) return { text: p, tone: 0 };
+        const up = m[0] === "+";
+        const good = BAD_UP.test(p) ? !up : up;
+        return { text: p, tone: good ? 1 : -1 };
+      });
+  }
+
+  // Drop a leading emoji from engine titles; the card already has its own icon.
+  const questTitle = (t) => String(t || "").replace(/^\S+\s/, (m) => (/[a-z0-9]/i.test(m) ? m : ""));
+
+  function Chips({ items, style }) {
+    return jsx(View, {
+      style: [st.chips, style],
+      children: items.map((c, idx) =>
+        jsx(
+          View,
+          {
+            style: [st.chip, c.tone === 1 ? st.chipGood : c.tone === -1 ? st.chipBad : c.tone === 2 ? st.chipGold : st.chipNeutral],
+            children: jsx(Text, {
+              style: [st.chipTxt, { color: c.tone === 1 ? COLOR.vital : c.tone === -1 ? COLOR.crit : c.tone === 2 ? COLOR.gold : COLOR.text2 }],
+              children: c.text,
+            }),
+          },
+          idx,
+        ),
+      ),
+    });
   }
 
   function snapshot(s) {
     return {
+      week: s.week,
       cash: s.cash,
       monthlyRevenue: s.monthlyRevenue,
       mentalClarity: s.mentalClarity,
       teamMorale: s.teamMorale,
-      team: s.team.slice(),
+      teamSize: s.team.length,
+      stage: s.stage,
+      badges: (s.unlockedBadges || []).length,
+      slotUsed: s.slotUsed,
     };
+  }
+
+  function buildReport(before, after) {
+    const rows = [
+      { label: "Cash", value: money(after.cash), delta: after.cash - before.cash, fmt: signedMoney, fogged: true },
+      { label: "MRR", value: money(after.monthlyRevenue), delta: after.monthlyRevenue - before.monthlyRevenue, fmt: signedMoney, fogged: true },
+      { label: "Clarity", value: Math.round(after.mentalClarity) + "%", delta: after.mentalClarity - before.mentalClarity, fmt: (v) => signed(v, "%") },
+      { label: "Morale", value: Math.round(after.teamMorale) + "%", delta: after.teamMorale - before.teamMorale, fmt: (v) => signed(v, "%") },
+    ];
+    const notes = [];
+    if (after.stage > before.stage) notes.push(["🏛️", "Stage up: " + (STAGE_NAMES[after.stage] || "Stage " + after.stage) + ". Valuation re-rated.", 1]);
+    if ((after.unlockedBadges || []).length > before.badges) notes.push(["🏆", "New badge unlocked. Check the journal.", 1]);
+    if (after.team.length < before.teamSize) notes.push(["🚪", "Someone resigned. Morale was too low.", -1]);
+    if (before.mentalClarity >= 40 && after.mentalClarity < 40) notes.push(["🌫️", "The fog is rolling in. Your numbers are getting hard to read. Rest this week.", -1]);
+    if (parseFloat(after.runwayMonths) < 3) notes.push(["⏳", "Under 3 months of runway. Cut burn or bring in cash.", -1]);
+    if (!before.slotUsed) notes.push(["⚡", "You didn't use last week's personal action.", 0]);
+    if (after.pendingEvent) notes.push(["⚖️", "A decision is waiting for you.", 0]);
+    return { week: before.week, rows: rows, notes: notes, quest: after.currentTarget && after.currentTarget.title, nextWeek: after.week };
   }
 
   function App() {
@@ -119,11 +212,11 @@ function (g, r, i, a, m, _e, d) {
     });
     const [engine, setEngine] = React.useState(null),
       [S, setS] = React.useState(null),
-      [tab, setTab] = React.useState("Journal"),
+      [tab, setTab] = React.useState("HQ"),
       [guideOpen, setGuideOpen] = React.useState(false),
-      [targetOpen, setTargetOpen] = React.useState(false),
       [saved, setSaved] = React.useState(readSave),
-      [toast, setToast] = React.useState(null);
+      [toast, setToast] = React.useState(null),
+      [report, setReport] = React.useState(null);
     const toastTimer = React.useRef(null);
 
     React.useEffect(() => {
@@ -137,7 +230,7 @@ function (g, r, i, a, m, _e, d) {
     const notify = (text, kind) => {
       toastTimer.current && clearTimeout(toastTimer.current);
       setToast({ text: text, kind: kind || "info", id: Date.now() });
-      toastTimer.current = setTimeout(() => setToast(null), kind === "bad" ? 3200 : 2600);
+      toastTimer.current = setTimeout(() => setToast(null), kind === "bad" ? 3200 : 2400);
     };
 
     // Runs an engine call that returns {success, reason, state}; failures are
@@ -147,6 +240,7 @@ function (g, r, i, a, m, _e, d) {
       if (result.success) {
         setS({ ...result.state });
         okText && notify(okText, "ok");
+        buzz(10);
         return true;
       }
       buzz(30);
@@ -166,23 +260,23 @@ function (g, r, i, a, m, _e, d) {
       setSaved(null);
       setEngine(eng);
       setS({ ...eng.state });
-      setTab("Journal");
-      setTargetOpen(true);
+      setTab("HQ");
+      setReport(null);
     };
     const resume = () => {
       if (!saved) return;
       const eng = restoreEngine(saved.state);
       setEngine(eng);
       setS({ ...eng.state });
-      setTab("Journal");
-      notify("Welcome back. Week " + saved.state.week + ".", "ok");
+      setTab("HQ");
     };
     const restart = () => {
       clearSave();
       setSaved(null);
       setEngine(null);
       setS(null);
-      setTab("Journal");
+      setTab("HQ");
+      setReport(null);
     };
 
     if (!engine || !S)
@@ -190,645 +284,777 @@ function (g, r, i, a, m, _e, d) {
         style: st.container,
         children: [
           jsx(StatusBar, { barStyle: "light-content" }),
-          saved &&
-            jsxs(View, {
-              style: st.resumeCard,
-              children: [
-                jsxs(View, {
-                  style: { flex: 1 },
-                  children: [
-                    jsx(Text, { style: st.resumeKicker, children: "SAVED GAME" }),
-                    jsx(Text, { style: st.resumeTitle, numberOfLines: 1, children: saved.state.companyName }),
-                    jsx(Text, {
-                      style: st.resumeSub,
-                      children: "Week " + saved.state.week + " · " + money(saved.state.cash) + " in the bank",
-                    }),
-                  ],
-                }),
-                jsxs(View, {
-                  style: { alignItems: "flex-end", gap: 6 },
-                  children: [
-                    jsx(Touchable, {
-                      style: st.resumeBtn,
-                      onPress: resume,
-                      children: jsx(Text, { style: st.resumeBtnTxt, children: "Continue ▸" }),
-                    }),
-                    jsx(Touchable, {
-                      onPress: () => {
-                        clearSave();
-                        setSaved(null);
-                      },
-                      children: jsx(Text, { style: st.resumeDiscard, children: "Discard" }),
-                    }),
-                  ],
-                }),
-              ],
-            }),
-          jsx(Onboarding.OnboardingScreen, { onStartGame: start }),
+          jsx(Onboarding.OnboardingScreen, {
+            onStartGame: start,
+            saved: saved,
+            onResume: resume,
+            onDiscard: () => {
+              clearSave();
+              setSaved(null);
+            },
+          }),
         ],
       });
 
     if (S.gameOver || S.victory)
       return jsxs(Screen, {
         style: st.container,
-        children: [
-          jsx(StatusBar, { barStyle: "light-content" }),
-          jsx(GameOver.GameOverScreen, { gameState: S, onRestart: restart }),
-        ],
+        children: [jsx(StatusBar, { barStyle: "light-content" }), jsx(GameOver.GameOverScreen, { gameState: S, onRestart: restart })],
       });
 
+    // ---------- derived ----------
     const target = S.currentTarget,
       guide = target && target.howToGuide,
       targetDone = !!target && S.completedTargets.includes(target.week),
-      cashColor = S.cash < 4 * S.weeklyBurn ? COLOR.crit : COLOR.vital,
-      moraleColor = S.teamMorale < 40 ? COLOR.crit : COLOR.vital,
-      clarityColor = Fog.isFogged(S.mentalClarity) ? COLOR.fog : COLOR.act,
+      fogged = Fog.isFogged(S.mentalClarity),
+      fogAmt = Fog.fogIntensity(S.mentalClarity),
+      fogOp = Fog.fogOpacity(S.mentalClarity),
+      ft = (text, key) => Fog.fogText(text, S.mentalClarity, key, S.week),
       runway = parseFloat(S.runwayMonths),
       runwayLabel = runway >= 999 ? "∞" : runway.toFixed(1),
-      runwayColor = runway < 4 ? COLOR.crit : runway < 8 ? COLOR.fog : COLOR.vital,
-      fogOp = Fog.fogOpacity(S.mentalClarity),
-      narrow = typeof window !== "undefined" && window.innerWidth < 360;
+      runwayColor = runway < 3 ? COLOR.crit : runway < 6 ? COLOR.fog : COLOR.vital,
+      clarityColor = S.mentalClarity < 25 ? COLOR.crit : fogged ? COLOR.fog : COLOR.act,
+      moraleColor = S.teamMorale < 40 ? COLOR.crit : S.teamMorale < 60 ? COLOR.fog : COLOR.vital,
+      nextStage = (Engine.STAGES || []).find((x) => x.stage > S.stage),
+      stageName = STAGE_NAMES[S.stage] || "Stage " + S.stage,
+      weakTie = (S.relationships || []).some((x) => x.health < 40),
+      allDone = S.slotUsed && (targetDone || !guide);
 
     const advance = () => {
       const before = snapshot(S);
-      const skipped = !S.slotUsed;
       const next = engine.advanceWeek();
       setS({ ...next });
-      setTargetOpen(!next.completedTargets.includes(next.currentTarget && next.currentTarget.week));
-      buzz(8);
-      if (next.gameOver || next.victory || next.pendingEvent) return;
-      const summary = "Week " + next.week + " · " + weekSummary(before, next);
-      notify(skipped ? summary + "\nYou skipped last week's action." : summary, next.mentalClarity < before.mentalClarity - 4 ? "warn" : "info");
+      buzz(12);
+      if (next.gameOver || next.victory) return;
+      setReport(buildReport(before, next));
+      setTab("HQ");
     };
 
-    const tile = (label, figure, figColor, barPct, barColor, sub, subColor, fogged) =>
+    // ---------- pieces ----------
+    const meter = (label, value, pct, color, fogMe) =>
       jsxs(View, {
-        style: st.tile,
+        style: st.hudCell,
         children: [
-          jsx(Text, { style: [st.tileLabel, fogged && { opacity: fogOp }], numberOfLines: 1, children: label }),
-          jsx(Text, {
-            style: [st.tileFigure, narrow && st.tileFigureNarrow, { color: figColor }, fogged && { opacity: fogOp }],
-            numberOfLines: 1,
-            adjustsFontSizeToFit: !0,
-            children: figure,
-          }),
+          jsx(Text, { style: st.hudLabel, numberOfLines: 1, children: label }),
+          jsx(Text, { style: [st.hudValue, { color: color }, fogMe && { opacity: fogOp }], numberOfLines: 1, children: value }),
           jsx(View, {
-            style: st.barTrack,
-            children: jsx(View, {
-              style: [st.barFill, { width: Math.max(0, Math.min(100, barPct)) + "%", backgroundColor: barColor }, fogged && { opacity: fogOp }],
-            }),
+            style: st.hudTrack,
+            children: jsx(View, { style: [st.hudFill, { width: Math.max(2, Math.min(100, pct)) + "%", backgroundColor: color }, fogMe && { opacity: fogOp }] }),
           }),
-          jsx(Text, { style: [st.tileSub, { color: subColor || COLOR.text3 }, fogged && { opacity: fogOp }], numberOfLines: 1, children: sub }),
         ],
       });
 
+    const hud = jsxs(View, {
+      style: st.hud,
+      children: [
+        meter("CASH", ft(compact(S.cash), "cash"), (S.cash / Math.max(1, S.sector.initial_cash)) * 100, S.cash < 4 * S.weeklyBurn ? COLOR.crit : COLOR.vital, true),
+        meter("RUNWAY", ft(runwayLabel + "mo", "runway"), (Math.min(runway, 12) / 12) * 100, runwayColor, true),
+        meter("CLARITY", Math.round(S.mentalClarity) + "%", S.mentalClarity, clarityColor, false),
+        meter("MORALE", Math.round(S.teamMorale) + "%", S.teamMorale, moraleColor, false),
+        fogged && jsx(View, { pointerEvents: "none", dataSet: { ff: "fog" }, style: [st.fogLayer, { opacity: 0.35 + 0.6 * fogAmt }] }),
+      ],
+    });
+
+    const runwayPips = jsx(View, {
+      style: st.pips,
+      children: Array.from({ length: 12 }, (_, k) =>
+        jsx(View, { style: [st.pip, k < Math.min(12, Math.floor(runway)) && { backgroundColor: runwayColor }, k === Math.floor(runway) && runway < 12 && { backgroundColor: runwayColor, opacity: (runway % 1) * 0.9 + 0.1 }] }, k),
+      ),
+    });
+
+    const hero = jsxs(View, {
+      style: st.hero,
+      dataSet: { ff: "rise1" },
+      children: [
+        jsxs(View, {
+          style: st.heroTop,
+          children: [
+            jsxs(View, {
+              style: { flex: 1 },
+              children: [
+                jsx(Text, { style: st.kicker, children: "RUNWAY" }),
+                jsxs(Text, {
+                  style: [st.heroBig, { color: runwayColor, opacity: fogOp }],
+                  children: [ft(runwayLabel, "runwayBig"), jsx(Text, { style: st.heroUnit, children: " months" }, "u")],
+                }),
+              ],
+            }),
+            jsxs(View, {
+              style: { alignItems: "flex-end" },
+              children: [
+                jsx(Text, { style: st.kicker, children: "IN THE BANK" }),
+                jsx(Text, { style: [st.heroCash, { opacity: fogOp }], children: ft(money(S.cash), "cashBig") }),
+              ],
+            }),
+          ],
+        }),
+        runwayPips,
+        jsxs(View, {
+          style: st.heroRow,
+          children: [
+            [ft(money(S.monthlyRevenue), "mrr"), "MRR", COLOR.vital],
+            [ft(money(S.weeklyBurn), "burn"), "burn / wk", COLOR.crit],
+            [ft(String(Math.round(S.activeUsers).toLocaleString()), "users"), "users", COLOR.text],
+          ].map(([v, l, c]) =>
+            jsxs(View, { style: st.heroStat, children: [jsx(Text, { style: [st.heroStatV, { color: c, opacity: fogOp }], numberOfLines: 1, children: v }), jsx(Text, { style: st.heroStatL, children: l })] }, l),
+          ),
+        }),
+        jsxs(View, {
+          style: st.vitals,
+          children: [
+            [["🧠", "Clarity"], S.mentalClarity, clarityColor, fogged ? "in the fog" : S.mentalClarity < 60 ? "getting tired" : "clear head"],
+            [["🤝", "Morale"], S.teamMorale, moraleColor, S.teamMorale < 40 ? "people may quit" : "team of " + S.team.length],
+          ].map(([[icon, label], v, c, sub]) =>
+            jsxs(
+              View,
+              {
+                style: st.vital,
+                children: [
+                  jsxs(View, {
+                    style: st.vitalTop,
+                    children: [
+                      jsx(Text, { style: st.vitalLabel, children: icon + "  " + label }),
+                      jsx(Text, { style: [st.vitalValue, { color: c }], children: Math.round(v) + "%" }),
+                    ],
+                  }),
+                  jsx(View, { style: st.vitalTrack, children: jsx(View, { style: [st.vitalFill, { width: Math.max(2, v) + "%", backgroundColor: c }] }) }),
+                  jsx(Text, { style: st.vitalSub, children: sub }),
+                ],
+              },
+              label,
+            ),
+          ),
+        }),
+        fogged && jsx(View, { pointerEvents: "none", dataSet: { ff: "fog" }, style: [st.fogLayer, { opacity: 0.3 + 0.65 * fogAmt, bottom: 92 }] }),
+      ],
+    });
+
+    const milestone = nextStage
+      ? jsxs(View, {
+          style: st.card,
+          dataSet: { ff: "rise2" },
+          children: [
+            jsxs(View, {
+              style: st.rowBetween,
+              children: [
+                jsx(Text, { style: st.kicker, children: "NEXT MILESTONE" }),
+                jsx(Text, { style: [st.kicker, { color: COLOR.gold }], children: stageName + " → " + (STAGE_NAMES[nextStage.stage] || "Stage " + nextStage.stage) }),
+              ],
+            }),
+            jsx(Text, { style: st.cardTitle, children: "Reach " + money(nextStage.mrr) + " MRR" }),
+            jsx(View, {
+              style: st.goalTrack,
+              children: jsx(View, { style: [st.goalFill, { width: Math.max(2, Math.min(100, (S.monthlyRevenue / nextStage.mrr) * 100)) + "%" }] }),
+            }),
+            jsx(Text, { style: st.cardSub, children: ft(money(S.monthlyRevenue), "mrr2") + " of " + money(nextStage.mrr) + " · valuation re-rates to " + compact(nextStage.valuation) }),
+          ],
+        })
+      : null;
+
+    const quest =
+      target &&
+      jsxs(View, {
+        style: [st.card, st.quest, targetDone && st.questDone],
+        dataSet: { ff: "rise3" },
+        children: [
+          jsxs(View, {
+            style: st.rowBetween,
+            children: [
+              jsx(Text, { style: [st.kicker, { color: targetDone ? COLOR.vital : COLOR.accent }], children: targetDone ? "✓ WEEKLY TARGET DONE" : "🎯 WEEKLY TARGET" }),
+              jsx(Chips, { items: [{ text: "+" + (target.reward_exp || 50) + " EXP", tone: 2 }].concat(target.reward_cash ? [{ text: "+" + money(target.reward_cash), tone: 1 }] : []) }),
+            ],
+          }),
+          jsx(Text, { style: st.cardTitle, children: questTitle(target.title) }),
+          jsx(Text, { style: st.questTasks, children: String(target.tasks || "").replace(/\s*\|\s*/g, "\n") }),
+          guide &&
+            jsx(Touchable, {
+              style: [st.questBtn, targetDone && st.questBtnDone],
+              onPress: () => setGuideOpen(true),
+              activeOpacity: 0.85,
+              children: jsx(Text, {
+                style: [st.questBtnTxt, targetDone && { color: COLOR.text2 }],
+                children: targetDone ? "Review strategies" : "Choose a strategy ▸",
+              }),
+            }),
+        ],
+      });
+
+    const actionCard = jsxs(View, {
+      style: st.card,
+      dataSet: { ff: "rise4" },
+      children: [
+        jsxs(View, {
+          style: st.rowBetween,
+          children: [
+            jsx(Text, { style: st.kicker, children: "YOUR ACTION THIS WEEK" }),
+            jsxs(View, {
+              style: st.token,
+              children: [
+                jsx(View, { dataSet: S.slotUsed ? undefined : { ff: "glow" }, style: [st.tokenDot, { backgroundColor: S.slotUsed ? COLOR.text3 : COLOR.vital }] }),
+                jsx(Text, { style: [st.tokenTxt, { color: S.slotUsed ? COLOR.text3 : COLOR.vital }], children: S.slotUsed ? "used" : "1 left" }),
+              ],
+            }),
+          ],
+        }),
+        jsx(Text, {
+          style: st.cardSub,
+          children: S.slotUsed
+            ? "Done for this week. End the week when you're ready."
+            : fogged
+              ? "You're in the fog. Resting is the smart play this week."
+              : "Rest, learn, or reach out to someone who matters.",
+        }),
+        jsxs(View, {
+          style: st.actionRow,
+          children: [
+            jsx(Touchable, { style: [st.actionBtn, fogged && !S.slotUsed && st.actionBtnHot], onPress: () => setTab("Activities"), children: jsx(Text, { style: st.actionBtnTxt, children: "⚡ Actions" }) }),
+            jsx(Touchable, {
+              style: st.actionBtn,
+              onPress: () => setTab("Relationships"),
+              children: jsx(Text, { style: st.actionBtnTxt, children: "🤝 Circle" + (weakTie ? " · !" : "") }),
+            }),
+          ],
+        }),
+      ],
+    });
+
+    const recent = jsxs(View, {
+      style: st.card,
+      children: [
+        jsxs(View, {
+          style: st.rowBetween,
+          children: [
+            jsx(Text, { style: st.kicker, children: "LATELY" }),
+            jsx(Touchable, { onPress: () => setTab("Journal"), children: jsx(Text, { style: st.link, children: "Full journal ▸" }) }),
+          ],
+        }),
+        S.journalLog.slice(0, 3).map((x, idx) =>
+          jsxs(
+            View,
+            {
+              style: [st.logItem, idx > 0 && st.logDivider],
+              children: [
+                jsx(View, { style: [st.logBar, { backgroundColor: x.type === "negative" ? COLOR.crit : COLOR.act }] }),
+                jsxs(View, {
+                  style: { flex: 1 },
+                  children: [
+                    jsx(Text, { style: st.logTitle, numberOfLines: 1, children: x.title }),
+                    jsx(Text, { style: st.logText, numberOfLines: 2, children: x.text }),
+                  ],
+                }),
+                jsx(Text, { style: st.logWeek, children: "W" + x.week }),
+              ],
+            },
+            idx,
+          ),
+        ),
+        jsx(Touchable, { onPress: () => setTab("Assets"), style: st.companyLink, children: jsx(Text, { style: st.link, children: "Company, KPIs & assets ▸" }) }),
+      ],
+    });
+
+    const hq = jsx(ScrollView, {
+      style: { flex: 1 },
+      contentContainerStyle: st.hqContent,
+      showsVerticalScrollIndicator: !1,
+      children: [
+        jsx(React.Fragment, { children: hero }, "hero"),
+        fogged &&
+          jsxs(
+            Touchable,
+            {
+              style: st.fogBanner,
+              onPress: () => setTab("Activities"),
+              children: [jsx(Text, { style: st.fogBannerTxt, children: Fog.fogNotice(S.mentalClarity) }), jsx(Text, { style: st.fogBannerCta, children: "Rest ▸" })],
+            },
+            "fogb",
+          ),
+        jsx(React.Fragment, { children: quest }, "quest"),
+        jsx(React.Fragment, { children: actionCard }, "action"),
+        jsx(React.Fragment, { children: milestone }, "ms"),
+        jsx(React.Fragment, { children: recent }, "recent"),
+      ],
+    });
+
+    let content;
+    if (tab === "HQ") content = hq;
+    else if (tab === "Journal") content = jsx(Journal.JournalScreen, { journalLog: S.journalLog, gameState: S });
+    else if (tab === "Assets") content = jsx(Assets.AssetsScreen, { gameState: S });
+    else if (tab === "Relationships")
+      content = jsx(Circle.RelationshipsScreen, { gameState: S, onContact: (id) => act(engine.contactRelationship(id), "Reached out. Relationship +11.") });
+    else if (tab === "Departments")
+      content = jsx(Team.DepartmentsScreen, {
+        gameState: S,
+        onHire: (id) => act(engine.hireCandidate(id), "Welcome to the team."),
+        onFire: (id) => act(engine.fireEmployee(id), "Let go. Morale −10%."),
+        onRefreshCandidates: () => act(engine.refreshCandidatePool(), "3 new candidates sourced."),
+        onRunDeptAction: (id) => act(engine.executeDepartmentAction("dept", id), "Done. Logged in your journal."),
+      });
+    else if (tab === "Activities")
+      content = jsx(Actions.ActivitiesScreen, {
+        gameState: S,
+        onSelectActivity: (activity) => {
+          if (act(engine.executeActivity(activity), (activity.name_en || activity.name) + " ✓")) setTab("HQ");
+        },
+      });
+
+    // ---------- modals ----------
+    const reportModal =
+      report &&
+      jsx(Modal, {
+        visible: !0,
+        transparent: !0,
+        animationType: "fade",
+        onRequestClose: () => setReport(null),
+        children: jsx(Touchable, {
+          activeOpacity: 1,
+          style: st.sheetOverlay,
+          onPress: () => setReport(null),
+          children: jsxs(Touchable, {
+            activeOpacity: 1,
+            onPress: () => {},
+            style: st.sheet,
+            dataSet: { ff: "pop" },
+            children: [
+              jsx(Text, { style: [st.kicker, { color: COLOR.act }], children: "WEEKLY REPORT" }),
+              jsx(Text, { style: st.sheetTitle, children: "Week " + report.week + " wrapped" }),
+              jsx(View, {
+                style: st.reportRows,
+                children: report.rows.map((row, idx) => {
+                  const zero = Math.round(row.delta) === 0;
+                  const good = row.delta > 0;
+                  return jsxs(
+                    View,
+                    {
+                      style: st.reportRow,
+                      dataSet: { ff: "rise" + (idx + 1) },
+                      children: [
+                        jsx(Text, { style: st.reportLabel, children: row.label }),
+                        jsx(Text, { style: [st.reportValue, row.fogged && { opacity: fogOp }], children: row.fogged ? ft(row.value, "r" + idx) : row.value }),
+                        jsx(View, {
+                          style: [st.deltaPill, zero ? st.chipNeutral : good ? st.chipGood : st.chipBad],
+                          children: jsx(Text, {
+                            style: [st.deltaTxt, { color: zero ? COLOR.text3 : good ? COLOR.vital : COLOR.crit }, row.fogged && { opacity: fogOp }],
+                            children: zero ? "—" : row.fogged ? ft(row.fmt(row.delta), "d" + idx) : row.fmt(row.delta),
+                          }),
+                        }),
+                      ],
+                    },
+                    row.label,
+                  );
+                }),
+              }),
+              report.notes.length > 0 &&
+                jsx(View, {
+                  style: st.notes,
+                  children: report.notes.map(([icon, text, tone], idx) =>
+                    jsxs(
+                      View,
+                      {
+                        style: [st.note, tone === -1 && st.noteBad, tone === 1 && st.noteGood],
+                        children: [jsx(Text, { style: st.noteIcon, children: icon }), jsx(Text, { style: st.noteTxt, children: text })],
+                      },
+                      idx,
+                    ),
+                  ),
+                }),
+              report.quest && jsx(Text, { style: st.reportQuest, children: "Next up: " + report.quest }),
+              jsx(Touchable, {
+                style: st.primaryBtn,
+                onPress: () => setReport(null),
+                activeOpacity: 0.85,
+                children: jsx(Text, { style: st.primaryTxt, children: S.pendingEvent ? "Face the decision ▸" : "Start week " + report.nextWeek + " ▸" }),
+              }),
+            ],
+          }),
+        }),
+      });
+
+    const dilemmaModal =
+      S.pendingEvent &&
+      !report &&
+      jsx(Modal, {
+        visible: !0,
+        transparent: !0,
+        animationType: "fade",
+        children: jsx(View, {
+          style: st.centerOverlay,
+          children: jsx(View, {
+            style: st.dilemma,
+            dataSet: { ff: "pop" },
+            children: jsx(ScrollView, {
+              showsVerticalScrollIndicator: !1,
+              children: [
+                jsxs(
+                  View,
+                  {
+                    style: st.rowBetween,
+                    children: [
+                      jsx(Text, { style: [st.kicker, { color: COLOR.fog }], children: "⚖️ DILEMMA · WEEK " + S.week }),
+                      jsx(Text, { style: st.kicker, children: String(S.pendingEvent.category || "").toUpperCase() }),
+                    ],
+                  },
+                  "k",
+                ),
+                jsx(Text, { style: st.dilemmaTitle, children: S.pendingEvent.title }, "t"),
+                jsx(Text, { style: st.dilemmaDesc, children: S.pendingEvent.description }, "d"),
+                ["option_A", "option_B"].map((key, idx) =>
+                  jsxs(
+                    Touchable,
+                    {
+                      style: st.option,
+                      activeOpacity: 0.85,
+                      dataSet: { ff: "rise" + (idx + 2) },
+                      onPress: () => {
+                        const next = engine.resolveEventChoice(key);
+                        setS({ ...next });
+                        buzz(14);
+                        if (!next.gameOver && !next.victory) notify("Decision made. It's in your journal.", "info");
+                      },
+                      children: [
+                        jsxs(View, {
+                          style: st.optionTop,
+                          children: [
+                            jsx(View, { style: st.optionKey, children: jsx(Text, { style: st.optionKeyTxt, children: idx ? "B" : "A" }) }),
+                            jsx(Text, { style: st.optionTitle, children: S.pendingEvent[key].title }),
+                          ],
+                        }),
+                        jsx(Chips, { items: previewChips(S.pendingEvent[key].preview), style: { marginTop: 10 } }),
+                      ],
+                    },
+                    key,
+                  ),
+                ),
+                jsx(Text, { style: st.noRight, children: "THERE IS NO RIGHT OPTION" }, "n"),
+              ],
+            }),
+          }),
+        }),
+      });
+
+    const guideModal =
+      guideOpen &&
+      guide &&
+      jsx(Modal, {
+        visible: !0,
+        transparent: !0,
+        animationType: "slide",
+        onRequestClose: () => setGuideOpen(false),
+        children: jsx(View, {
+          style: st.sheetOverlay,
+          children: jsxs(View, {
+            style: [st.sheet, { maxHeight: "90%" }],
+            children: [
+              jsxs(View, {
+                style: st.sheetHeader,
+                children: [
+                  jsxs(View, {
+                    style: { flex: 1 },
+                    children: [
+                      jsx(Text, { style: [st.kicker, { color: COLOR.accent }], children: "🎯 WEEK " + S.week + " TARGET" }),
+                      jsx(Text, { style: st.sheetTitle, numberOfLines: 2, children: questTitle(target.title) }),
+                    ],
+                  }),
+                  jsx(Touchable, { style: st.closeBtn, onPress: () => setGuideOpen(false), children: jsx(Text, { style: st.closeTxt, children: "✕" }) }),
+                ],
+              }),
+              jsxs(ScrollView, {
+                showsVerticalScrollIndicator: !1,
+                style: { flexGrow: 0 },
+                children: [
+                  jsxs(View, {
+                    style: st.why,
+                    children: [jsx(Text, { style: [st.kicker, { color: COLOR.fog }], children: "WHY IT MATTERS" }), jsx(Text, { style: st.whyTxt, children: guide.whyItMatters })],
+                  }),
+                  jsx(Text, { style: st.pickTitle, children: targetDone ? "Already done this week" : "Pick one. You only get one shot per week." }),
+                  guide.strategies.map((s, idx) => {
+                    const tooPoor = S.cash < s.cost;
+                    const disabled = targetDone || tooPoor;
+                    return jsxs(
+                      View,
+                      {
+                        style: [st.strat, disabled && { opacity: 0.6 }],
+                        dataSet: { ff: "rise" + (idx + 1) },
+                        children: [
+                          jsxs(View, {
+                            style: st.rowBetween,
+                            children: [
+                              jsx(View, {
+                                style: [st.stratBadge, { backgroundColor: s.badgeBg }],
+                                children: jsx(Text, { style: [st.stratBadgeTxt, { color: s.badgeColor }], children: s.badge }),
+                              }),
+                              jsx(Text, { style: [st.stratCost, tooPoor && { color: COLOR.crit }], children: s.costLabel }),
+                            ],
+                          }),
+                          jsx(Text, { style: st.stratTitle, children: String(s.title || "").replace(/^\d+\.\s*/, "") }),
+                          jsx(Text, { style: st.stratDesc, children: s.desc }),
+                          jsx(Chips, { items: effectChips(s.effects), style: { marginBottom: 12 } }),
+                          jsx(Touchable, {
+                            style: [st.stratBtn, disabled && st.stratBtnOff],
+                            disabled: disabled,
+                            activeOpacity: 0.85,
+                            onPress: () => {
+                              const res = engine.executeTargetStrategy(s.id);
+                              if (act(res, "🎯 Target hit · +" + (target.reward_exp || 50) + " EXP")) setGuideOpen(false);
+                            },
+                            children: jsx(Text, {
+                              style: [st.stratBtnTxt, disabled && { color: COLOR.text3 }],
+                              children: targetDone ? "Target already done" : tooPoor ? "Not enough cash" : "Go with this ▸",
+                            }),
+                          }),
+                        ],
+                      },
+                      s.id,
+                    );
+                  }),
+                ],
+              }),
+            ],
+          }),
+        }),
+      });
+
+    // ---------- shell ----------
     return jsxs(Screen, {
       style: st.container,
       children: [
         jsx(StatusBar, { barStyle: "light-content" }),
         jsxs(View, {
-          style: st.header,
+          style: st.topBar,
           children: [
             jsxs(View, {
               style: { flex: 1 },
               children: [
-                jsx(Text, { style: st.companyTitle, numberOfLines: 1, children: S.companyName }),
-                jsx(Text, {
-                  style: st.founderSub,
-                  numberOfLines: 1,
-                  children: S.founderName + " · Week " + S.week + " · Month " + S.month,
-                }),
+                jsx(Text, { style: st.company, numberOfLines: 1, children: S.companyName }),
+                jsx(Text, { style: st.weekLine, numberOfLines: 1, children: "Week " + S.week + " · Month " + S.month + " · " + S.founderName }),
               ],
             }),
-            jsx(View, {
-              style: st.expChip,
-              children: jsx(Text, { style: st.expChipTxt, children: S.founderExp + " EXP" }),
-            }),
+            jsx(View, { style: st.stagePill, children: jsx(Text, { style: st.stagePillTxt, children: stageName }) }),
+            jsx(View, { style: st.expPill, children: jsx(Text, { style: st.expPillTxt, children: S.founderExp + " XP" }) }),
           ],
         }),
+        tab !== "HQ" && hud,
+        jsx(View, { style: st.content, children: content }),
         jsxs(View, {
-          style: st.statRow,
+          style: st.endBar,
           children: [
-            tile(
-              "CASH",
-              Fog.fogText(money(S.cash), S.mentalClarity, "cash", S.week),
-              cashColor,
-              (S.cash / Math.max(1, S.sector && S.sector.initial_cash ? S.sector.initial_cash : 25e3)) * 100,
-              cashColor,
-              Fog.fogText("MRR " + money(S.monthlyRevenue), S.mentalClarity, "mrr", S.week),
-              null,
-              true,
-            ),
-            tile(
-              "BURN/WK",
-              Fog.fogText(money(S.weeklyBurn), S.mentalClarity, "burn", S.week),
-              COLOR.crit,
-              (Math.min(runway, 12) / 12) * 100,
-              runwayColor,
-              Fog.fogText(runwayLabel + (narrow ? " mo" : " mo runway"), S.mentalClarity, "runway", S.week),
-              runwayColor,
-              true,
-            ),
-            tile("CLARITY", S.mentalClarity + "%", clarityColor, S.mentalClarity, clarityColor, Fog.isFogged(S.mentalClarity) ? "in the fog" : "clear head", Fog.isFogged(S.mentalClarity) ? COLOR.fog : null, false),
-            tile("MORALE", Math.round(S.teamMorale) + "%", moraleColor, S.teamMorale, moraleColor, "team of " + S.team.length, null, false),
-          ],
-        }),
-        Fog.isFogged(S.mentalClarity) &&
-          jsxs(Touchable, {
-            style: st.fogNotice,
-            onPress: () => setTab("Activities"),
-            children: [
-              jsx(Text, { style: st.fogNoticeTxt, numberOfLines: 2, children: Fog.fogNotice(S.mentalClarity) }),
-              jsx(Text, { style: st.fogNoticeCta, children: "Rest ▸" }),
-            ],
-          }),
-        target &&
-          jsxs(View, {
-            style: [st.targetCard, targetDone && st.targetCardDone],
-            children: [
-              jsxs(Touchable, {
-                style: st.targetHeader,
-                onPress: () => setTargetOpen(!targetOpen),
-                children: [
-                  jsx(Text, { style: st.targetTitle, numberOfLines: targetOpen ? 3 : 1, children: target.title }),
-                  jsx(View, {
-                    style: [st.chip, targetDone ? st.chipDone : st.chipTodo],
-                    children: jsx(Text, {
-                      style: [st.chipTxt, { color: targetDone ? COLOR.vital : COLOR.gold }],
-                      children: targetDone ? "✓ Done" : "+" + (target.reward_exp || 50) + " EXP",
-                    }),
-                  }),
-                  jsx(Text, { style: st.chevron, children: targetOpen ? "▴" : "▾" }),
-                ],
-              }),
-              targetOpen &&
-                jsx(Text, { style: st.targetTasks, children: target.tasks }),
-              targetOpen &&
-                guide &&
-                jsx(Touchable, {
-                  style: [st.guideBtn, targetDone && st.guideBtnDone],
-                  onPress: () => setGuideOpen(true),
-                  children: jsx(Text, {
-                    style: [st.guideBtnTxt, targetDone && { color: COLOR.text2 }],
-                    children: targetDone ? "Target done · review strategies" : "Choose a strategy ▸",
-                  }),
-                }),
-            ],
-          }),
-        jsxs(View, {
-          style: st.screenContainer,
-          children: [
-            "Journal" === tab && jsx(Journal.JournalScreen, { journalLog: S.journalLog, gameState: S }),
-            "Assets" === tab && jsx(Assets.AssetsScreen, { gameState: S }),
-            "Relationships" === tab &&
-              jsx(Circle.RelationshipsScreen, {
-                gameState: S,
-                onContact: (id) => engine && act(engine.contactRelationship(id), "Reached out. Relationship +11."),
-              }),
-            "Departments" === tab &&
-              jsx(Team.DepartmentsScreen, {
-                gameState: S,
-                onHire: (id) => engine && act(engine.hireCandidate(id), "Welcome to the team."),
-                onFire: (id) => engine && act(engine.fireEmployee(id), "Let go. Morale −10%."),
-                onRefreshCandidates: () => engine && act(engine.refreshCandidatePool(), "3 new candidates sourced."),
-                onRunDeptAction: (id) => {
-                  if (engine && act(engine.executeDepartmentAction("dept", id), "Done. Logged in your journal.")) setTab("Journal");
-                },
-              }),
-            "Activities" === tab &&
-              jsx(Actions.ActivitiesScreen, {
-                gameState: S,
-                onSelectActivity: (activity) => {
-                  if (engine && act(engine.executeActivity(activity), (activity.name_en || activity.name) + " ✓")) setTab("Journal");
-                },
-              }),
-          ],
-        }),
-        jsxs(View, {
-          style: st.weekFooter,
-          children: [
-            jsxs(View, {
-              children: [
-                jsx(Text, { style: st.weekFooterLabel, children: "WEEK " + S.week }),
-                jsx(Text, {
-                  style: [st.slotLabel, { color: S.slotUsed ? COLOR.text3 : COLOR.vital }],
-                  children: S.slotUsed ? "Action used" : "● One action available",
-                }),
-              ],
+            jsx(Text, {
+              style: [st.endHint, { color: allDone ? COLOR.vital : COLOR.text3 }],
+              numberOfLines: 1,
+              children: allDone ? "All set for this week" : [!targetDone && guide ? "target open" : null, !S.slotUsed ? "action unused" : null].filter(Boolean).join(" · "),
             }),
             jsx(Touchable, {
-              style: st.advanceBtn,
+              style: st.endBtn,
               onPress: advance,
-              children: jsx(Text, { style: st.advanceBtnTxt, children: "Advance week ▸" }),
+              activeOpacity: 0.85,
+              dataSet: allDone ? { ff: "pulse" } : undefined,
+              children: jsx(Text, { style: st.endBtnTxt, children: "End week " + S.week + " ▸" }),
             }),
           ],
         }),
         jsx(View, {
-          style: st.bottomNav,
+          style: st.nav,
           children: TABS.map((t) => {
-            const on = tab === t.key;
-            const dot = t.key === "Activities" && !S.slotUsed;
+            const on = tab === t.key || (t.key === "HQ" && tab === "Assets");
+            const dot = (t.key === "Activities" && !S.slotUsed) || (t.key === "Relationships" && weakTie);
             return jsxs(
               Touchable,
               {
                 style: st.navItem,
                 onPress: () => setTab(t.key),
+                activeOpacity: 0.7,
                 children: [
-                  jsx(View, { style: [st.navMarker, on && st.navMarkerActive] }),
-                  jsxs(Text, { style: [st.navMono, on && st.navMonoActive], children: [t.mono, dot ? " ·" : ""] }),
-                  jsx(Text, { style: [st.navLabel, on && st.activeLabel], children: t.label }),
+                  jsxs(View, {
+                    style: [st.navIconWrap, on && st.navIconOn],
+                    children: [jsx(Text, { style: [st.navIcon, !on && { opacity: 0.55 }], children: t.icon }), dot && jsx(View, { style: st.navDot })],
+                  }),
+                  jsx(Text, { style: [st.navLabel, on && st.navLabelOn], children: t.label }),
                 ],
               },
               t.key,
             );
           }),
         }),
+        fogged && jsx(View, { pointerEvents: "none", dataSet: { ff: "vignette" }, style: [st.vignette, { opacity: 0.4 + 0.6 * fogAmt }] }),
         toast &&
-          jsx(View, {
-            pointerEvents: "none",
-            style: st.toastWrap,
-            children: jsx(View, {
-              style: [
-                st.toast,
-                { borderLeftColor: toast.kind === "bad" ? COLOR.crit : toast.kind === "warn" ? COLOR.fog : toast.kind === "ok" ? COLOR.vital : COLOR.act },
-              ],
-              children: jsx(Text, { style: st.toastTxt, children: toast.text }),
-            }),
-          }, toast.id),
-        S.pendingEvent &&
-          jsx(Modal, {
-            visible: !0,
-            transparent: !0,
-            animationType: "fade",
-            children: jsx(View, {
-              style: st.modalOverlay,
+          jsx(
+            View,
+            {
+              pointerEvents: "none",
+              style: st.toastWrap,
               children: jsx(View, {
-                style: st.modalCard,
-                children: jsx(ScrollView, {
-                  showsVerticalScrollIndicator: !1,
-                  children: [
-                    jsx(Text, { style: st.dilemmaKicker, children: "DILEMMA · WEEK " + S.week }, "k"),
-                    jsx(Text, { style: st.modalCategory, children: S.pendingEvent.category }, "c"),
-                    jsx(Text, { style: st.modalTitle, children: S.pendingEvent.title }, "t"),
-                    jsx(Text, { style: st.modalDesc, children: S.pendingEvent.description }, "d"),
-                    ["option_A", "option_B"].map((key) =>
-                      jsxs(
-                        Touchable,
-                        {
-                          style: [st.optionBtn, { borderLeftColor: key === "option_A" ? COLOR.vital : COLOR.crit }],
-                          onPress: () => {
-                            const before = snapshot(S);
-                            const next = engine.resolveEventChoice(key);
-                            setS({ ...next });
-                            buzz(12);
-                            if (!next.gameOver && !next.victory) notify("Decided. " + weekSummary(before, next), "info");
-                          },
-                          children: [
-                            jsx(Text, { style: st.optionTitle, children: S.pendingEvent[key].title }),
-                            jsx(Text, { style: st.optionPreview, children: S.pendingEvent[key].preview }),
-                          ],
-                        },
-                        key,
-                      ),
-                    ),
-                    jsx(Text, { style: st.noRightOption, children: "THERE IS NO RIGHT OPTION" }, "n"),
-                  ],
-                }),
+                dataSet: { ff: "toast" },
+                style: [st.toast, { borderLeftColor: toast.kind === "bad" ? COLOR.crit : toast.kind === "warn" ? COLOR.fog : toast.kind === "ok" ? COLOR.vital : COLOR.act }],
+                children: jsx(Text, { style: st.toastTxt, children: toast.text }),
               }),
-            }),
-          }),
-        guideOpen &&
-          guide &&
-          jsx(Modal, {
-            visible: !0,
-            transparent: !0,
-            animationType: "slide",
-            onRequestClose: () => setGuideOpen(false),
-            children: jsx(View, {
-              style: st.sheetOverlay,
-              children: jsxs(View, {
-                style: st.sheet,
-                children: [
-                  jsxs(View, {
-                    style: st.sheetHeader,
-                    children: [
-                      jsxs(View, {
-                        style: { flex: 1 },
-                        children: [
-                          jsx(Text, { style: st.sheetKicker, children: "STRATEGY GUIDE · WEEK " + S.week }),
-                          jsx(Text, { style: st.sheetTitle, numberOfLines: 2, children: target.title }),
-                        ],
-                      }),
-                      jsx(Touchable, {
-                        style: st.closeBtn,
-                        onPress: () => setGuideOpen(false),
-                        children: jsx(Text, { style: st.closeTxt, children: "✕" }),
-                      }),
-                    ],
-                  }),
-                  jsxs(ScrollView, {
-                    showsVerticalScrollIndicator: !1,
-                    style: { flexGrow: 0 },
-                    children: [
-                      jsxs(View, {
-                        style: st.whyCard,
-                        children: [
-                          jsx(Text, { style: st.whyTitle, children: "Why this matters" }),
-                          jsx(Text, { style: st.whyText, children: guide.whyItMatters }),
-                        ],
-                      }),
-                      jsx(Text, {
-                        style: st.strategiesTitle,
-                        children: targetDone ? "You already hit this target this week" : "Pick one way to hit this target",
-                      }),
-                      guide.strategies.map((s) => {
-                        const tooPoor = S.cash < s.cost;
-                        const disabled = targetDone || tooPoor;
-                        return jsxs(
-                          View,
-                          {
-                            style: st.stratCard,
-                            children: [
-                              jsxs(View, {
-                                style: st.stratTop,
-                                children: [
-                                  jsx(View, {
-                                    style: [st.stratBadge, { backgroundColor: s.badgeBg }],
-                                    children: jsx(Text, { style: [st.stratBadgeTxt, { color: s.badgeColor }], children: s.badge }),
-                                  }),
-                                  jsx(Text, { style: [st.stratCost, tooPoor && { color: COLOR.crit }], children: s.costLabel }),
-                                ],
-                              }),
-                              jsx(Text, { style: st.stratTitle, children: s.title }),
-                              jsx(Text, { style: st.stratDesc, children: s.desc }),
-                              jsx(Touchable, {
-                                style: [st.stratBtn, disabled && st.stratBtnOff],
-                                disabled: disabled,
-                                onPress: () => {
-                                  const res = engine.executeTargetStrategy(s.id);
-                                  if (act(res, "🎯 Target hit · +" + (target.reward_exp || 50) + " EXP")) {
-                                    setGuideOpen(false);
-                                    setTargetOpen(false);
-                                    res.targetTab && setTab(res.targetTab);
-                                  }
-                                },
-                                children: jsx(Text, {
-                                  style: [st.stratBtnTxt, disabled && { color: COLOR.text3 }],
-                                  children: targetDone ? "Target already done" : tooPoor ? "Not enough cash" : "Execute this strategy ▸",
-                                }),
-                              }),
-                            ],
-                          },
-                          s.id,
-                        );
-                      }),
-                    ],
-                  }),
-                ],
-              }),
-            }),
-          }),
+            },
+            toast.id,
+          ),
+        reportModal,
+        dilemmaModal,
+        guideModal,
       ],
     });
   }
 
+  const card = { backgroundColor: COLOR.panel, borderRadius: 18, padding: 16, borderWidth: 1, borderColor: COLOR.line };
   const st = StyleSheet.create({
     container: { flex: 1, backgroundColor: COLOR.ink },
-    header: {
-      backgroundColor: COLOR.panel,
-      paddingVertical: 10,
-      paddingHorizontal: 16,
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 10,
-      borderBottomWidth: 1,
-      borderBottomColor: COLOR.line,
-    },
-    companyTitle: { ...TYPE.screenTitle, color: COLOR.text },
-    founderSub: { ...TYPE.label, color: COLOR.text3, marginTop: 3, textTransform: "none" },
-    expChip: {
-      backgroundColor: COLOR.panel2,
-      paddingVertical: 4,
-      paddingHorizontal: 10,
-      borderRadius: 8,
-      borderWidth: 1,
-      borderColor: COLOR.line,
-    },
-    expChipTxt: { ...TYPE.label, color: COLOR.gold },
-    statRow: {
-      backgroundColor: COLOR.panel,
-      paddingHorizontal: 8,
-      paddingBottom: 8,
-      paddingTop: 2,
-      flexDirection: "row",
-      gap: 6,
-      borderBottomWidth: 1,
-      borderBottomColor: COLOR.line,
-    },
-    tile: {
-      flex: 1,
-      minWidth: 0,
-      backgroundColor: COLOR.panel2,
-      paddingVertical: 8,
-      paddingHorizontal: 8,
-      borderRadius: 10,
-      borderWidth: 1,
-      borderColor: COLOR.line,
-    },
-    tileLabel: { fontFamily: "AzeretMono_500Medium", fontSize: 9, letterSpacing: 0.6, color: COLOR.text3, marginBottom: 3 },
-    tileFigure: { fontFamily: "AzeretMono_600SemiBold", fontSize: 14, letterSpacing: -0.3, marginBottom: 5 },
-    tileFigureNarrow: { fontSize: 11.5, letterSpacing: -0.5 },
-    tileSub: { fontFamily: "Archivo_500Medium", fontSize: 9.5, marginTop: 4 },
-    barTrack: { height: 3, backgroundColor: COLOR.panel, borderRadius: 2, overflow: "hidden" },
-    barFill: { height: "100%", borderRadius: 2 },
-    fogNotice: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 10,
-      backgroundColor: COLOR.panel2,
-      marginHorizontal: 8,
-      marginTop: 8,
-      paddingHorizontal: 12,
-      paddingVertical: 8,
-      borderRadius: 8,
-      borderLeftWidth: 3,
-      borderLeftColor: COLOR.fog,
-    },
-    fogNoticeTxt: { ...TYPE.body, fontSize: 12, color: COLOR.text, flex: 1 },
-    fogNoticeCta: { ...TYPE.label, color: COLOR.fog, textTransform: "none" },
-    targetCard: {
-      backgroundColor: COLOR.panel,
-      marginHorizontal: 8,
-      marginTop: 8,
-      paddingHorizontal: 12,
-      paddingVertical: 10,
-      borderRadius: 10,
-      borderWidth: 1,
-      borderColor: COLOR.lineHot,
-    },
-    targetCardDone: { borderColor: COLOR.line, opacity: 0.85 },
-    targetHeader: { flexDirection: "row", alignItems: "center", gap: 8, minHeight: 28 },
-    targetTitle: { ...TYPE.sectionHeading, color: COLOR.text, flex: 1 },
-    chevron: { color: COLOR.text3, fontSize: 12, width: 12, textAlign: "center" },
-    chip: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, borderWidth: 1 },
-    chipTodo: { borderColor: "#4a3d10", backgroundColor: "#1f1a08" },
-    chipDone: { borderColor: "#1f4a33", backgroundColor: "#0f2219" },
-    chipTxt: { ...TYPE.label, textTransform: "none" },
-    targetTasks: { ...TYPE.body, color: COLOR.text2, marginTop: 6, marginBottom: 10 },
-    guideBtn: {
-      backgroundColor: COLOR.act,
-      paddingVertical: 10,
-      borderRadius: 8,
-      alignItems: "center",
-      justifyContent: "center",
-      minHeight: 40,
-    },
-    guideBtnDone: { backgroundColor: COLOR.panel2, borderWidth: 1, borderColor: COLOR.line },
-    guideBtnTxt: { ...TYPE.label, color: "#ffffff", textTransform: "none" },
-    screenContainer: { flex: 1 },
-    weekFooter: {
-      backgroundColor: COLOR.panel,
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-      borderTopWidth: 1,
-      borderTopColor: COLOR.line,
-    },
-    weekFooterLabel: { ...TYPE.label, color: COLOR.text3 },
-    slotLabel: { fontFamily: "Archivo_600SemiBold", fontSize: 11, letterSpacing: 0.3, marginTop: 2 },
-    advanceBtn: {
-      paddingHorizontal: 20,
-      paddingVertical: 12,
-      borderRadius: 10,
-      backgroundColor: COLOR.accent,
-      minHeight: 46,
-      justifyContent: "center",
-    },
-    advanceBtnTxt: { ...TYPE.label, color: "#ffffff", textTransform: "none", fontSize: 13 },
-    bottomNav: {
-      minHeight: 54,
-      backgroundColor: COLOR.panel,
-      flexDirection: "row",
-      justifyContent: "space-around",
-      alignItems: "center",
-      borderTopWidth: 1,
-      borderTopColor: COLOR.line,
-      paddingTop: 2,
-      paddingBottom: 4,
-    },
-    navItem: { alignItems: "center", flex: 1, paddingVertical: 4, minHeight: 44, justifyContent: "center" },
-    navMarker: { height: 2, width: 20, backgroundColor: "transparent", marginBottom: 4 },
-    navMarkerActive: { backgroundColor: COLOR.accent },
-    navMono: { fontFamily: "AzeretMono_600SemiBold", fontSize: 10, color: COLOR.text3, letterSpacing: 0.5 },
-    navMonoActive: { color: COLOR.text },
-    navLabel: { ...TYPE.tabLabel, color: COLOR.text3, marginTop: 2 },
-    activeLabel: { color: COLOR.text },
-    toastWrap: { position: "absolute", left: 12, right: 12, bottom: 128, alignItems: "center", zIndex: 50 },
-    toast: {
-      maxWidth: 420,
-      width: "100%",
-      backgroundColor: "#222b35",
-      borderRadius: 10,
-      paddingVertical: 10,
-      paddingHorizontal: 14,
-      borderLeftWidth: 3,
-      shadowColor: "#000",
-      shadowOpacity: 0.4,
-      shadowRadius: 12,
-      shadowOffset: { width: 0, height: 4 },
-    },
-    toastTxt: { fontFamily: "Archivo_500Medium", fontSize: 12.5, lineHeight: 18, color: COLOR.text },
-    resumeCard: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 12,
-      backgroundColor: COLOR.panel,
-      margin: 12,
-      marginBottom: 0,
-      padding: 14,
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: COLOR.lineHot,
-      borderLeftWidth: 3,
-      borderLeftColor: COLOR.vital,
-    },
-    resumeKicker: { ...TYPE.label, color: COLOR.vital },
-    resumeTitle: { ...TYPE.screenTitle, color: COLOR.text, marginTop: 2 },
-    resumeSub: { ...TYPE.body, fontSize: 12, color: COLOR.text2, marginTop: 2 },
-    resumeBtn: { backgroundColor: COLOR.accent, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8, minHeight: 40, justifyContent: "center" },
-    resumeBtnTxt: { ...TYPE.label, color: "#ffffff", textTransform: "none" },
-    resumeDiscard: { ...TYPE.label, color: COLOR.text3, textTransform: "none", paddingVertical: 4 },
-    modalOverlay: { flex: 1, backgroundColor: "rgba(6,9,12,0.78)", justifyContent: "center", alignItems: "center", padding: 16 },
-    modalCard: {
-      backgroundColor: COLOR.panel,
-      borderRadius: 16,
-      padding: 20,
-      width: "100%",
-      maxWidth: 400,
-      maxHeight: "90%",
-      borderTopWidth: 2,
-      borderTopColor: COLOR.fog,
-    },
-    dilemmaKicker: { ...TYPE.label, color: COLOR.fog, marginBottom: 8 },
-    modalCategory: { ...TYPE.label, color: COLOR.text3, marginBottom: 4, textTransform: "uppercase" },
-    modalTitle: { ...TYPE.screenTitle, fontSize: 18, color: COLOR.text, marginBottom: 8 },
-    modalDesc: { ...TYPE.body, fontSize: 13.5, lineHeight: 20, color: COLOR.text2, marginBottom: 16 },
-    optionBtn: {
-      backgroundColor: COLOR.panel2,
-      borderRadius: 10,
-      padding: 14,
-      marginBottom: 10,
-      borderLeftWidth: 3,
-      minHeight: 52,
-      justifyContent: "center",
-    },
-    optionTitle: { ...TYPE.sectionHeading, color: COLOR.text, marginBottom: 4 },
-    optionPreview: { ...TYPE.bodySmall, fontSize: 12, color: COLOR.text2 },
-    noRightOption: { ...TYPE.label, color: COLOR.text3, textAlign: "center", marginTop: 8 },
-    sheetOverlay: { flex: 1, backgroundColor: "rgba(6,9,12,0.78)", justifyContent: "flex-end" },
+    content: { flex: 1 },
+    kicker: { fontFamily: "AzeretMono_500Medium", fontSize: 10, letterSpacing: 1, color: COLOR.text3 },
+    rowBetween: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
+    link: { fontFamily: "Archivo_600SemiBold", fontSize: 12.5, color: COLOR.act },
+
+    // top bar + HUD
+    topBar: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 10, backgroundColor: COLOR.ink },
+    company: { fontFamily: "Archivo_600SemiBold", fontSize: 18, letterSpacing: -0.4, color: COLOR.text },
+    weekLine: { fontFamily: "Archivo_500Medium", fontSize: 12, color: COLOR.text3, marginTop: 2 },
+    stagePill: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: "#1d2733", borderWidth: 1, borderColor: "#2b3a4c" },
+    stagePillTxt: { fontFamily: "AzeretMono_500Medium", fontSize: 10.5, color: COLOR.act },
+    expPill: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: "#211c0c", borderWidth: 1, borderColor: "#4a3d10" },
+    expPillTxt: { fontFamily: "AzeretMono_500Medium", fontSize: 10.5, color: COLOR.gold },
+    hud: { flexDirection: "row", gap: 6, paddingHorizontal: 10, paddingBottom: 10, overflow: "hidden" },
+    hudCell: { flex: 1, minWidth: 0, backgroundColor: COLOR.panel, borderRadius: 12, paddingHorizontal: 9, paddingVertical: 8, borderWidth: 1, borderColor: COLOR.line },
+    hudLabel: { fontFamily: "AzeretMono_500Medium", fontSize: 8.5, letterSpacing: 0.8, color: COLOR.text3 },
+    hudValue: { fontFamily: "AzeretMono_600SemiBold", fontSize: 14, letterSpacing: -0.4, marginTop: 3, marginBottom: 5 },
+    hudTrack: { height: 3, borderRadius: 2, backgroundColor: COLOR.ink, overflow: "hidden" },
+    hudFill: { height: "100%", borderRadius: 2 },
+    fogLayer: { position: "absolute", left: 0, right: 0, top: 0, bottom: 0 },
+
+    // HQ
+    hqContent: { padding: 12, paddingBottom: 20, gap: 12, width: "100%", maxWidth: 600, alignSelf: "center" },
+    hero: { ...card, padding: 18, overflow: "hidden", borderColor: COLOR.lineHot },
+    heroTop: { flexDirection: "row", alignItems: "flex-end", gap: 12 },
+    heroBig: { fontFamily: "AzeretMono_600SemiBold", fontSize: 40, letterSpacing: -2, marginTop: 2 },
+    heroUnit: { fontFamily: "Archivo_500Medium", fontSize: 14, letterSpacing: 0, color: COLOR.text2 },
+    heroCash: { fontFamily: "AzeretMono_600SemiBold", fontSize: 20, letterSpacing: -0.6, color: COLOR.text, marginTop: 4 },
+    pips: { flexDirection: "row", gap: 4, marginTop: 14 },
+    pip: { flex: 1, height: 8, borderRadius: 3, backgroundColor: COLOR.panel2 },
+    heroRow: { flexDirection: "row", gap: 8, marginTop: 14 },
+    heroStat: { flex: 1, minWidth: 0, backgroundColor: COLOR.panel2, borderRadius: 12, paddingVertical: 9, paddingHorizontal: 10 },
+    heroStatV: { fontFamily: "AzeretMono_600SemiBold", fontSize: 14, letterSpacing: -0.4 },
+    heroStatL: { fontFamily: "Archivo_500Medium", fontSize: 10.5, color: COLOR.text3, marginTop: 2 },
+    vitals: { flexDirection: "row", gap: 8, marginTop: 8 },
+    vital: { flex: 1, backgroundColor: COLOR.panel2, borderRadius: 12, padding: 10 },
+    vitalTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+    vitalLabel: { fontFamily: "Archivo_600SemiBold", fontSize: 12, color: COLOR.text2 },
+    vitalValue: { fontFamily: "AzeretMono_600SemiBold", fontSize: 15, letterSpacing: -0.4 },
+    vitalTrack: { height: 6, borderRadius: 3, backgroundColor: COLOR.ink, marginTop: 8, overflow: "hidden" },
+    vitalFill: { height: "100%", borderRadius: 3 },
+    vitalSub: { fontFamily: "Archivo_500Medium", fontSize: 10.5, color: COLOR.text3, marginTop: 6 },
+    fogBanner: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "#2a2111", borderRadius: 14, padding: 12, borderWidth: 1, borderColor: "#5a4416" },
+    fogBannerTxt: { flex: 1, fontFamily: "Archivo_500Medium", fontSize: 13, lineHeight: 18, color: "#f0d39b" },
+    fogBannerCta: { fontFamily: "Archivo_600SemiBold", fontSize: 13, color: COLOR.fog },
+    card: card,
+    cardTitle: { fontFamily: "Archivo_600SemiBold", fontSize: 17, letterSpacing: -0.3, color: COLOR.text, marginTop: 8 },
+    cardSub: { fontFamily: "Archivo_400Regular", fontSize: 13, lineHeight: 19, color: COLOR.text2, marginTop: 6 },
+    goalTrack: { height: 10, borderRadius: 5, backgroundColor: COLOR.panel2, marginTop: 12, overflow: "hidden" },
+    goalFill: { height: "100%", borderRadius: 5, backgroundColor: COLOR.gold },
+    quest: { borderColor: "#5a2a20", backgroundColor: "#1a1716" },
+    questDone: { borderColor: "#1f4a33", backgroundColor: "#121b17" },
+    questTasks: { fontFamily: "Archivo_400Regular", fontSize: 13, lineHeight: 20, color: COLOR.text2, marginTop: 6, marginBottom: 12 },
+    questBtn: { backgroundColor: COLOR.accent, borderRadius: 12, minHeight: 46, alignItems: "center", justifyContent: "center" },
+    questBtnDone: { backgroundColor: COLOR.panel2, borderWidth: 1, borderColor: COLOR.line },
+    questBtnTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 14, color: "#fff" },
+    token: { flexDirection: "row", alignItems: "center", gap: 6 },
+    tokenDot: { width: 9, height: 9, borderRadius: 5 },
+    tokenTxt: { fontFamily: "AzeretMono_500Medium", fontSize: 11 },
+    actionRow: { flexDirection: "row", gap: 8, marginTop: 12 },
+    actionBtn: { flex: 1, minHeight: 44, borderRadius: 12, backgroundColor: COLOR.panel2, borderWidth: 1, borderColor: COLOR.line, alignItems: "center", justifyContent: "center" },
+    actionBtnHot: { borderColor: COLOR.fog, backgroundColor: "#2a2111" },
+    actionBtnTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 13.5, color: COLOR.text },
+    logItem: { flexDirection: "row", gap: 10, paddingVertical: 10, alignItems: "flex-start" },
+    logDivider: { borderTopWidth: 1, borderTopColor: COLOR.line },
+    logBar: { width: 3, alignSelf: "stretch", borderRadius: 2 },
+    logTitle: { fontFamily: "Archivo_600SemiBold", fontSize: 13, color: COLOR.text },
+    logText: { fontFamily: "Archivo_400Regular", fontSize: 12, lineHeight: 17, color: COLOR.text2, marginTop: 2 },
+    logWeek: { fontFamily: "AzeretMono_500Medium", fontSize: 10, color: COLOR.text3 },
+    companyLink: { borderTopWidth: 1, borderTopColor: COLOR.line, paddingTop: 12, marginTop: 4 },
+
+    // end bar + nav
+    endBar: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, paddingVertical: 10, backgroundColor: COLOR.panel, borderTopWidth: 1, borderTopColor: COLOR.line },
+    endHint: { flex: 1, fontFamily: "Archivo_500Medium", fontSize: 12 },
+    endBtn: { backgroundColor: COLOR.accent, borderRadius: 14, minHeight: 48, paddingHorizontal: 20, alignItems: "center", justifyContent: "center" },
+    endBtnTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 15, color: "#fff" },
+    nav: { flexDirection: "row", backgroundColor: COLOR.panel, paddingBottom: 6, paddingTop: 4 },
+    navItem: { flex: 1, alignItems: "center", justifyContent: "center", minHeight: 52 },
+    navIconWrap: { width: 46, height: 30, borderRadius: 15, alignItems: "center", justifyContent: "center" },
+    navIconOn: { backgroundColor: "#2a3442" },
+    navIcon: { fontSize: 17 },
+    navDot: { position: "absolute", top: 3, right: 9, width: 8, height: 8, borderRadius: 4, backgroundColor: COLOR.accent, borderWidth: 1.5, borderColor: COLOR.panel },
+    navLabel: { fontFamily: "Archivo_500Medium", fontSize: 10.5, color: COLOR.text3, marginTop: 2 },
+    navLabelOn: { color: COLOR.text },
+    vignette: { position: "absolute", left: 0, right: 0, top: 0, bottom: 0 },
+
+    // chips
+    chips: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+    chip: { borderRadius: 999, paddingHorizontal: 9, paddingVertical: 4, borderWidth: 1 },
+    chipGood: { backgroundColor: "#10241a", borderColor: "#1f4a33" },
+    chipBad: { backgroundColor: "#2a1513", borderColor: "#5a2622" },
+    chipGold: { backgroundColor: "#211c0c", borderColor: "#4a3d10" },
+    chipNeutral: { backgroundColor: COLOR.panel2, borderColor: COLOR.line },
+    chipTxt: { fontFamily: "AzeretMono_500Medium", fontSize: 11 },
+
+    // toast
+    toastWrap: { position: "absolute", left: 12, right: 12, bottom: 132, alignItems: "center", zIndex: 50 },
+    toast: { maxWidth: 440, width: "100%", backgroundColor: "#243040", borderRadius: 14, paddingVertical: 12, paddingHorizontal: 14, borderLeftWidth: 4, shadowColor: "#000", shadowOpacity: 0.45, shadowRadius: 16, shadowOffset: { width: 0, height: 6 } },
+    toastTxt: { fontFamily: "Archivo_500Medium", fontSize: 13, lineHeight: 18, color: COLOR.text },
+
+    // sheets & modals
+    sheetOverlay: { flex: 1, backgroundColor: "rgba(6,9,12,0.8)", justifyContent: "flex-end", cursor: "default" },
     sheet: {
       backgroundColor: COLOR.panel,
-      borderTopLeftRadius: 18,
-      borderTopRightRadius: 18,
-      paddingHorizontal: 16,
-      paddingTop: 16,
-      paddingBottom: 24,
-      maxHeight: "88%",
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      paddingHorizontal: 18,
+      paddingTop: 20,
+      paddingBottom: 26,
       width: "100%",
-      maxWidth: 560,
+      maxWidth: 600,
       alignSelf: "center",
-      borderTopWidth: 2,
-      borderTopColor: COLOR.act,
+      borderTopWidth: 1,
+      borderColor: COLOR.lineHot,
+      cursor: "default",
     },
-    sheetHeader: { flexDirection: "row", alignItems: "flex-start", gap: 12, marginBottom: 12 },
-    sheetKicker: { ...TYPE.label, color: COLOR.vital },
-    sheetTitle: { ...TYPE.screenTitle, color: COLOR.text, marginTop: 3 },
-    closeBtn: {
-      width: 40,
-      height: 40,
-      borderRadius: 10,
-      backgroundColor: COLOR.panel2,
-      alignItems: "center",
-      justifyContent: "center",
-      borderWidth: 1,
-      borderColor: COLOR.line,
-    },
-    closeTxt: { color: COLOR.text, fontSize: 14, fontFamily: "Archivo_600SemiBold" },
-    whyCard: { backgroundColor: COLOR.panel2, padding: 12, borderRadius: 10, marginBottom: 14, borderWidth: 1, borderColor: COLOR.line },
-    whyTitle: { ...TYPE.sectionHeading, color: COLOR.fog, marginBottom: 6 },
-    whyText: { ...TYPE.bodySmall, fontSize: 12.5, lineHeight: 18, color: COLOR.text2 },
-    strategiesTitle: { ...TYPE.sectionHeading, color: COLOR.text, marginBottom: 10 },
-    stratCard: { backgroundColor: COLOR.panel2, borderRadius: 10, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: COLOR.line },
-    stratTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6, gap: 8 },
-    stratBadge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8, flexShrink: 1 },
-    stratBadgeTxt: { ...TYPE.label, textTransform: "none" },
-    stratCost: { ...TYPE.label, color: COLOR.act, textTransform: "none" },
-    stratTitle: { ...TYPE.sectionHeading, color: COLOR.text, marginBottom: 2 },
-    stratDesc: { ...TYPE.bodySmall, fontSize: 12, lineHeight: 17, color: COLOR.text2, marginBottom: 10 },
-    stratBtn: { backgroundColor: COLOR.act, paddingVertical: 10, borderRadius: 8, alignItems: "center", minHeight: 42, justifyContent: "center" },
+    sheetHeader: { flexDirection: "row", alignItems: "flex-start", gap: 12, marginBottom: 14 },
+    sheetTitle: { fontFamily: "Archivo_600SemiBold", fontSize: 22, letterSpacing: -0.5, color: COLOR.text, marginTop: 4 },
+    closeBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: COLOR.panel2, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: COLOR.line },
+    closeTxt: { color: COLOR.text, fontSize: 15, fontFamily: "Archivo_600SemiBold" },
+    reportRows: { marginTop: 16, gap: 8 },
+    reportRow: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: COLOR.panel2, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12 },
+    reportLabel: { fontFamily: "Archivo_600SemiBold", fontSize: 14, color: COLOR.text2, width: 70 },
+    reportValue: { flex: 1, fontFamily: "AzeretMono_600SemiBold", fontSize: 15, color: COLOR.text, letterSpacing: -0.3 },
+    deltaPill: { borderRadius: 999, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 4, minWidth: 64, alignItems: "center" },
+    deltaTxt: { fontFamily: "AzeretMono_600SemiBold", fontSize: 12 },
+    notes: { marginTop: 12, gap: 6 },
+    note: { flexDirection: "row", gap: 10, alignItems: "flex-start", backgroundColor: COLOR.panel2, borderRadius: 12, padding: 10 },
+    noteBad: { backgroundColor: "#2a1513" },
+    noteGood: { backgroundColor: "#10241a" },
+    noteIcon: { fontSize: 15, width: 20, textAlign: "center" },
+    noteTxt: { flex: 1, fontFamily: "Archivo_500Medium", fontSize: 13, lineHeight: 18, color: COLOR.text },
+    reportQuest: { fontFamily: "Archivo_500Medium", fontSize: 13, color: COLOR.text2, marginTop: 14, marginBottom: 2 },
+    primaryBtn: { backgroundColor: COLOR.accent, borderRadius: 14, minHeight: 52, alignItems: "center", justifyContent: "center", marginTop: 14 },
+    primaryTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 15.5, color: "#fff" },
+    centerOverlay: { flex: 1, backgroundColor: "rgba(6,9,12,0.84)", justifyContent: "center", alignItems: "center", padding: 14 },
+    dilemma: { backgroundColor: COLOR.panel, borderRadius: 22, padding: 18, width: "100%", maxWidth: 460, maxHeight: "92%", borderWidth: 1, borderColor: "#5a4416", borderTopWidth: 3, borderTopColor: COLOR.fog },
+    dilemmaTitle: { fontFamily: "Archivo_600SemiBold", fontSize: 22, letterSpacing: -0.5, color: COLOR.text, marginTop: 12 },
+    dilemmaDesc: { fontFamily: "Archivo_400Regular", fontSize: 14.5, lineHeight: 22, color: COLOR.text2, marginTop: 8, marginBottom: 16 },
+    option: { backgroundColor: COLOR.panel2, borderRadius: 16, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: COLOR.line },
+    optionTop: { flexDirection: "row", alignItems: "center", gap: 10 },
+    optionKey: { width: 28, height: 28, borderRadius: 8, backgroundColor: COLOR.ink, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: COLOR.lineHot },
+    optionKeyTxt: { fontFamily: "AzeretMono_600SemiBold", fontSize: 13, color: COLOR.text },
+    optionTitle: { flex: 1, fontFamily: "Archivo_600SemiBold", fontSize: 15, color: COLOR.text },
+    noRight: { fontFamily: "AzeretMono_500Medium", fontSize: 10, letterSpacing: 1.5, color: COLOR.text3, textAlign: "center", marginTop: 6 },
+    why: { backgroundColor: COLOR.panel2, borderRadius: 14, padding: 12, marginBottom: 14 },
+    whyTxt: { fontFamily: "Archivo_400Regular", fontSize: 13, lineHeight: 19, color: COLOR.text2, marginTop: 6 },
+    pickTitle: { fontFamily: "Archivo_600SemiBold", fontSize: 14, color: COLOR.text, marginBottom: 10 },
+    strat: { backgroundColor: COLOR.panel2, borderRadius: 16, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: COLOR.line },
+    stratBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, flexShrink: 1 },
+    stratBadgeTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 11 },
+    stratCost: { fontFamily: "AzeretMono_600SemiBold", fontSize: 13, color: COLOR.text },
+    stratTitle: { fontFamily: "Archivo_600SemiBold", fontSize: 15.5, color: COLOR.text, marginTop: 10 },
+    stratDesc: { fontFamily: "Archivo_400Regular", fontSize: 13, lineHeight: 19, color: COLOR.text2, marginTop: 4, marginBottom: 10 },
+    stratBtn: { backgroundColor: COLOR.act, borderRadius: 12, minHeight: 44, alignItems: "center", justifyContent: "center" },
     stratBtnOff: { backgroundColor: COLOR.panel, borderWidth: 1, borderColor: COLOR.line },
-    stratBtnTxt: { ...TYPE.label, color: "#ffffff", textTransform: "none" },
+    stratBtnTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 14, color: "#fff" },
   });
 }

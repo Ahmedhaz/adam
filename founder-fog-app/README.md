@@ -39,7 +39,8 @@ original game only exists as the compiled Expo web build of the Founder Fog
 artifact (`enhance/original.html`); the React Native source wasn't found in
 any repo. Enhancements are applied on top of it:
 
-- `enhance/App.js` replaces the main game screen (Metro module 144)
+- `enhance/App.js` replaces the game shell and HQ screen (Metro module 144)
+- `enhance/Onboarding.js` replaces the title screen and new-company setup (module 265)
 - `enhance/build.py` applies small patches to the game engine and wraps the
   page for mobile (PWA head, safe areas)
 
@@ -47,6 +48,21 @@ any repo. Enhancements are applied on top of it:
 python3 founder-fog-app/enhance/build.py   # rebuild ../founder-fog/index.html
 cd founder-fog-app && npx cap sync         # copy into the native projects
 ```
+
+### Design (v2 revamp)
+- **Title screen** with Continue / New company, then a 2-step setup: pick a
+  market (cash, margin, runway at a glance) and name the company, with a
+  "how a week works" primer
+- **HQ** is the home tab: runway hero with month pips, MRR/burn/users,
+  clarity and morale meters, the weekly target as a quest card, your weekly
+  action, the next funding milestone and the latest journal entries
+- **Weekly report** after every *End week*: cash/MRR/clarity/morale deltas,
+  warnings (fog, short runway, resignations, stage-ups) and what's next
+- **Dilemmas and strategies** show their trade-offs as green/red chips
+- **The fog is visible**: a drifting, blurring haze over the money numbers
+  and a vignette around the screen that thicken as clarity drops
+- Icon tab bar with attention dots, a pulsing *End week* button when there's
+  nothing left to do, and motion that respects reduced-motion settings
 
 ### What the enhanced version changes
 - **Autosave:** progress is saved after every move; on launch you get
