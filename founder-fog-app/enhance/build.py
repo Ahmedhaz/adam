@@ -13,6 +13,7 @@ so enhancements are applied as patches on top of it:
 Run:  python3 founder-fog-app/enhance/build.py
 """
 import base64
+import json
 import pathlib
 import re
 import subprocess
@@ -22,8 +23,25 @@ HERE = pathlib.Path(__file__).resolve().parent
 OUT = HERE.parent.parent / "founder-fog" / "index.html"
 OUT_AR = OUT.with_name("ar.html")
 DICT_AR = HERE / "ar.json"
+PICS = json.loads((HERE / "pics.json").read_text(encoding="utf-8"))  # emoji -> img/<name>.webp
+
+
+def pics_css():
+    rules = ['  [data-pic] { background-size: contain; background-repeat: no-repeat; background-position: center; }']
+    rules += [f'  [data-pic="{name}"] {{ background-image: url(img/{name}.webp); }}' for name in sorted(set(PICS.values()))]
+    return "\n".join(rules)
 
 MODULES = {144: "App.js", 265: "Onboarding.js"}
+
+# Bright, BitLife-style look: the shared theme module (267) drives every screen.
+THEME_PATCHES = [
+    ("const t={ink:'#10151A',panel:'#171D24',panel2:'#1D242D',line:'#242D38',lineHot:'#33404E',text:'#DCE4EC',text2:'#93A1B0',text3:'#66727F',vital:'#5FB98A',fog:'#E0A33E',crit:'#D9695F',act:'#5B8DD6',gold:'#C9A227',accent:'#EC3013',burnoutGround:'#141017'}",
+     "const t={ink:'#EEF2F7',panel:'#FFFFFF',panel2:'#F4F6FA',line:'#E3E8EF',lineHot:'#C9D3E0',text:'#1C2430',text2:'#4E5A6B',text3:'#8C97A6',vital:'#22A559',fog:'#E38A00',crit:'#E5484D',act:'#2D7FF9',gold:'#C28F00',accent:'#FF5A36',burnoutGround:'#F4EEF2'}"),
+]
+# Badge colours hard-coded in the original screens were tuned for a dark background.
+BADGE_COLORS = {"'#3b2d00'": "'#FFF4CC'", '"#3b2d00"': '"#FFF4CC"', '"#0b3318"': '"#DDF5E5"', '"#004a77"': '"#DCEBFF"',
+                '"#3d1210"': '"#FDE2E0"', '"#2b164a"': '"#EEE3FF"', '"#8c1d18"': '"#FDE2E0"',
+                '"#fbbc04"': '"#B07D00"', '"#34a853"': '"#1E8E3E"', '"#f28b82"': '"#C5221F"', '"#a479e2"': '"#7B4FD0"'}
 
 ENGINE_PATCHES = [
     (
@@ -44,6 +62,11 @@ ENGINE_PATCHES = [
         "this.state.mentalClarity=Math.max(0,this.state.mentalClarity-(((this.state.perks||[]).includes(\"stoic\")?1:2)+(parseFloat(this.state.runwayMonths)<6?2:0)"
         "+(parseFloat(this.state.runwayMonths)<3?2:0)+(this.state.teamMorale<40?1:0))),"
         "this.applyMoraleAttrition(),",
+    ),
+    (
+        "show an infinite runway as \u221e in the weekly log instead of 999",
+        "(${this.state.runwayMonths} Mo Runway)",
+        '(${this.state.runwayMonths>=999?"\u221e":this.state.runwayMonths} Mo Runway)',
     ),
     (
         "Magnetic perk: relationships decay half as fast",
@@ -86,14 +109,14 @@ HEAD = """<!doctype html>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Founder Fog">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#10151A">
+<meta name="theme-color" content="#EEF2F7">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <style>
-  html, body { height: 100%; margin: 0; background: #10151A; }
+  html, body { height: 100%; margin: 0; background: #EEF2F7; }
   body { overflow: hidden; -webkit-text-size-adjust: 100%; overscroll-behavior: none; -webkit-user-select: none; user-select: none; }
-  #root { display: flex; height: 100%; flex: 1; background: #10151A; box-sizing: border-box;
+  #root { display: flex; height: 100%; flex: 1; background: #EEF2F7; box-sizing: border-box;
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
   input, textarea { -webkit-user-select: text; user-select: text; }
   * { -webkit-tap-highlight-color: transparent; }
@@ -115,6 +138,8 @@ HEAD = """<!doctype html>
   [data-ff="pulse"] { animation: ff-pulse 1.8s ease-out infinite; }
   [data-ff="glow"] { animation: ff-glow 1.6s ease-in-out infinite; }
   [data-ff="float"] { animation: ff-float 5s ease-in-out infinite; }
+  [data-ff="float2"] { animation: ff-float 6.5s ease-in-out -2s infinite; }
+  [data-ff="sky"] { background: linear-gradient(180deg, #CFE3FF 0%, #EAF2FF 45%, #F7F9FC 100%) !important; }
 
   /* the fog: drifting haze that blurs whatever is under it */
   [data-ff="fog"], [data-ff="fogbank"] {
@@ -127,7 +152,7 @@ HEAD = """<!doctype html>
     -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
   }
   [data-ff="fogbank"] { opacity: .32; -webkit-backdrop-filter: none; backdrop-filter: none; animation-duration: 24s; }
-  [data-ff="vignette"] { background: radial-gradient(ellipse at 50% 40%, transparent 50%, rgba(224,163,62,.10) 78%, rgba(10,13,16,.9) 100%); }
+  [data-ff="vignette"] { background: radial-gradient(ellipse at 50% 40%, transparent 45%, rgba(214,220,228,.55) 75%, rgba(170,180,192,.9) 100%); }
   @media (prefers-reduced-motion: reduce) { [data-ff] { animation: none !important; } }
 </style>
 </head>
@@ -158,18 +183,26 @@ def main():
         # "// @include other.js" inlines a sibling file into the module scope
         code = re.sub(r"^// @include (\S+)$", lambda inc: (HERE / inc.group(1)).read_text(encoding="utf-8"), code, flags=re.M)
         code = code[code.index("function ("):].strip()
+        code = code.replace("/*@PICS*/ {}", json.dumps(PICS, ensure_ascii=False))
         end_marker = "},%d,[" % mod_id
         start = bundle.rindex("__d(function(", 0, bundle.index(end_marker))
         m = re.compile(r"__d\(function\([^)]*\)\{.*?\},%d,(\[[0-9,]*\])\);" % mod_id, re.S).match(bundle, start)
         assert m, f"module {mod_id} not found"
         bundle = bundle[: m.start()] + "__d(" + code + ",%d," % mod_id + m.group(1) + ");" + bundle[m.end():]
 
-    # 2. engine patches
+    # 2. theme + engine patches
+    for old, new in THEME_PATCHES:
+        assert bundle.count(old) == 1, f"theme patch not found: {old[:40]}"
+        bundle = bundle.replace(old, new)
+    for old, new in BADGE_COLORS.items():
+        bundle = bundle.replace(old, new)
     for why, old, new in ENGINE_PATCHES:
         n = bundle.count(old)
         assert n == 1, f"patch '{why}' matched {n} times"
         bundle = bundle.replace(old, new)
 
+    global HEAD
+    HEAD = HEAD.replace("</style>", "  /* 3D pictures */\n" + pics_css() + "\n</style>", 1)
     OUT.write_text(HEAD + bundle + TAIL, encoding="utf-8")
     print(f"wrote {OUT} ({OUT.stat().st_size:,} bytes)")
 

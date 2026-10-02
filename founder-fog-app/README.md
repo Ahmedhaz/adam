@@ -66,6 +66,13 @@ cd founder-fog-app && npx cap sync         # copy into the native projects
 - Icon tab bar with attention dots, a pulsing *End week* button when there's
   nothing left to do, and motion that respects reduced-motion settings
 
+### Look (v4, BitLife-style)
+Bright theme (patched into the shared theme module so every screen follows),
+3D Fluent emoji pictures bundled in `../founder-fog/img/` (`enhance/pics.json`
+maps emoji → file; drawn via CSS on `[data-pic]`), a header with your avatar
+and a mood face that follows your clarity, "this week" tiles, a life-log feed,
+BitLife stat bars and a round **+1 Week** button. Avatar is picked at setup.
+
 ### Arabic version
 `../founder-fog/ar.html` is the same game in Arabic, right-to-left, with IBM Plex
 Sans Arabic embedded. The title screen has an English / العربية switch; the

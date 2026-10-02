@@ -24,6 +24,14 @@ function (g, r, i, a, m, _e, d) {
     jsx = J.jsx,
     jsxs = J.jsxs;
 
+  const PICS = /*@PICS*/ {};
+  function Pic({ e, size, style }) {
+    const k = PICS[String(e || "").replace(/\uFE0F/g, "")];
+    if (k) return jsx(View, { dataSet: { pic: k }, style: [{ width: size, height: size }, style] });
+    return jsx(Text, { style: [{ fontSize: Math.round(size * 0.78), lineHeight: size, textAlign: "center" }, style], children: e });
+  }
+  const AVATARS = ["avatar_m1", "avatar_w1", "avatar_m2", "avatar_w2"];
+
   const ICONS = { saas_ai: "🤖", fintech: "💳", ecommerce_marketplace: "🛍️", healthtech: "🩺", edtech: "🎓" };
   const DIFF_COLOR = { Hard: COLOR.crit, Moderate: COLOR.fog, Easy: COLOR.vital };
 
@@ -48,6 +56,7 @@ function (g, r, i, a, m, _e, d) {
   function Title({ saved, onNew, onResume, onDiscard }) {
     return jsxs(View, {
       style: st.titleWrap,
+      dataSet: { ff: "sky" },
       children: [
         jsx(View, { dataSet: { ff: "fogbank" }, pointerEvents: "none", style: st.titleFog }),
         // EN | عربي switch, always visible at the top of the title screen
@@ -71,7 +80,16 @@ function (g, r, i, a, m, _e, d) {
         jsxs(View, {
           style: st.titleCenter,
           children: [
-            jsx(View, { dataSet: { ff: "float" }, children: jsx(Text, { style: st.logoMark, children: "⛰️" }) }),
+            jsxs(View, {
+              style: st.heroArt,
+              children: [
+                jsx(View, { style: [st.orbit, { top: 6, left: 4 }], dataSet: { ff: "float" }, children: jsx(Pic, { e: "🌫️", size: 50 }) }),
+                jsx(View, { style: [st.orbit, { top: 0, right: 10 }], dataSet: { ff: "float2" }, children: jsx(Pic, { e: "💰", size: 40 }) }),
+                jsx(View, { style: [st.orbit, { bottom: 18, left: 0 }], dataSet: { ff: "float2" }, children: jsx(Pic, { e: "🧠", size: 38 }) }),
+                jsx(View, { style: [st.orbit, { bottom: 10, right: 0 }], dataSet: { ff: "float" }, children: jsx(Pic, { e: "📈", size: 40 }) }),
+                jsx(View, { dataSet: { ff: "float" }, children: jsx(Pic, { e: "🚀", size: 150 }) }),
+              ],
+            }),
             jsx(Text, { style: st.logo, children: "FOUNDER FOG" }),
             jsx(Text, { style: st.logoTag, children: "Build a company. Keep your head clear.\nYou will not always be able to read the numbers." }),
           ],
@@ -141,7 +159,8 @@ function (g, r, i, a, m, _e, d) {
     const [step, setStep] = React.useState(0),
       [sectorId, setSectorId] = React.useState(Engine.SECTORS[0].id),
       [founder, setFounder] = React.useState("Ahmed"),
-      [company, setCompany] = React.useState("Adamos AI");
+      [company, setCompany] = React.useState("Adamos AI"),
+      [avatar, setAvatar] = React.useState("avatar_m1");
 
     if (step === 0)
       return jsx(Title, { saved: saved, onResume: onResume, onDiscard: onDiscard, onNew: () => setStep(1) });
@@ -172,7 +191,7 @@ function (g, r, i, a, m, _e, d) {
                     jsxs(View, {
                       style: st.sectorTop,
                       children: [
-                        jsx(View, { style: [st.sectorIcon, on && st.sectorIconOn], children: jsx(Text, { style: st.sectorEmoji, children: ICONS[s.id] || "🚀" }) }),
+                        jsx(View, { style: [st.sectorIcon, on && st.sectorIconOn], children: jsx(Pic, { e: ICONS[s.id] || "🚀", size: 36 }) }),
                         jsxs(View, {
                           style: { flex: 1 },
                           children: [
@@ -227,6 +246,17 @@ function (g, r, i, a, m, _e, d) {
           contentContainerStyle: st.list,
           keyboardShouldPersistTaps: "handled",
           children: [
+            jsx(Text, { style: st.inputLabel, children: "PICK YOUR LOOK" }),
+            jsx(View, {
+              style: st.avatars,
+              children: AVATARS.map((a) =>
+                jsx(
+                  Touchable,
+                  { style: [st.avatarOpt, a === avatar && st.avatarOn], onPress: () => setAvatar(a), activeOpacity: 0.85, children: jsx(Pic, { e: a, size: 56 }) },
+                  a,
+                ),
+              ),
+            }),
             jsx(Text, { style: st.inputLabel, children: "FOUNDER" }),
             jsx(TextInput, { style: st.input, value: founder, onChangeText: setFounder, placeholder: "Your name", placeholderTextColor: COLOR.text3, maxLength: 24 }),
             jsx(Text, { style: st.inputLabel, children: "COMPANY" }),
@@ -271,7 +301,7 @@ function (g, r, i, a, m, _e, d) {
           children: jsx(Touchable, {
             style: [st.primaryBtn, !ready && { opacity: 0.4 }],
             disabled: !ready,
-            onPress: () => onStartGame({ founderName: founder.trim(), companyName: company.trim(), sectorId: sector.id }),
+            onPress: () => onStartGame({ founderName: founder.trim(), companyName: company.trim(), sectorId: sector.id, avatar: avatar }),
             activeOpacity: 0.85,
             children: jsx(Text, { style: st.primaryTxt, children: "Found " + (company.trim() || "the company") + " ▸" }),
           }),
@@ -282,6 +312,12 @@ function (g, r, i, a, m, _e, d) {
 
   const st = StyleSheet.create({
     container: { flex: 1, backgroundColor: COLOR.ink },
+    heroArt: { width: 260, height: 210, alignItems: "center", justifyContent: "center" },
+    orbit: { position: "absolute" },
+    heroFog: { position: "absolute", left: -40, right: -40, bottom: 20, height: 70 },
+    avatars: { flexDirection: "row", gap: 10, marginBottom: 6 },
+    avatarOpt: { flex: 1, aspectRatio: 1, maxWidth: 86, borderRadius: 20, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center", borderWidth: 3, borderColor: "transparent" },
+    avatarOn: { borderColor: "#2D7FF9", backgroundColor: "#E9F0FF" },
     titleWrap: { flex: 1, backgroundColor: COLOR.ink, justifyContent: "space-between", padding: 24, overflow: "hidden" },
     titleFog: { position: "absolute", left: 0, right: 0, top: 0, bottom: 0 },
     titleCenter: { flex: 1, justifyContent: "center", alignItems: "center", gap: 10 },
@@ -326,10 +362,10 @@ function (g, r, i, a, m, _e, d) {
     stepSub: { ...TYPE.body, fontSize: 13.5, color: COLOR.text2, marginTop: 4 },
     list: { paddingHorizontal: 16, paddingBottom: 24, paddingTop: 8, gap: 10, width: "100%", maxWidth: 560, alignSelf: "center" },
     sector: { backgroundColor: COLOR.panel, borderRadius: 16, padding: 14, borderWidth: 1.5, borderColor: COLOR.line },
-    sectorOn: { borderColor: COLOR.accent, backgroundColor: "#1c1a1d" },
+    sectorOn: { borderColor: COLOR.accent, backgroundColor: "#FFF6F2" },
     sectorTop: { flexDirection: "row", alignItems: "center", gap: 12 },
     sectorIcon: { width: 46, height: 46, borderRadius: 12, backgroundColor: COLOR.panel2, alignItems: "center", justifyContent: "center" },
-    sectorIconOn: { backgroundColor: "#3a1610" },
+    sectorIconOn: { backgroundColor: "#FFE3DA" },
     sectorEmoji: { fontSize: 24 },
     sectorName: { fontFamily: "Archivo_600SemiBold", fontSize: 15, color: COLOR.text, letterSpacing: -0.2 },
     sectorAr: { ...TYPE.body, fontSize: 12, color: COLOR.text3, marginTop: 1, textAlign: "left" },

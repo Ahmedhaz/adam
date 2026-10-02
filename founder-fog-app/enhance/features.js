@@ -441,7 +441,10 @@
             onResponderTerminate: () => setDx(0),
             children: [
               lean && jsx(View, { style: [fst.stamp, lean === "left" ? fst.stampLeft : fst.stampRight], children: jsx(Text, { style: fst.stampTxt, children: card[lean].label }) }),
-              jsx(Text, { style: fst.from, children: card.from }),
+              jsxs(View, {
+                style: fst.fromRow,
+                children: [jsx(Pic, { e: leadEmoji(card.from)[0] || "📧", size: 52 }), jsx(Text, { style: [fst.from, { flex: 1 }], children: leadEmoji(card.from)[1] })],
+              }),
               jsx(Text, { style: fst.mailTitle, children: card.title }),
               jsx(Text, { style: fst.mailBody, children: card.body }),
               card.ignore && jsx(Text, { style: fst.warn, children: has(S, "delegator") ? "Ignoring is safe (Delegator)." : "⚠️ Ignoring this has consequences." }),
@@ -496,7 +499,7 @@
                   dataSet: { ff: "rise" + (idx + 1) },
                   onPress: () => onPick(p),
                   children: [
-                    jsx(Text, { style: fst.perkIcon, children: p.icon }),
+                    jsx(Pic, { e: p.icon, size: 46 }),
                     jsxs(View, { style: { flex: 1 }, children: [jsx(Text, { style: fst.perkName, children: p.name }), jsx(Text, { style: fst.perkDesc, children: p.desc })] }),
                   ],
                 },
@@ -560,7 +563,7 @@
                 setPhase("q");
               },
               children: [
-                jsx(Text, { style: fst.perkIcon, children: x.icon }),
+                jsx(Pic, { e: x.icon, size: 46 }),
                 jsxs(View, {
                   style: { flex: 1 },
                   children: [
@@ -578,7 +581,7 @@
     else if (phase === "q") {
       const q = qs[qi];
       body = [
-        jsxs(View, { style: fst.investorHead, children: [jsx(Text, { style: fst.perkIcon, children: inv.icon }), jsx(Text, { style: fst.perkName, children: inv.name })] }, "h"),
+        jsxs(View, { style: fst.investorHead, children: [jsx(Pic, { e: inv.icon, size: 40 }), jsx(Text, { style: fst.perkName, children: inv.name })] }, "h"),
         jsx(React.Fragment, { children: meter }, "m"),
         reaction && jsx(View, { style: [fst.reaction, reaction.score > 0 ? fst.reactGood : reaction.score < 0 ? fst.reactBad : null], dataSet: { ff: "pop" }, children: jsx(Text, { style: fst.reactionTxt, children: (reaction.score > 1 ? "🤩 " : reaction.score > 0 ? "🙂 " : reaction.score < 0 ? "😬 " : "😐 ") + reaction.text }) }, "r" + qi),
         jsx(Text, { style: fst.question, children: "Q" + (qi + 1) + ". " + q.q }, "q"),
@@ -700,11 +703,12 @@
 
   const fst = StyleSheet.create({
     kicker: { fontFamily: "AzeretMono_500Medium", fontSize: 10, letterSpacing: 1, color: COLOR.text3 },
-    overlay: { flex: 1, backgroundColor: "rgba(6,9,12,0.88)", justifyContent: "center", alignItems: "center", padding: 16 },
+    overlay: { flex: 1, backgroundColor: "rgba(24,34,48,0.5)", justifyContent: "center", alignItems: "center", padding: 16 },
     inboxTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "100%", maxWidth: 460, marginBottom: 12 },
     later: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, backgroundColor: COLOR.panel2, borderWidth: 1, borderColor: COLOR.line },
     laterTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 13, color: COLOR.text2 },
     mail: { width: "100%", maxWidth: 460, minHeight: 260, backgroundColor: "#f1ece2", borderRadius: 22, padding: 22, shadowColor: "#000", shadowOpacity: 0.5, shadowRadius: 30, shadowOffset: { width: 0, height: 12 }, cursor: "grab", userSelect: "none" },
+    fromRow: { flexDirection: "row", alignItems: "center", gap: 12 },
     from: { fontFamily: "AzeretMono_500Medium", fontSize: 11, color: "#6b6152", letterSpacing: 0.3 },
     mailTitle: { fontFamily: "Archivo_600SemiBold", fontSize: 23, lineHeight: 29, letterSpacing: -0.5, color: "#1b1712", marginTop: 14 },
     mailBody: { fontFamily: "Archivo_400Regular", fontSize: 15, lineHeight: 22, color: "#4b4236", marginTop: 10 },
@@ -717,9 +721,9 @@
     // stays left-to-right in Arabic so the buttons sit on the side you swipe toward
     choiceRow: { direction: "ltr", flexDirection: "row", gap: 10, width: "100%", maxWidth: 460, marginTop: 14 },
     choice: { flex: 1, backgroundColor: COLOR.panel, borderRadius: 16, padding: 12, borderWidth: 1.5, borderColor: COLOR.line, alignItems: "center", minHeight: 64, justifyContent: "center" },
-    choiceOn: { borderColor: COLOR.act, backgroundColor: "#1d2733" },
+    choiceOn: { borderColor: COLOR.act, backgroundColor: "#E3EEFF" },
     choiceLabel: { fontFamily: "Archivo_600SemiBold", fontSize: 13.5, color: COLOR.text, textAlign: "center" },
-    panel: { width: "100%", maxWidth: 460, backgroundColor: COLOR.panel, borderRadius: 22, padding: 20, borderWidth: 1, borderColor: "#4a3d10", borderTopWidth: 3, borderTopColor: COLOR.gold },
+    panel: { width: "100%", maxWidth: 460, backgroundColor: COLOR.panel, borderRadius: 22, padding: 20, borderWidth: 1, borderColor: "#F1D27A", borderTopWidth: 3, borderTopColor: COLOR.gold },
     panelTitle: { fontFamily: "Archivo_600SemiBold", fontSize: 22, letterSpacing: -0.5, color: COLOR.text, marginTop: 6 },
     panelSub: { fontFamily: "Archivo_400Regular", fontSize: 13.5, lineHeight: 19, color: COLOR.text2, marginTop: 6, marginBottom: 14 },
     perk: { flexDirection: "row", gap: 12, alignItems: "center", backgroundColor: COLOR.panel2, borderRadius: 16, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: COLOR.line },
@@ -727,7 +731,7 @@
     perkName: { fontFamily: "Archivo_600SemiBold", fontSize: 15.5, color: COLOR.text },
     perkDesc: { fontFamily: "Archivo_400Regular", fontSize: 12.5, lineHeight: 18, color: COLOR.text2, marginTop: 2 },
     owned: { fontFamily: "Archivo_500Medium", fontSize: 12, color: COLOR.text3, marginTop: 4, textAlign: "center" },
-    sheetOverlay: { flex: 1, backgroundColor: "rgba(6,9,12,0.84)", justifyContent: "flex-end" },
+    sheetOverlay: { flex: 1, backgroundColor: "rgba(24,34,48,0.45)", justifyContent: "flex-end" },
     sheet: { backgroundColor: COLOR.panel, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 18, paddingBottom: 26, maxHeight: "92%", width: "100%", maxWidth: 600, alignSelf: "center", borderTopWidth: 2, borderTopColor: COLOR.act },
     investor: { flexDirection: "row", gap: 12, alignItems: "flex-start", backgroundColor: COLOR.panel2, borderRadius: 16, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: COLOR.line },
     investorHead: { flexDirection: "row", alignItems: "center", gap: 8 },
@@ -737,8 +741,8 @@
     meterFill: { height: "100%", borderRadius: 6 },
     meterBar: { position: "absolute", top: 0, bottom: 0, width: 2, backgroundColor: COLOR.text },
     reaction: { marginTop: 12, borderRadius: 12, padding: 10, backgroundColor: COLOR.panel2 },
-    reactGood: { backgroundColor: "#10241a" },
-    reactBad: { backgroundColor: "#2a1513" },
+    reactGood: { backgroundColor: "#E2F6EA" },
+    reactBad: { backgroundColor: "#FDE7E7" },
     reactionTxt: { fontFamily: "Archivo_500Medium", fontSize: 13.5, color: COLOR.text },
     question: { fontFamily: "Archivo_600SemiBold", fontSize: 19, letterSpacing: -0.4, color: COLOR.text, marginTop: 16, marginBottom: 10 },
     answer: { backgroundColor: COLOR.panel2, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 14, marginBottom: 8, borderWidth: 1, borderColor: COLOR.line },

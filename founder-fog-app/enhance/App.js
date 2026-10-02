@@ -43,9 +43,9 @@ function (g, r, i, a, m, _e, d) {
     jsxs = J.jsxs;
 
   const TABS = [
-    { key: "hq", icon: "🏢", label: "HQ" },
-    { key: "journal", icon: "📓", label: "Journal" },
     { key: "team", icon: "👥", label: "Team" },
+    { key: "assets", icon: "🏢", label: "Company" },
+    { key: "advance" },
     { key: "circle", icon: "🤝", label: "Circle" },
     { key: "actions", icon: "⚡", label: "Actions" },
   ];
@@ -170,6 +170,20 @@ function (g, r, i, a, m, _e, d) {
   // Drop a leading emoji from engine titles; the card already has its own icon.
   const questTitle = (t) => String(t || "").replace(/^\S+\s/, (m) => (/[a-z0-9]/i.test(m) ? m : ""));
 
+  // 3D pictures (Fluent emoji, bundled in img/) drawn via CSS on [data-pic]; emoji text as fallback.
+  const PICS = /*@PICS*/ {};
+  const picKey = (e) => PICS[String(e || "").replace(/\uFE0F/g, "")];
+  function Pic({ e, size, style }) {
+    const k = picKey(e);
+    if (k) return jsx(View, { dataSet: { pic: k }, style: [{ width: size, height: size }, style] });
+    return jsx(Text, { style: [{ fontSize: Math.round(size * 0.78), lineHeight: size, width: size, textAlign: "center" }, style], children: e });
+  }
+  const leadEmoji = (t) => {
+    const str = String(t || "");
+    const m = str.match(/^\s*(\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic}\uFE0F?)*)\s*/u);
+    return m ? [m[1], str.slice(m[0].length)] : [null, str];
+  };
+
   function Chips({ items, style }) {
     return jsx(View, {
       style: [st.chips, style],
@@ -247,6 +261,12 @@ function (g, r, i, a, m, _e, d) {
       [inboxOpen, setInboxOpen] = React.useState(false),
       [pitchOpen, setPitchOpen] = React.useState(false);
     const toastTimer = React.useRef(null);
+    const feedRef = React.useRef(null);
+    // keep the life log scrolled to the latest week, BitLife style
+    React.useEffect(() => {
+      const t = setTimeout(() => feedRef.current && feedRef.current.scrollToEnd && feedRef.current.scrollToEnd({ animated: !0 }), 80);
+      return () => clearTimeout(t);
+    }, [S && S.week, S && S.journalLog.length, tab]);
 
     React.useEffect(() => {
       if (!S) return;
@@ -301,11 +321,12 @@ function (g, r, i, a, m, _e, d) {
     if (!fontsLoaded)
       return jsx(Screen, {
         style: [st.container, { justifyContent: "center", alignItems: "center" }],
-        children: jsx(StatusBar, { barStyle: "light-content" }),
+        children: jsx(StatusBar, { barStyle: "dark-content" }),
       });
 
-    const start = ({ founderName, companyName, sectorId }) => {
+    const start = ({ founderName, companyName, sectorId, avatar }) => {
       const eng = new Engine.StartupEngine(founderName, companyName, sectorId);
+      eng.state.avatar = avatar || "avatar_m1";
       ensureFeatureState(eng.state);
       dealInbox(eng.state, 1);
       clearSave();
@@ -336,7 +357,7 @@ function (g, r, i, a, m, _e, d) {
       return jsxs(Screen, {
         style: st.container,
         children: [
-          jsx(StatusBar, { barStyle: "light-content" }),
+          jsx(StatusBar, { barStyle: "dark-content" }),
           jsx(Onboarding.OnboardingScreen, {
             onStartGame: start,
             saved: saved,
@@ -352,7 +373,7 @@ function (g, r, i, a, m, _e, d) {
     if (S.gameOver || S.victory)
       return jsxs(Screen, {
         style: st.container,
-        children: [jsx(StatusBar, { barStyle: "light-content" }), jsx(GameOver.GameOverScreen, { gameState: S, onRestart: restart })],
+        children: [jsx(StatusBar, { barStyle: "dark-content" }), jsx(GameOver.GameOverScreen, { gameState: S, onRestart: restart })],
       });
 
     // ---------- derived ----------
@@ -472,81 +493,6 @@ function (g, r, i, a, m, _e, d) {
       ],
     });
 
-    const runwayPips = jsx(View, {
-      style: st.pips,
-      children: Array.from({ length: 12 }, (_, k) =>
-        jsx(View, { style: [st.pip, k < Math.min(12, Math.floor(runway)) && { backgroundColor: runwayColor }, k === Math.floor(runway) && runway < 12 && { backgroundColor: runwayColor, opacity: (runway % 1) * 0.9 + 0.1 }] }, k),
-      ),
-    });
-
-    const hero = jsxs(View, {
-      style: st.hero,
-      dataSet: { ff: "rise1" },
-      children: [
-        jsxs(View, {
-          style: st.heroTop,
-          children: [
-            jsxs(View, {
-              style: { flex: 1 },
-              children: [
-                jsx(Text, { style: st.kicker, children: "RUNWAY" }),
-                jsxs(Text, {
-                  style: [st.heroBig, { color: runwayColor, opacity: fogOp }],
-                  children: [ft(runwayLabel, "runwayBig"), jsx(Text, { style: st.heroUnit, children: " months" }, "u")],
-                }),
-              ],
-            }),
-            jsxs(View, {
-              style: { alignItems: "flex-end" },
-              children: [
-                jsx(Text, { style: st.kicker, children: "IN THE BANK" }),
-                jsx(Text, { style: [st.heroCash, { opacity: fogOp }], children: ft(money(S.cash), "cashBig") }),
-                jsx(Text, { style: st.heroEquity, children: "you own " + ltr((S.equity == null ? 100 : S.equity).toFixed(S.equity < 100 ? 1 : 0) + "%") }),
-              ],
-            }),
-          ],
-        }),
-        runwayPips,
-        jsxs(View, {
-          style: st.heroRow,
-          children: [
-            [ft(money(S.monthlyRevenue), "mrr"), "MRR", COLOR.vital],
-            [ft(money(S.weeklyBurn), "burn"), "burn / wk", COLOR.crit],
-            [ft(String(Math.round(S.activeUsers).toLocaleString()), "users"), "users", COLOR.text],
-          ].map(([v, l, c]) =>
-            jsxs(View, { style: st.heroStat, children: [jsx(Text, { style: [st.heroStatV, { color: c, opacity: fogOp }], numberOfLines: 1, children: v }), jsx(Text, { style: st.heroStatL, children: l })] }, l),
-          ),
-        }),
-        jsxs(View, {
-          style: st.vitals,
-          children: [
-            [["🧠", "Clarity"], S.mentalClarity, clarityColor, fogged ? "in the fog" : S.mentalClarity < 60 ? "getting tired" : "clear head"],
-            [["🤝", "Morale"], S.teamMorale, moraleColor, S.teamMorale < 40 ? "people may quit" : "team of " + S.team.length],
-          ].map(([[icon, label], v, c, sub]) =>
-            jsxs(
-              View,
-              {
-                style: st.vital,
-                children: [
-                  jsxs(View, {
-                    style: st.vitalTop,
-                    children: [
-                      jsx(Text, { style: st.vitalLabel, children: icon + "  " + label }),
-                      jsx(Text, { style: [st.vitalValue, { color: c }], children: Math.round(v) + "%" }),
-                    ],
-                  }),
-                  jsx(View, { style: st.vitalTrack, children: jsx(View, { style: [st.vitalFill, { width: Math.max(2, v) + "%", backgroundColor: c }] }) }),
-                  jsx(Text, { style: st.vitalSub, children: sub }),
-                ],
-              },
-              label,
-            ),
-          ),
-        }),
-        fogged && jsx(View, { pointerEvents: "none", dataSet: { ff: "fog" }, style: [st.fogLayer, { opacity: 0.3 + 0.65 * fogAmt, bottom: 92 }] }),
-      ],
-    });
-
     const lvlFrom = xpForLevel(S.level),
       lvlTo = xpForLevel(S.level + 1);
     const levelRow = jsxs(View, {
@@ -567,202 +513,193 @@ function (g, r, i, a, m, _e, d) {
       ],
     });
 
-    const milestone = nextStage
-      ? jsxs(View, {
-          style: st.card,
-          dataSet: { ff: "rise2" },
+    // ---------- BitLife-style home ----------
+    const mood = S.mentalClarity >= 70 ? "😎" : S.mentalClarity >= 50 ? "🙂" : S.mentalClarity >= 40 ? "😐" : S.mentalClarity >= 20 ? "😵‍💫" : "🥴";
+    const barColor = (v) => (v >= 60 ? "#34C759" : v >= 30 ? "#FFB020" : "#FF453A");
+
+    const header = jsxs(View, {
+      style: st.header,
+      children: [
+        jsxs(View, {
+          style: st.avatarWrap,
           children: [
+            jsx(Pic, { e: S.avatar || "avatar_m1", size: 58 }),
+            jsx(View, { style: st.moodBadge, children: jsx(Pic, { e: mood, size: 24 }) }),
+          ],
+        }),
+        jsxs(View, {
+          style: { flex: 1, minWidth: 0 },
+          children: [
+            jsx(Text, { style: st.hName, numberOfLines: 1, children: S.founderName }),
+            jsx(Text, { style: st.hSub, numberOfLines: 1, children: "Founder · " + S.companyName }),
             jsxs(View, {
-              style: st.rowBetween,
+              style: st.hChips,
               children: [
-                jsx(Text, { style: st.kicker, children: "NEXT MILESTONE" }),
-                jsx(Text, { style: [st.kicker, { color: COLOR.gold }], children: stageName + " → " + (STAGE_NAMES[nextStage.stage] || "Stage " + nextStage.stage) }),
+                jsx(View, { style: st.stagePill, children: jsx(Text, { style: st.stagePillTxt, children: stageName }) }),
+                jsx(View, { style: st.expPill, children: jsx(Text, { style: st.expPillTxt, children: "Lv " + S.level }) }),
+                jsx(Touchable, { style: st.langBtn, onPress: switchLanguage, children: jsx(Text, { style: st.langBtnTxt, children: IS_AR ? "EN" : "عربي" }) }),
               ],
             }),
-            jsx(Text, { style: st.cardTitle, children: "Reach " + money(nextStage.mrr) + " MRR" }),
-            jsx(View, {
-              style: st.goalTrack,
-              children: jsx(View, { style: [st.goalFill, { width: Math.max(2, Math.min(100, (S.monthlyRevenue / nextStage.mrr) * 100)) + "%" }] }),
-            }),
-            jsx(Text, { style: st.cardSub, children: ft(money(S.monthlyRevenue), "mrr2") + " of " + money(nextStage.mrr) + " · valuation re-rates to " + compact(nextStage.valuation) }),
-            levelRow,
           ],
-        })
-      : null;
+        }),
+        jsxs(View, {
+          style: st.bank,
+          children: [
+            jsx(Text, { style: st.bankLabel, children: "BANK" }),
+            jsx(Text, { style: [st.bankValue, { color: S.cash < 4 * S.weeklyBurn ? "#FF453A" : "#1F9D55", opacity: fogOp }], numberOfLines: 1, children: ft(compact(S.cash), "cash") }),
+            jsx(View, { style: st.weekPill, children: jsx(Text, { style: st.weekPillTxt, children: "Week " + S.week }) }),
+          ],
+        }),
+        fogged && jsx(View, { pointerEvents: "none", dataSet: { ff: "fog" }, style: [st.fogLayer, { opacity: 0.35 + 0.6 * fogAmt, left: "62%" }] }),
+      ],
+    });
 
-    const quest =
-      target &&
-      jsxs(View, {
-        style: [st.card, st.quest, targetDone && st.questDone],
-        dataSet: { ff: "rise3" },
-        children: [
-          jsxs(View, {
-            style: st.rowBetween,
+    // tappable "this week" tiles
+    const tile = (key, icon, label, sub, color, onPress, badge, done) =>
+      jsxs(
+        Touchable,
+        {
+          style: [st.tile, { backgroundColor: color }, done && { opacity: 0.55 }],
+          activeOpacity: 0.85,
+          onPress: onPress,
+          children: [
+            jsx(Pic, { e: icon, size: 40 }),
+            jsx(Text, { style: st.tileLabel, numberOfLines: 1, children: label }),
+            jsx(Text, { style: st.tileSub, numberOfLines: 1, children: sub }),
+            badge ? jsx(View, { style: st.tileBadge, children: jsx(Text, { style: st.tileBadgeTxt, children: String(badge) }) }) : null,
+          ],
+        },
+        key,
+      );
+    const inboxN = (S.inbox || []).length;
+    const tiles = jsx(ScrollView, {
+      horizontal: !0,
+      showsHorizontalScrollIndicator: !1,
+      contentContainerStyle: st.tiles,
+      children: [
+        guide && tile("t", targetDone ? "✅" : "🎯", targetDone ? "Target done" : "Weekly target", targetDone ? "+" + (S.streak || 0) + " streak" : "+" + (target.reward_exp || 50) + " XP", "#FFE8E1", () => setGuideOpen(true), S.streak ? "🔥" + S.streak : null, targetDone),
+        tile("i", "📨", "Inbox", inboxN ? inboxN + " new" : "All clear", "#FFF4D6", () => inboxN && setInboxOpen(true), inboxN || null, !inboxN),
+        tile("a", fogged && !S.slotUsed ? "🧘" : "⚡", fogged && !S.slotUsed ? "Rest now" : "Your action", S.slotUsed ? "used" : "1 left", "#E3F7EA", () => setTab("actions"), null, S.slotUsed),
+        tile("p", "💼", "Fundraise", raisedThisStage(S) ? "Raised ✓" : canPitch(S) ? roundName : S.week < 3 ? "Week 3+" : "Not now", "#E5EEFF", () => (canPitch(S) ? setPitchOpen(true) : notify(raisedThisStage(S) ? "Next round opens at the next milestone." : S.slotUsed ? "Pitching needs this week's action." : S.week < 3 ? "Investors take meetings from week 3." : "Investors will take a meeting in " + pitchCooldown(S) + " wk.", "info")), null, !canPitch(S)),
+        tile("c", "🤝", "Circle", weakTie ? "Needs you" : "All good", "#F1E8FF", () => setTab("circle"), weakTie ? "!" : null, false),
+      ],
+    });
+
+    // the life log, oldest first, grouped by week (BitLife's "age" feed)
+    const isRoutine = (x) => leadEmoji(x.title)[0] === "📊" && /\d/.test(x.title);
+    const lastWeeks = S.journalLog.filter((x) => x.week > S.week - 8 && !isRoutine(x)).slice().reverse();
+    const feedRows = [];
+    let lastW = null;
+    lastWeeks.forEach((x, idx) => {
+      if (x.week !== lastW) {
+        for (let w = (lastW == null ? x.week : lastW + 1); w < x.week; w++)
+          feedRows.push(jsx(View, { style: st.weekHead, children: jsx(Text, { style: st.weekHeadTxt, children: "Week " + w + "  ·  a quiet week" }) }, "q" + w));
+        lastW = x.week;
+        feedRows.push(jsx(View, { style: st.weekHead, children: jsx(Text, { style: st.weekHeadTxt, children: "Week " + x.week }) }, "w" + x.week + "_" + idx));
+      }
+      const [icon, title] = leadEmoji(x.title);
+      feedRows.push(
+        jsxs(
+          View,
+          {
+            style: st.logRow,
             children: [
-              jsx(Text, { style: [st.kicker, { color: targetDone ? COLOR.vital : COLOR.accent }], children: targetDone ? "✓ WEEKLY TARGET DONE" : "🎯 WEEKLY TARGET" }),
-              jsx(Chips, {
-                items: (S.streak ? [{ text: "🔥 " + S.streak, tone: 1 }] : []).concat([{ text: "+" + (target.reward_exp || 50) + " EXP", tone: 2 }]).concat(target.reward_cash ? [{ text: "+" + money(target.reward_cash), tone: 1 }] : []),
+              jsx(View, { style: [st.logIcon, x.type === "negative" && { backgroundColor: "#FFE7E5" }], children: jsx(Pic, { e: icon || (x.type === "negative" ? "⚠️" : "📝"), size: 26 }) }),
+              jsxs(View, {
+                style: { flex: 1, minWidth: 0 },
+                children: [
+                  jsx(Text, { style: [st.logTitle, x.type === "negative" && { color: "#D93A30" }], children: title }),
+                  jsx(Text, { style: st.logText, numberOfLines: 3, children: x.text }),
+                ],
               }),
             ],
-          }),
-          jsx(Text, { style: st.cardTitle, children: questTitle(target.title) }),
-          jsx(Text, { style: st.questTasks, children: String(target.tasks || "").replace(/\s*\|\s*/g, "\n") }),
-          guide &&
-            jsx(Touchable, {
-              style: [st.questBtn, targetDone && st.questBtnDone],
-              onPress: () => setGuideOpen(true),
-              activeOpacity: 0.85,
-              children: jsx(Text, {
-                style: [st.questBtnTxt, targetDone && { color: COLOR.text2 }],
-                children: targetDone ? "Review strategies" : "Choose a strategy ▸",
-              }),
-            }),
-        ],
-      });
-
-    const actionCard = jsxs(View, {
-      style: st.card,
-      dataSet: { ff: "rise4" },
-      children: [
-        jsxs(View, {
-          style: st.rowBetween,
-          children: [
-            jsx(Text, { style: st.kicker, children: "YOUR ACTION THIS WEEK" }),
-            jsxs(View, {
-              style: st.token,
-              children: [
-                jsx(View, { dataSet: S.slotUsed ? undefined : { ff: "glow" }, style: [st.tokenDot, { backgroundColor: S.slotUsed ? COLOR.text3 : COLOR.vital }] }),
-                jsx(Text, { style: [st.tokenTxt, { color: S.slotUsed ? COLOR.text3 : COLOR.vital }], children: S.slotUsed ? "used" : "1 left" }),
-              ],
-            }),
-          ],
-        }),
-        jsx(Text, {
-          style: st.cardSub,
-          children: S.slotUsed
-            ? "Done for this week. End the week when you're ready."
-            : fogged
-              ? "You're in the fog. Resting is the smart play this week."
-              : "Rest, learn, or reach out to someone who matters.",
-        }),
-        jsxs(View, {
-          style: st.actionRow,
-          children: [
-            jsx(Touchable, { style: [st.actionBtn, fogged && !S.slotUsed && st.actionBtnHot], onPress: () => setTab("actions"), children: jsx(Text, { style: st.actionBtnTxt, children: "⚡ Actions" }) }),
-            jsx(Touchable, {
-              style: st.actionBtn,
-              onPress: () => setTab("circle"),
-              children: jsx(Text, { style: st.actionBtnTxt, children: "🤝 Circle" + (weakTie ? " · !" : "") }),
-            }),
-          ],
-        }),
-        jsxs(Touchable, {
-          style: [st.pitchBtn, !canPitch(S) && st.pitchBtnOff],
-          disabled: !canPitch(S),
-          activeOpacity: 0.85,
-          onPress: () => setPitchOpen(true),
-          children: [
-            jsx(Text, { style: [st.pitchTxt, !canPitch(S) && { color: COLOR.text3 }], children: "💼 " + (raisedThisStage(S) ? roundName + " round raised ✓" : "Pitch investors · " + roundName + " round") }),
-            jsx(Text, {
-              style: st.pitchSub,
-              children: canPitch(S)
-                ? "Raise cash for equity. Uses your action."
-                : raisedThisStage(S)
-                  ? "Round closed. Next round opens at " + (nextStage ? money(nextStage.mrr) + " MRR" : "the next stage")
-                  : S.week < 3
-                    ? "Opens in week 3"
-                    : S.slotUsed
-                      ? "Needs this week's action"
-                      : "Investors will take a meeting in " + pitchCooldown(S) + " wk",
-            }),
-          ],
-        }),
-      ],
-    });
-
-    const recent = jsxs(View, {
-      style: st.card,
-      children: [
-        jsxs(View, {
-          style: st.rowBetween,
-          children: [
-            jsx(Text, { style: st.kicker, children: "LATELY" }),
-            jsx(Touchable, { onPress: () => setTab("journal"), children: jsx(Text, { style: st.link, children: "Full journal ▸" }) }),
-          ],
-        }),
-        S.journalLog.slice(0, 3).map((x, idx) =>
-          jsxs(
-            View,
-            {
-              style: [st.logItem, idx > 0 && st.logDivider],
-              children: [
-                jsx(View, { style: [st.logBar, { backgroundColor: x.type === "negative" ? COLOR.crit : COLOR.act }] }),
-                jsxs(View, {
-                  style: { flex: 1 },
-                  children: [
-                    jsx(Text, { style: st.logTitle, numberOfLines: 1, children: x.title }),
-                    jsx(Text, { style: st.logText, numberOfLines: 2, children: x.text }),
-                  ],
-                }),
-                jsx(Text, { style: st.logWeek, children: "W" + x.week }),
-              ],
-            },
-            idx,
-          ),
+          },
+          "e" + idx,
         ),
-        jsx(Touchable, { onPress: () => setTab("assets"), style: st.companyLink, children: jsx(Text, { style: st.link, children: "Company, KPIs & assets ▸" }) }),
+      );
+    });
+
+
+    const hq = jsxs(View, {
+      style: { flex: 1 },
+      children: [
+        jsx(View, { children: tiles }),
+        fogged &&
+          jsxs(Touchable, {
+            style: st.fogBanner,
+            onPress: () => setTab("actions"),
+            children: [jsx(Pic, { e: "🌫️", size: 28 }), jsx(Text, { style: st.fogBannerTxt, children: Fog.fogNotice(S.mentalClarity) }), jsx(Text, { style: st.fogBannerCta, children: "Rest ▸" })],
+          }),
+        jsx(ScrollView, { ref: feedRef, style: st.feed, contentContainerStyle: st.feedInner, showsVerticalScrollIndicator: !1, children: feedRows }),
       ],
     });
 
-    const hq = jsx(ScrollView, {
-      style: { flex: 1 },
-      contentContainerStyle: st.hqContent,
-      showsVerticalScrollIndicator: !1,
-      children: [
-        jsx(React.Fragment, { children: hero }, "hero"),
-        fogged &&
-          jsxs(
-            Touchable,
-            {
-              style: st.fogBanner,
-              onPress: () => setTab("actions"),
-              children: [jsx(Text, { style: st.fogBannerTxt, children: Fog.fogNotice(S.mentalClarity) }), jsx(Text, { style: st.fogBannerCta, children: "Rest ▸" })],
-            },
-            "fogb",
-          ),
-        S.inbox && S.inbox.length > 0 &&
-          jsxs(
-            Touchable,
-            {
-              style: st.inboxCard,
-              activeOpacity: 0.85,
-              dataSet: { ff: "rise2" },
-              onPress: () => setInboxOpen(true),
+    // BitLife-style stat bars
+    const statBar = (icon, label, pct, valueText, fogMe) =>
+      jsxs(
+        View,
+        {
+          style: st.statRow,
+          children: [
+            jsx(Pic, { e: icon, size: 22 }),
+            jsx(Text, { style: st.statLabel, numberOfLines: 1, children: label }),
+            jsxs(View, {
+              style: st.statTrack,
               children: [
-                jsx(Text, { style: st.inboxIcon, children: "📨" }),
-                jsxs(View, {
-                  style: { flex: 1 },
-                  children: [
-                    jsx(Text, { style: [st.kicker, { color: "#c9b48f" }], children: (S.inbox.length === 1 ? "1 MESSAGE" : S.inbox.length + " MESSAGES") + " · ANSWER BEFORE WEEK ENDS" }),
-                    jsx(Text, { style: st.inboxTitle, numberOfLines: 1, children: (cardById(S.inbox[0].id) || {}).title }),
-                  ],
-                }),
-                jsx(Text, { style: st.inboxArrow, children: "▸" }),
+                jsx(View, { style: [st.statFill, { width: Math.max(4, Math.min(100, pct)) + "%", backgroundColor: barColor(pct) }, fogMe && { opacity: fogOp }] }),
+                jsx(Text, { style: [st.statPct, fogMe && { opacity: fogOp }], children: valueText }),
               ],
-            },
-            "inbox",
-          ),
-        jsx(React.Fragment, { children: quest }, "quest"),
-        jsx(React.Fragment, { children: actionCard }, "action"),
-        jsx(React.Fragment, { children: milestone }, "ms"),
-        jsx(React.Fragment, { children: recent }, "recent"),
+            }),
+          ],
+        },
+        label,
+      );
+    const statsPanel = jsxs(View, {
+      style: st.statsPanel,
+      children: [
+        statBar("🧠", "Clarity", S.mentalClarity, Math.round(S.mentalClarity) + "%"),
+        statBar("🤝", "Morale", S.teamMorale, Math.round(S.teamMorale) + "%"),
+        statBar("⏳", "Runway", (Math.min(runway, 12) / 12) * 100, ft(runwayLabel + " mo", "runway"), true),
+        statBar("💼", "Trust", S.investorTrust == null ? 80 : S.investorTrust, Math.round(S.investorTrust == null ? 80 : S.investorTrust) + "%"),
+        fogged && jsx(View, { pointerEvents: "none", dataSet: { ff: "fog" }, style: [st.fogLayer, { opacity: 0.2 + 0.4 * fogAmt }] }),
+      ],
+    });
+
+    // company overview (milestone, level, equity, rounds) above the original assets screen
+    const company = jsxs(View, {
+      style: { flex: 1 },
+      children: [
+        jsxs(View, {
+          style: st.companyCard,
+          children: [
+            nextStage
+              ? jsxs(View, {
+                  children: [
+                    jsxs(View, {
+                      style: st.rowBetween,
+                      children: [
+                        jsx(Text, { style: st.kicker, children: "NEXT MILESTONE" }),
+                        jsx(Text, { style: [st.kicker, { color: COLOR.gold }], children: stageName + " → " + (STAGE_NAMES[nextStage.stage] || "Stage " + nextStage.stage) }),
+                      ],
+                    }),
+                    jsx(Text, { style: st.cardTitle, children: "Reach " + money(nextStage.mrr) + " MRR" }),
+                    jsx(View, { style: st.goalTrack, children: jsx(View, { style: [st.goalFill, { width: Math.max(2, Math.min(100, (S.monthlyRevenue / nextStage.mrr) * 100)) + "%" }] }) }),
+                    jsx(Text, { style: st.cardSub, children: ft(money(S.monthlyRevenue), "mrr2") + " of " + money(nextStage.mrr) + " · valuation re-rates to " + compact(nextStage.valuation) }),
+                  ],
+                })
+              : null,
+            levelRow,
+            jsx(Text, { style: st.levelPerks, children: "you own " + ltr((S.equity == null ? 100 : S.equity).toFixed(S.equity < 100 ? 1 : 0) + "%") + " · valuation " + compact(S.valuation) }),
+          ],
+        }),
+        jsx(View, { style: { flex: 1 }, children: jsx(Assets.AssetsScreen, { gameState: S }) }),
       ],
     });
 
     let content;
     if (tab === "hq") content = hq;
     else if (tab === "journal") content = jsx(Journal.JournalScreen, { journalLog: S.journalLog, gameState: S });
-    else if (tab === "assets") content = jsx(Assets.AssetsScreen, { gameState: S });
+    else if (tab === "assets") content = company;
     else if (tab === "circle")
       content = jsx(Circle.RelationshipsScreen, { gameState: S, onContact: (id) => act(engine.contactRelationship(id), "Reached out. Relationship +11.") });
     else if (tab === "team")
@@ -835,7 +772,7 @@ function (g, r, i, a, m, _e, d) {
                       View,
                       {
                         style: [st.note, tone === -1 && st.noteBad, tone === 1 && st.noteGood],
-                        children: [jsx(Text, { style: st.noteIcon, children: icon }), jsx(Text, { style: st.noteTxt, children: text })],
+                        children: [jsx(Pic, { e: icon, size: 24 }), jsx(Text, { style: st.noteTxt, children: text })],
                       },
                       idx,
                     ),
@@ -879,6 +816,7 @@ function (g, r, i, a, m, _e, d) {
                   },
                   "k",
                 ),
+                jsx(View, { style: st.dilemmaPic, dataSet: { ff: "float" }, children: jsx(Pic, { e: S.pendingEvent.icon || "⚖️", size: 84 }) }, "pic"),
                 jsx(Text, { style: st.dilemmaTitle, children: S.pendingEvent.title }, "t"),
                 jsx(Text, { style: st.dilemmaDesc, children: S.pendingEvent.description }, "d"),
                 ["option_A", "option_B"].map((key, idx) =>
@@ -1001,56 +939,54 @@ function (g, r, i, a, m, _e, d) {
     return jsxs(Screen, {
       style: st.container,
       children: [
-        jsx(StatusBar, { barStyle: "light-content" }),
-        jsxs(View, {
-          style: st.topBar,
-          children: [
-            jsxs(View, {
-              style: { flex: 1 },
-              children: [
-                jsx(Text, { style: st.company, numberOfLines: 1, children: S.companyName }),
-                jsx(Text, { style: st.weekLine, numberOfLines: 1, children: "Week " + S.week + " · Month " + S.month + " · " + S.founderName }),
-              ],
-            }),
-            jsx(View, { style: st.stagePill, children: jsx(Text, { style: st.stagePillTxt, children: stageName }) }),
-            jsx(View, { style: st.expPill, children: jsx(Text, { style: st.expPillTxt, children: "Lv " + S.level }) }),
-            jsx(Touchable, { style: st.langBtn, onPress: switchLanguage, children: jsx(Text, { style: st.langBtnTxt, children: IS_AR ? "EN" : "\u0639\u0631\u0628\u064a" }) }),
-          ],
-        }),
-        tab !== "hq" && hud,
+        jsx(StatusBar, { barStyle: "dark-content" }),
+        header,
+        tab !== "hq" &&
+          jsxs(Touchable, {
+            style: st.backBar,
+            onPress: () => setTab("hq"),
+            children: [jsx(Text, { style: st.backTxt, children: "‹  Home" }), jsx(Text, { style: st.backTitle, children: (TABS.find((t) => t.key === tab) || {}).label || "" })],
+          }),
+        tab !== "hq" && tab !== "assets" && hud,
         jsx(View, { style: st.content, children: content }),
-        jsxs(View, {
-          style: st.endBar,
-          children: [
-            jsx(Text, {
-              style: [st.endHint, { color: allDone ? COLOR.vital : COLOR.text3 }],
-              numberOfLines: 1,
-              children: allDone && !(S.inbox || []).length ? "All set for this week" : [S.inbox && S.inbox.length ? S.inbox.length + " unread" : null, !targetDone && guide ? "target open" : null, !S.slotUsed ? "action unused" : null].filter(Boolean).join(" · "),
-            }),
-            jsx(Touchable, {
-              style: st.endBtn,
-              onPress: advance,
-              activeOpacity: 0.85,
-              dataSet: allDone && !(S.inbox || []).length ? { ff: "pulse" } : undefined,
-              children: jsx(Text, { style: st.endBtnTxt, children: "End week " + S.week + " ▸" }),
-            }),
-          ],
-        }),
+        tab === "hq" && statsPanel,
         jsx(View, {
           style: st.nav,
           children: TABS.map((t) => {
-            const on = tab === t.key || (t.key === "hq" && tab === "assets");
-            const dot = (t.key === "actions" && !S.slotUsed) || (t.key === "circle" && weakTie) || (t.key === "hq" && S.inbox && S.inbox.length > 0 && tab !== "hq");
+            if (t.key === "advance")
+              return jsxs(
+                View,
+                {
+                  style: st.navCenter,
+                  children: [
+                    jsxs(Touchable, {
+                      style: st.ageBtn,
+                      onPress: advance,
+                      activeOpacity: 0.85,
+                      dataSet: allDone && !inboxN ? { ff: "pulse" } : undefined,
+                      children: [jsx(Text, { style: st.agePlus, children: "+" }), jsx(Text, { style: st.ageTxt, children: "1 Week" })],
+                    }),
+                    jsx(Text, {
+                      style: [st.ageHint, { color: allDone && !inboxN ? COLOR.vital : COLOR.text3 }],
+                      numberOfLines: 1,
+                      children: allDone && !inboxN ? "Ready" : [inboxN ? inboxN + " unread" : null, !targetDone && guide ? "target open" : null, !S.slotUsed ? "action unused" : null].filter(Boolean)[0] || "",
+                    }),
+                  ],
+                },
+                "adv",
+              );
+            const on = tab === t.key;
+            const dot = (t.key === "actions" && !S.slotUsed) || (t.key === "circle" && weakTie);
             return jsxs(
               Touchable,
               {
                 style: st.navItem,
-                onPress: () => setTab(t.key),
+                onPress: () => setTab(on ? "hq" : t.key),
                 activeOpacity: 0.7,
                 children: [
                   jsxs(View, {
                     style: [st.navIconWrap, on && st.navIconOn],
-                    children: [jsx(Text, { style: [st.navIcon, !on && { opacity: 0.55 }], children: t.icon }), dot && jsx(View, { style: st.navDot })],
+                    children: [jsx(Pic, { e: t.icon, size: 30 }), dot && jsx(View, { style: st.navDot })],
                   }),
                   jsx(Text, { style: [st.navLabel, on && st.navLabelOn], children: t.label }),
                 ],
@@ -1103,11 +1039,11 @@ function (g, r, i, a, m, _e, d) {
     topBar: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 10, backgroundColor: COLOR.ink },
     company: { fontFamily: "Archivo_600SemiBold", fontSize: 18, letterSpacing: -0.4, color: COLOR.text },
     weekLine: { fontFamily: "Archivo_500Medium", fontSize: 12, color: COLOR.text3, marginTop: 2 },
-    stagePill: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: "#1d2733", borderWidth: 1, borderColor: "#2b3a4c" },
+    stagePill: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: "#E3EEFF", borderWidth: 1, borderColor: "#B9D2FB" },
     stagePillTxt: { fontFamily: "AzeretMono_500Medium", fontSize: 10.5, color: COLOR.act },
     langBtn: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5, minHeight: 28, justifyContent: "center", backgroundColor: COLOR.panel2, borderWidth: 1, borderColor: COLOR.lineHot },
     langBtnTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 12, color: COLOR.text },
-    expPill: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: "#211c0c", borderWidth: 1, borderColor: "#4a3d10" },
+    expPill: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: "#FFF6D6", borderWidth: 1, borderColor: "#F1D27A" },
     expPillTxt: { fontFamily: "AzeretMono_500Medium", fontSize: 10.5, color: COLOR.gold },
     hud: { flexDirection: "row", gap: 6, paddingHorizontal: 10, paddingBottom: 10, overflow: "hidden" },
     hudCell: { flex: 1, minWidth: 0, backgroundColor: COLOR.panel, borderRadius: 12, paddingHorizontal: 9, paddingVertical: 8, borderWidth: 1, borderColor: COLOR.line },
@@ -1139,8 +1075,8 @@ function (g, r, i, a, m, _e, d) {
     vitalTrack: { height: 6, borderRadius: 3, backgroundColor: COLOR.ink, marginTop: 8, overflow: "hidden" },
     vitalFill: { height: "100%", borderRadius: 3 },
     vitalSub: { fontFamily: "Archivo_500Medium", fontSize: 10.5, color: COLOR.text3, marginTop: 6 },
-    fogBanner: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "#2a2111", borderRadius: 14, padding: 12, borderWidth: 1, borderColor: "#5a4416" },
-    fogBannerTxt: { flex: 1, fontFamily: "Archivo_500Medium", fontSize: 13, lineHeight: 18, color: "#f0d39b" },
+    fogBanner: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "#FFF1DB", borderRadius: 14, padding: 12, borderWidth: 1, borderColor: "#F3C77A" },
+    fogBannerTxt: { flex: 1, fontFamily: "Archivo_500Medium", fontSize: 13, lineHeight: 18, color: "#8A5A00" },
     fogBannerCta: { fontFamily: "Archivo_600SemiBold", fontSize: 13, color: COLOR.fog },
     card: card,
     cardTitle: { fontFamily: "Archivo_600SemiBold", fontSize: 17, letterSpacing: -0.3, color: COLOR.text, marginTop: 8 },
@@ -1149,18 +1085,18 @@ function (g, r, i, a, m, _e, d) {
     levelTrack: { height: 6, borderRadius: 3, backgroundColor: COLOR.panel2, marginTop: 8, overflow: "hidden" },
     levelFill: { height: "100%", borderRadius: 3, backgroundColor: "#a77bf3" },
     levelPerks: { fontFamily: "Archivo_500Medium", fontSize: 12, color: COLOR.text2, marginTop: 8 },
-    pitchBtn: { marginTop: 8, borderRadius: 12, padding: 12, backgroundColor: "#16233a", borderWidth: 1, borderColor: "#2b4a7a" },
+    pitchBtn: { marginTop: 8, borderRadius: 12, padding: 12, backgroundColor: "#E8F0FF", borderWidth: 1, borderColor: "#B9D2FB" },
     pitchBtnOff: { backgroundColor: COLOR.panel2, borderColor: COLOR.line },
     pitchTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 13.5, color: COLOR.text },
     pitchSub: { fontFamily: "Archivo_400Regular", fontSize: 11.5, color: COLOR.text3, marginTop: 3 },
-    inboxCard: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#2a2419", borderRadius: 18, padding: 14, borderWidth: 1, borderColor: "#5c4d30" },
+    inboxCard: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#FFF8E8", borderRadius: 18, padding: 14, borderWidth: 1, borderColor: "#EBD9A8" },
     inboxIcon: { fontSize: 26 },
-    inboxTitle: { fontFamily: "Archivo_600SemiBold", fontSize: 15, color: "#f1ece2", marginTop: 4 },
-    inboxArrow: { color: "#c9b48f", fontSize: 20 },
+    inboxTitle: { fontFamily: "Archivo_600SemiBold", fontSize: 15, color: "#3B2F1A", marginTop: 4 },
+    inboxArrow: { color: "#8A6D3B", fontSize: 20 },
     goalTrack: { height: 10, borderRadius: 5, backgroundColor: COLOR.panel2, marginTop: 12, overflow: "hidden" },
     goalFill: { height: "100%", borderRadius: 5, backgroundColor: COLOR.gold },
-    quest: { borderColor: "#5a2a20", backgroundColor: "#1a1716" },
-    questDone: { borderColor: "#1f4a33", backgroundColor: "#121b17" },
+    quest: { borderColor: "#FFC9B8", backgroundColor: "#FFF4EF" },
+    questDone: { borderColor: "#A8E0BE", backgroundColor: "#EFFAF3" },
     questTasks: { fontFamily: "Archivo_400Regular", fontSize: 13, lineHeight: 20, color: COLOR.text2, marginTop: 6, marginBottom: 12 },
     questBtn: { backgroundColor: COLOR.accent, borderRadius: 12, minHeight: 46, alignItems: "center", justifyContent: "center" },
     questBtnDone: { backgroundColor: COLOR.panel2, borderWidth: 1, borderColor: COLOR.line },
@@ -1170,7 +1106,7 @@ function (g, r, i, a, m, _e, d) {
     tokenTxt: { fontFamily: "AzeretMono_500Medium", fontSize: 11 },
     actionRow: { flexDirection: "row", gap: 8, marginTop: 12 },
     actionBtn: { flex: 1, minHeight: 44, borderRadius: 12, backgroundColor: COLOR.panel2, borderWidth: 1, borderColor: COLOR.line, alignItems: "center", justifyContent: "center" },
-    actionBtnHot: { borderColor: COLOR.fog, backgroundColor: "#2a2111" },
+    actionBtnHot: { borderColor: COLOR.fog, backgroundColor: "#FFF1DB" },
     actionBtnTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 13.5, color: COLOR.text },
     logItem: { flexDirection: "row", gap: 10, paddingVertical: 10, alignItems: "flex-start" },
     logDivider: { borderTopWidth: 1, borderTopColor: COLOR.line },
@@ -1188,7 +1124,7 @@ function (g, r, i, a, m, _e, d) {
     nav: { flexDirection: "row", backgroundColor: COLOR.panel, paddingBottom: 6, paddingTop: 4 },
     navItem: { flex: 1, alignItems: "center", justifyContent: "center", minHeight: 52 },
     navIconWrap: { width: 46, height: 30, borderRadius: 15, alignItems: "center", justifyContent: "center" },
-    navIconOn: { backgroundColor: "#2a3442" },
+    navIconOn: { backgroundColor: "#E3EEFF" },
     navIcon: { fontSize: 17 },
     navDot: { position: "absolute", top: 3, right: 9, width: 8, height: 8, borderRadius: 4, backgroundColor: COLOR.accent, borderWidth: 1.5, borderColor: COLOR.panel },
     navLabel: { fontFamily: "Archivo_500Medium", fontSize: 10.5, color: COLOR.text3, marginTop: 2 },
@@ -1198,19 +1134,19 @@ function (g, r, i, a, m, _e, d) {
     // chips
     chips: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
     chip: { borderRadius: 999, paddingHorizontal: 9, paddingVertical: 4, borderWidth: 1 },
-    chipGood: { backgroundColor: "#10241a", borderColor: "#1f4a33" },
-    chipBad: { backgroundColor: "#2a1513", borderColor: "#5a2622" },
-    chipGold: { backgroundColor: "#211c0c", borderColor: "#4a3d10" },
+    chipGood: { backgroundColor: "#E2F6EA", borderColor: "#A8E0BE" },
+    chipBad: { backgroundColor: "#FDE7E7", borderColor: "#F6B8B8" },
+    chipGold: { backgroundColor: "#FFF6D6", borderColor: "#F1D27A" },
     chipNeutral: { backgroundColor: COLOR.panel2, borderColor: COLOR.line },
     chipTxt: { fontFamily: "AzeretMono_500Medium", fontSize: 11 },
 
     // toast
     toastWrap: { position: "absolute", left: 12, right: 12, bottom: 132, alignItems: "center", zIndex: 50 },
-    toast: { maxWidth: 440, width: "100%", backgroundColor: "#243040", borderRadius: 14, paddingVertical: 12, paddingHorizontal: 14, borderLeftWidth: 4, shadowColor: "#000", shadowOpacity: 0.45, shadowRadius: 16, shadowOffset: { width: 0, height: 6 } },
+    toast: { maxWidth: 440, width: "100%", backgroundColor: "#FFFFFF", borderRadius: 14, paddingVertical: 12, paddingHorizontal: 14, borderLeftWidth: 4, shadowColor: "#000", shadowOpacity: 0.45, shadowRadius: 16, shadowOffset: { width: 0, height: 6 } },
     toastTxt: { fontFamily: "Archivo_500Medium", fontSize: 13, lineHeight: 18, color: COLOR.text },
 
     // sheets & modals
-    sheetOverlay: { flex: 1, backgroundColor: "rgba(6,9,12,0.8)", justifyContent: "flex-end", cursor: "default" },
+    sheetOverlay: { flex: 1, backgroundColor: "rgba(24,34,48,0.42)", justifyContent: "flex-end", cursor: "default" },
     sheet: {
       backgroundColor: COLOR.panel,
       borderTopLeftRadius: 24,
@@ -1237,15 +1173,16 @@ function (g, r, i, a, m, _e, d) {
     deltaTxt: { fontFamily: "AzeretMono_600SemiBold", fontSize: 12 },
     notes: { marginTop: 12, gap: 6 },
     note: { flexDirection: "row", gap: 10, alignItems: "flex-start", backgroundColor: COLOR.panel2, borderRadius: 12, padding: 10 },
-    noteBad: { backgroundColor: "#2a1513" },
-    noteGood: { backgroundColor: "#10241a" },
+    noteBad: { backgroundColor: "#FDE7E7" },
+    noteGood: { backgroundColor: "#E2F6EA" },
     noteIcon: { fontSize: 15, width: 20, textAlign: "center" },
     noteTxt: { flex: 1, fontFamily: "Archivo_500Medium", fontSize: 13, lineHeight: 18, color: COLOR.text },
     reportQuest: { fontFamily: "Archivo_500Medium", fontSize: 13, color: COLOR.text2, marginTop: 14, marginBottom: 2 },
     primaryBtn: { backgroundColor: COLOR.accent, borderRadius: 14, minHeight: 52, alignItems: "center", justifyContent: "center", marginTop: 14 },
     primaryTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 15.5, color: "#fff" },
-    centerOverlay: { flex: 1, backgroundColor: "rgba(6,9,12,0.84)", justifyContent: "center", alignItems: "center", padding: 14 },
-    dilemma: { backgroundColor: COLOR.panel, borderRadius: 22, padding: 18, width: "100%", maxWidth: 460, maxHeight: "92%", borderWidth: 1, borderColor: "#5a4416", borderTopWidth: 3, borderTopColor: COLOR.fog },
+    centerOverlay: { flex: 1, backgroundColor: "rgba(24,34,48,0.45)", justifyContent: "center", alignItems: "center", padding: 14 },
+    dilemma: { backgroundColor: COLOR.panel, borderRadius: 22, padding: 18, width: "100%", maxWidth: 460, maxHeight: "92%", borderWidth: 1, borderColor: "#F3C77A", borderTopWidth: 3, borderTopColor: COLOR.fog },
+    dilemmaPic: { alignSelf: "center", marginTop: 8 },
     dilemmaTitle: { fontFamily: "Archivo_600SemiBold", fontSize: 22, letterSpacing: -0.5, color: COLOR.text, marginTop: 12 },
     dilemmaDesc: { fontFamily: "Archivo_400Regular", fontSize: 14.5, lineHeight: 22, color: COLOR.text2, marginTop: 8, marginBottom: 16 },
     option: { backgroundColor: COLOR.panel2, borderRadius: 16, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: COLOR.line },
@@ -1266,5 +1203,62 @@ function (g, r, i, a, m, _e, d) {
     stratBtn: { backgroundColor: COLOR.act, borderRadius: 12, minHeight: 44, alignItems: "center", justifyContent: "center" },
     stratBtnOff: { backgroundColor: COLOR.panel, borderWidth: 1, borderColor: COLOR.line },
     stratBtnTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 14, color: "#fff" },
+
+    // ---- BitLife-style home ----
+    header: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 14, paddingTop: 12, paddingBottom: 12, backgroundColor: "#FFFFFF", borderBottomLeftRadius: 22, borderBottomRightRadius: 22, shadowColor: "#2B3A55", shadowOpacity: 0.08, shadowRadius: 14, shadowOffset: { width: 0, height: 4 }, zIndex: 2, overflow: "hidden" },
+    avatarWrap: { width: 66, height: 66, borderRadius: 33, backgroundColor: "#E9F0FF", alignItems: "center", justifyContent: "center", borderWidth: 3, borderColor: "#FFFFFF", shadowColor: "#2D7FF9", shadowOpacity: 0.25, shadowRadius: 8, shadowOffset: { width: 0, height: 2 } },
+    moodBadge: { position: "absolute", right: -6, bottom: -4, width: 30, height: 30, borderRadius: 15, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOpacity: 0.15, shadowRadius: 4, shadowOffset: { width: 0, height: 1 } },
+    hName: { fontFamily: "Archivo_600SemiBold", fontSize: 19, letterSpacing: -0.4, color: COLOR.text },
+    hSub: { fontFamily: "Archivo_500Medium", fontSize: 12.5, color: COLOR.text2, marginTop: 1 },
+    hChips: { flexDirection: "row", gap: 6, marginTop: 6, flexWrap: "wrap" },
+    bank: { alignItems: "flex-end", gap: 2 },
+    bankLabel: { fontFamily: "AzeretMono_500Medium", fontSize: 9.5, letterSpacing: 1, color: COLOR.text3 },
+    bankValue: { fontFamily: "AzeretMono_600SemiBold", fontSize: 20, letterSpacing: -0.6 },
+    weekPill: { marginTop: 4, backgroundColor: "#2D7FF9", borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
+    weekPillTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 11.5, color: "#FFFFFF" },
+    stagePill: { borderRadius: 999, paddingHorizontal: 9, paddingVertical: 4, backgroundColor: "#E3EEFF" },
+    stagePillTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 11, color: "#1F5FD1" },
+    expPill: { borderRadius: 999, paddingHorizontal: 9, paddingVertical: 4, backgroundColor: "#FFF2C7" },
+    expPillTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 11, color: "#8A6400" },
+    langBtn: { borderRadius: 999, paddingHorizontal: 9, paddingVertical: 4, backgroundColor: "#F1F3F7" },
+    langBtnTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 11, color: COLOR.text2 },
+    tiles: { paddingHorizontal: 12, paddingVertical: 12, gap: 10 },
+    tile: { width: 112, borderRadius: 20, padding: 12, gap: 4, shadowColor: "#2B3A55", shadowOpacity: 0.06, shadowRadius: 8, shadowOffset: { width: 0, height: 3 } },
+    tileLabel: { fontFamily: "Archivo_600SemiBold", fontSize: 13.5, color: COLOR.text, marginTop: 6 },
+    tileSub: { fontFamily: "Archivo_500Medium", fontSize: 11.5, color: COLOR.text2 },
+    tileBadge: { position: "absolute", top: 8, right: 8, minWidth: 22, height: 22, borderRadius: 11, paddingHorizontal: 6, backgroundColor: "#FF453A", alignItems: "center", justifyContent: "center" },
+    tileBadgeTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 11, color: "#FFFFFF" },
+    fogBanner: { flexDirection: "row", alignItems: "center", gap: 10, marginHorizontal: 12, marginBottom: 8, backgroundColor: "#FFF1DB", borderRadius: 16, padding: 10, borderWidth: 1, borderColor: "#F3C77A" },
+    feed: { flex: 1, marginHorizontal: 12, backgroundColor: "#FFFFFF", borderRadius: 22, shadowColor: "#2B3A55", shadowOpacity: 0.06, shadowRadius: 10, shadowOffset: { width: 0, height: 3 } },
+    feedInner: { padding: 14, paddingBottom: 18 },
+    weekHead: { alignSelf: "flex-start", marginTop: 10, marginBottom: 6, backgroundColor: "#E9F0FF", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 5 },
+    weekHeadTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 13, color: "#1F5FD1" },
+    logRow: { flexDirection: "row", gap: 10, paddingVertical: 7, alignItems: "flex-start" },
+    logIcon: { width: 38, height: 38, borderRadius: 12, backgroundColor: "#F2F5FA", alignItems: "center", justifyContent: "center" },
+    logTitle: { fontFamily: "Archivo_600SemiBold", fontSize: 14, color: COLOR.text },
+    logText: { fontFamily: "Archivo_400Regular", fontSize: 13, lineHeight: 18.5, color: COLOR.text2, marginTop: 2 },
+    statsPanel: { marginHorizontal: 12, marginTop: 10, backgroundColor: "#FFFFFF", borderRadius: 20, paddingHorizontal: 14, paddingVertical: 10, gap: 7, overflow: "hidden", shadowColor: "#2B3A55", shadowOpacity: 0.06, shadowRadius: 10, shadowOffset: { width: 0, height: 3 } },
+    statRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+    statLabel: { width: 64, fontFamily: "Archivo_600SemiBold", fontSize: 13, color: COLOR.text },
+    statTrack: { flex: 1, height: 20, borderRadius: 10, backgroundColor: "#EEF1F6", overflow: "hidden", justifyContent: "center" },
+    statFill: { position: "absolute", start: 0, top: 0, bottom: 0, borderRadius: 10 },
+    statPct: { fontFamily: "AzeretMono_600SemiBold", fontSize: 11, color: "#1C2430", paddingHorizontal: 8, textAlign: "right" },
+    companyCard: { margin: 12, marginBottom: 0, backgroundColor: "#FFFFFF", borderRadius: 20, padding: 16, borderWidth: 1, borderColor: COLOR.line },
+    backBar: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 4 },
+    backTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 14, color: "#2D7FF9" },
+    backTitle: { fontFamily: "Archivo_600SemiBold", fontSize: 16, color: COLOR.text },
+    nav: { flexDirection: "row", alignItems: "flex-end", backgroundColor: "#FFFFFF", marginTop: 10, paddingTop: 6, paddingBottom: 8, borderTopLeftRadius: 24, borderTopRightRadius: 24, shadowColor: "#2B3A55", shadowOpacity: 0.1, shadowRadius: 16, shadowOffset: { width: 0, height: -4 } },
+    navItem: { flex: 1, alignItems: "center", justifyContent: "flex-end", minHeight: 58 },
+    navIconWrap: { width: 50, height: 40, borderRadius: 14, alignItems: "center", justifyContent: "center" },
+    navIconOn: { backgroundColor: "#E9F0FF" },
+    navLabel: { fontFamily: "Archivo_600SemiBold", fontSize: 11, color: COLOR.text3, marginTop: 2 },
+    navLabelOn: { color: "#1F5FD1" },
+    navCenter: { flex: 1.2, alignItems: "center" },
+    ageBtn: { width: 76, height: 76, borderRadius: 38, marginTop: -30, backgroundColor: "#34C759", alignItems: "center", justifyContent: "center", borderWidth: 5, borderColor: "#FFFFFF", shadowColor: "#1E8E3E", shadowOpacity: 0.45, shadowRadius: 12, shadowOffset: { width: 0, height: 5 } },
+    agePlus: { fontFamily: "Archivo_600SemiBold", fontSize: 30, lineHeight: 30, color: "#FFFFFF", marginTop: -2 },
+    ageTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 11, color: "#FFFFFF", marginTop: -1 },
+    ageHint: { fontFamily: "Archivo_500Medium", fontSize: 10.5, marginTop: 4, maxWidth: 96, textAlign: "center" },
+    toast: { maxWidth: 440, width: "100%", backgroundColor: "#FFFFFF", borderRadius: 16, paddingVertical: 12, paddingHorizontal: 14, borderLeftWidth: 5, shadowColor: "#2B3A55", shadowOpacity: 0.2, shadowRadius: 18, shadowOffset: { width: 0, height: 6 } },
+    toastWrap: { position: "absolute", left: 12, right: 12, top: 96, alignItems: "center", zIndex: 50 },
   });
 }
