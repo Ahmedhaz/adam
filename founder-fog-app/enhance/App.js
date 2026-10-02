@@ -222,6 +222,12 @@ function (g, r, i, a, m, _e, d) {
 // @include economy.js
 // @include market.js
 // @include org.js
+// @include content/dl_product.js
+// @include content/dl_people.js
+// @include content/dl_life.js
+// @include content/dl_mena.js
+// @include content/mail.js
+// @include stories.js
 
   function buildReport(before, after) {
     const rows = [
@@ -442,7 +448,9 @@ function (g, r, i, a, m, _e, d) {
     const chooseMail = (card, side) => {
       const s = engine.state;
       s.inbox = s.inbox.filter((m) => m.id !== card.id);
-      const next = applyEffects(engine, card.title, card[side].label, fx(card[side], s), card[side].log);
+      s.mailLog = { ...(s.mailLog || {}), [card.id]: { side: side, week: s.week } }; // threads remember
+      let next = applyEffects(engine, card.title, card[side].label, fx(card[side], s), card[side].log);
+      if (card[side].mx) applyFx(engine, card[side].mx), (next = engine.state);
       setS({ ...next });
       buzz(12);
       notify(card[side].log, "info");
@@ -872,7 +880,9 @@ function (g, r, i, a, m, _e, d) {
                             jsx(Text, { style: st.optionTitle, children: S.pendingEvent[key].title }),
                           ],
                         }),
-                        jsx(Chips, { items: previewChips(S.pendingEvent[key].preview), style: { marginTop: 10 } }),
+                        S.mentalClarity < 30
+                          ? jsx(Text, { style: [st.optionFog], children: "🌫️ Too foggy to read the consequences." })
+                          : jsx(View, { style: fogged && { opacity: fogOp }, children: jsx(Chips, { items: previewChips(S.pendingEvent[key].preview), style: { marginTop: 10 } }) }),
                       ],
                     },
                     key,
@@ -1223,6 +1233,7 @@ function (g, r, i, a, m, _e, d) {
     optionTop: { flexDirection: "row", alignItems: "center", gap: 10 },
     optionKey: { width: 28, height: 28, borderRadius: 8, backgroundColor: COLOR.ink, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: COLOR.lineHot },
     optionKeyTxt: { fontFamily: "AzeretMono_600SemiBold", fontSize: 13, color: COLOR.text },
+    optionFog: { fontFamily: "Archivo_500Medium", fontSize: 12.5, color: COLOR.text3, marginTop: 10 },
     optionTitle: { flex: 1, fontFamily: "Archivo_600SemiBold", fontSize: 15, color: COLOR.text },
     noRight: { fontFamily: "AzeretMono_500Medium", fontSize: 10, letterSpacing: 1.5, color: COLOR.text3, textAlign: "center", marginTop: 6 },
     why: { backgroundColor: COLOR.panel2, borderRadius: 14, padding: 12, marginBottom: 14 },

@@ -129,6 +129,9 @@ ENDINGS_PATCH = (
     "cofounder:{ground:s.COLOR.ink,accent:s.COLOR.crit,kicker:'ENDING \\xb7 CO-FOUNDER BREAKUP',title:'Tariq left, and the company went with him.',"
     "body:'Half the code, half the late nights and most of the reasons early customers trusted you walked out of the same door.',"
     "closing:'Most young startups die of founder problems, not market problems.',lift:!0},"
+    "alone:{ground:s.COLOR.burnoutGround,accent:s.COLOR.fog,kicker:'ENDING \\xb7 ALONE',title:'You built a company, and lost everyone who would have celebrated it.',"
+    "body:'Nour moved out in the spring. Your parents stopped asking how it was going. The company is still running. You are not sure who it is for.',"
+    "closing:'The people outside the company are not a distraction from it.',lift:!1},"
     "exit:{ground:s.COLOR.ink,accent:s.COLOR.gold,kicker:'ENDING \\xb7 EXIT'",
 )
 

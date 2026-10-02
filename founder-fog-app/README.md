@@ -53,6 +53,11 @@ any repo. Enhancements are applied on top of it:
 - `enhance/org.js` is people and capital: hires with jobs and a ramp-up,
   culture, term sheets that close after due diligence, revenue-based
   financing, a grant, angel bridges, the board and the co-founder
+- `enhance/stories.js` deals the dilemma library and runs echoes (choices
+  that come back weeks later), the Middle East calendar and the people
+  outside work; the content itself lives in `enhance/content/` (one JS pack
+  plus its Arabic per theme; `content/check.mjs` validates a pack and
+  `content/BRIEF.md` is the writing brief)
 - `enhance/build.py` applies small patches to the game engine and wraps the
   page for mobile (PWA head, safe areas)
 

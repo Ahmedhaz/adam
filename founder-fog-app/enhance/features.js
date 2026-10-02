@@ -284,7 +284,10 @@
       const c = cardById(m.id);
       if (!c) return;
       ignored++;
-      if (c.ignore && !has(s, "delegator")) applyEffects(engine, c.title, "Ignored", fx(c.ignore, s), c.ignore.log);
+      if (c.ignore && !has(s, "delegator")) {
+        applyEffects(engine, c.title, "Ignored", fx(c.ignore, s), c.ignore.log);
+        if (c.ignore.mx) applyFx(engine, c.ignore.mx);
+      }
     });
     s.inbox = [];
     return ignored;
@@ -454,7 +457,7 @@
                 style: fst.fromRow,
                 children: [jsx(Pic, { e: leadEmoji(card.from)[0] || "📧", size: 52 }), jsx(Text, { style: [fst.from, { flex: 1 }], children: leadEmoji(card.from)[1] })],
               }),
-              jsx(Text, { style: fst.mailTitle, children: card.title }),
+              jsx(Text, { style: fst.mailTitle, children: Fog.isFogged(S.mentalClarity) ? Fog.fogText(card.title, S.mentalClarity, "mail" + card.id, S.week) : card.title }),
               jsx(Text, { style: fst.mailBody, children: card.body }),
               card.ignore && jsx(Text, { style: fst.warn, children: has(S, "delegator") ? "Ignoring is safe (Delegator)." : "⚠️ Ignoring this has consequences." }),
               jsx(Text, { style: fst.swipeHint, children: "← swipe or tap →" }),
@@ -471,7 +474,7 @@
                   onPress: () => choose(side),
                   children: [
                     jsx(Text, { style: fst.choiceLabel, children: (side === "left" ? "← " : "") + card[side].label + (side === "right" ? " →" : "") }),
-                    jsx(Chips, { items: effectChips(fx(card[side], S)), style: { marginTop: 8, justifyContent: "center" } }),
+                    jsx(Chips, { items: card[side].mx ? previewChips(previewOf(card[side].mx)) : effectChips(fx(card[side], S)), style: { marginTop: 8, justifyContent: "center" } }),
                   ],
                 },
                 side,

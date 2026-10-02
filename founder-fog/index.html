@@ -854,7 +854,10 @@ __d(function (g, r, i, a, m, _e, d) {
       const c = cardById(m.id);
       if (!c) return;
       ignored++;
-      if (c.ignore && !has(s, "delegator")) applyEffects(engine, c.title, "Ignored", fx(c.ignore, s), c.ignore.log);
+      if (c.ignore && !has(s, "delegator")) {
+        applyEffects(engine, c.title, "Ignored", fx(c.ignore, s), c.ignore.log);
+        if (c.ignore.mx) applyFx(engine, c.ignore.mx);
+      }
     });
     s.inbox = [];
     return ignored;
@@ -1024,7 +1027,7 @@ __d(function (g, r, i, a, m, _e, d) {
                 style: fst.fromRow,
                 children: [jsx(Pic, { e: leadEmoji(card.from)[0] || "📧", size: 52 }), jsx(Text, { style: [fst.from, { flex: 1 }], children: leadEmoji(card.from)[1] })],
               }),
-              jsx(Text, { style: fst.mailTitle, children: card.title }),
+              jsx(Text, { style: fst.mailTitle, children: Fog.isFogged(S.mentalClarity) ? Fog.fogText(card.title, S.mentalClarity, "mail" + card.id, S.week) : card.title }),
               jsx(Text, { style: fst.mailBody, children: card.body }),
               card.ignore && jsx(Text, { style: fst.warn, children: has(S, "delegator") ? "Ignoring is safe (Delegator)." : "⚠️ Ignoring this has consequences." }),
               jsx(Text, { style: fst.swipeHint, children: "← swipe or tap →" }),
@@ -1041,7 +1044,7 @@ __d(function (g, r, i, a, m, _e, d) {
                   onPress: () => choose(side),
                   children: [
                     jsx(Text, { style: fst.choiceLabel, children: (side === "left" ? "← " : "") + card[side].label + (side === "right" ? " →" : "") }),
-                    jsx(Chips, { items: effectChips(fx(card[side], S)), style: { marginTop: 8, justifyContent: "center" } }),
+                    jsx(Chips, { items: card[side].mx ? previewChips(previewOf(card[side].mx)) : effectChips(fx(card[side], S)), style: { marginTop: 8, justifyContent: "center" } }),
                   ],
                 },
                 side,
@@ -1819,7 +1822,7 @@ __d(function (g, r, i, a, m, _e, d) {
   function scaleGains(engine, before, isMarketing) {
     const s = engine.state,
       d = s.monthlyRevenue - before;
-    if (d > 0) s.monthlyRevenue = Math.round(before + d * growthMult(s) * teamMult(s, isMarketing));
+    if (d > 0) s.monthlyRevenue = Math.round(before + d * growthMult(s) * teamMult(s, isMarketing) * seasonMult(s));
     // before fit, paid users don't stick
     if (isMarketing && ensureMarket(s).pmf < 40) s.churnRate = Math.min(25, s.churnRate + 0.4);
   }
@@ -2666,6 +2669,1342 @@ __d(function (g, r, i, a, m, _e, d) {
     optSub: { fontFamily: "Archivo_400Regular", fontSize: 12, lineHeight: 16, color: COLOR.text3, marginTop: 2 },
   });
 
+  const DL_PRODUCT = [
+    {
+      id: "dl_prod_01",
+      cat: "Product",
+      icon: "🤝",
+      title: "Omar Sabry wants his ERP connected first",
+      desc: "Omar's company pays you $2,400 a month and will double it if you integrate with their old ERP. Tariq estimates 5 weeks of work. Nobody else uses that ERP.",
+      when: (s) => s.monthlyRevenue >= 3000,
+      A: { title: "Build the integration", fx: { mrrPct: 0.1, techDebt: 6, pmf: -3, cofounder: -4 }, log: "Omar sent a thumbs-up voice note. Tariq cleared the next 5 weeks of the roadmap.",
+           echo: { after: [10, 20], icon: "🕳", title: "The ERP connector breaks again", text: "Omar's IT team upgraded their ERP over the weekend. The connector only you maintain stopped syncing, and Tariq spent Sunday rebuilding it.", fx: { techDebt: 6, morale: -5, cofounder: -4 } } },
+      B: { title: "Say no and keep the roadmap", fx: { mrrPct: -0.02, pmf: 3, trust: -2 }, log: "Omar said he understood. His next email was two lines shorter than usual." },
+    },
+    {
+      id: "dl_prod_02",
+      cat: "Product",
+      icon: "📊",
+      title: "The free dashboard everyone loves",
+      desc: "The public dashboard drives 31% of weekly sessions and earns nothing. It costs $900 a month in servers, and every paid feature waits behind its bug list.",
+      when: (s) => s.activeUsers >= 500,
+      A: { title: "Shut the dashboard down", fx: { baseBurn: -600, users: -250, pmf: -2, clarity: 4 }, log: "The shutdown banner went up on Monday. By Wednesday there were 40 angry replies on the forum." },
+      B: { title: "Keep it and pay the bill", fx: { cash: -1500, techDebt: 4, users: 100, clarity: -2 },
+           log: "The dashboard stays. So does the server invoice.",
+           echo: { after: [12, 24], icon: "📈", title: "The dashboard starts selling for you", text: "A procurement manager found you through the free dashboard and asked for a quote. Then two more did. Sales now calls it the front door.", fx: { users: 300, mrrPct: 0.05, pmf: 2 } } },
+    },
+    {
+      id: "dl_prod_03",
+      cat: "Product",
+      icon: "🔄",
+      title: "Tariq wants to rewrite the core",
+      desc: "Tariq has a 14-page document explaining why the codebase can't take another year. He wants 10 weeks with no new features. Sales wants the export tool by the end of the month.",
+      when: (s) => s.techDebt >= 40,
+      A: { title: "Approve the rewrite", fx: { techDebt: -12, mrrPct: -0.04, pmf: -3, cofounder: 8 }, log: "Tariq printed the plan and taped it to the wall. The export tool moved to next quarter.",
+           echo: { after: [10, 18], icon: "✅", title: "The new core is live", text: "The rewrite shipped three weeks late, but pages load twice as fast and the Monday bug triage now takes 20 minutes instead of a morning.", fx: { techDebt: -8, morale: 6, churn: -0.4 } } },
+      B: { title: "Patch it and keep shipping", fx: { pmf: 2, techDebt: 5, cofounder: -10 }, log: "The export tool shipped on time. Tariq closed his document without a word.",
+           echo: { after: [8, 16], icon: "🚨", title: "The 2am page", text: "The database locked up at 2am during a bulk import. Tariq fixed it by 5am and posted one line in Slack: same root cause as the rewrite document.", fx: { techDebt: 6, morale: -6, churn: 0.5 } } },
+    },
+    {
+      id: "dl_prod_04",
+      cat: "Product",
+      icon: "🤖",
+      title: "Everyone is shipping an AI assistant",
+      desc: "Layla forwards a list of 6 competitors who added an AI assistant this quarter. Hers is a short note: investors will ask. Tariq says a decent one takes 4 weeks and a serious API bill.",
+      when: (s) => s.week >= 10,
+      A: { title: "Build the AI assistant", fx: { cash: -4000, baseBurn: 600, trust: 6, users: 300, techDebt: 4 }, log: "The assistant launched with a waitlist and a purple gradient. Signups spiked for a week.",
+           echo: { after: [8, 14], icon: "🧾", title: "The model bill arrives", text: "The AI assistant's API invoice came in at three times the estimate. Most of the usage is people asking it to say hello.", fx: { cash: -3000, clarity: -4 } } },
+      B: { title: "Fix what customers asked for", fx: { trust: -5, pmf: 3, clarity: 3 }, log: "You told Layla the assistant can wait. Her reply was a single 'noted'." },
+    },
+    {
+      id: "dl_prod_05",
+      cat: "Product",
+      icon: "📱",
+      title: "Native app or a better mobile site",
+      desc: "68% of new signups come from phones, and the mobile site feels like a desktop page squeezed into a pocket. An agency quotes $6,000 for native apps. Your own team could fix the web in 3 weeks.",
+      when: (s) => s.activeUsers >= 800,
+      A: { title: "Hire the agency for native apps", fx: { cash: -6000, baseBurn: 400, users: 500, techDebt: 4 }, log: "The agency sent a 40-slide kickoff deck. Now you maintain three codebases.",
+           echo: { after: [12, 22], icon: "⭐", title: "The app store reviews come in", text: "The app sits at 4.6 stars, and push reminders bring people back on Thursdays. Retention on mobile is now better than on desktop.", fx: { users: 600, churn: -0.5 } } },
+      B: { title: "Rebuild the mobile web in-house", fx: { cash: -1200, users: 150, pmf: 2, morale: -4 }, log: "The team spent 3 weeks testing on borrowed phones. Mobile signups ticked up." },
+    },
+    {
+      id: "dl_prod_06",
+      cat: "Product",
+      icon: "🧩",
+      title: "Someone is scraping you to build on top",
+      desc: "A developer called Karim Haddad has been scraping your app to power his own tool, with 300 users. He emails asking for an official API instead of a lawsuit.",
+      when: (s) => s.stage >= 2,
+      A: { title: "Open a public API", fx: { techDebt: 6, pmf: 3, users: 300, clarity: -4 }, log: "Docs went live on a Thursday. Karim's tool switched over within a day.",
+           echo: { after: [14, 26], icon: "🤝", title: "A small ecosystem appears", text: "Four tools now plug into your API, and two of their customers upgraded to your top plan to get higher limits. Karim calls it a partnership.", fx: { mrrPct: 0.06, trust: 3 } } },
+      B: { title: "Block the scraper and stay closed", fx: { clarity: 3, techDebt: -2, users: -100, pmf: -2 }, log: "The scraper was blocked by Friday. Karim posted a thread about it that got 2,000 likes." },
+    },
+    {
+      id: "dl_prod_07",
+      cat: "Product",
+      icon: "🏷",
+      title: "Launch a free tier",
+      desc: "A competitor just launched free forever, and your trial signups dropped 22% in a month. Layla thinks a free tier would fill the funnel. Your support person already works until 9pm.",
+      when: (s) => s.mkt.pmf >= 30 && (s.sector.id === "saas_ai" || s.sector.id === "edtech"),
+      A: { title: "Launch the free tier", fx: { users: 1200, baseBurn: 500, arpu: -2, trust: 4 }, log: "Free signups went past 1,000 in the first week. The paid plan page got fewer clicks.",
+           echo: { after: [8, 16], icon: "📨", title: "Free users fill the inbox", text: "Free accounts now send 70% of support tickets and pay 0% of the bills. Your support person asked whether free means free help too.", fx: { morale: -6, cash: -2000, churn: 0.3 } } },
+      B: { title: "Stay paid-only and sharpen the trial", fx: { users: -100, arpu: 2, trust: -3, pmf: 1 }, log: "You extended the trial to 21 days and rewrote the onboarding emails. Layla was unconvinced." },
+    },
+    {
+      id: "dl_prod_08",
+      cat: "Product",
+      icon: "⚠",
+      title: "Your payment processor keeps going down",
+      desc: "The processor failed 3 times this month, once for 4 hours on salary day. Switching means a 6-week migration and re-certifying with two banks. They're offering service credits to stay.",
+      when: (s) => s.sector.id === "fintech",
+      A: { title: "Migrate to a new processor", fx: { cash: -5000, morale: -6, churn: -0.5, techDebt: -4 }, log: "The team spent 3 weekends on bank certification calls. Nobody has mentioned the old processor since." },
+      B: { title: "Take the credits and stay", fx: { cash: 1500, churn: 0.5, trust: -3 }, log: "The processor sent a credit note and a promise about new infrastructure.",
+           echo: { after: [6, 14], icon: "💥", title: "Another outage, on payday", text: "The processor went down again on the 25th, right when salaries landed. Your support line had 200 calls before noon.", fx: { churn: 1, mrrPct: -0.06, clarity: -5 } } },
+    },
+    {
+      id: "dl_prod_09",
+      cat: "Product",
+      icon: "🛠",
+      title: "Fourteen kinds of button",
+      desc: "Your designer Hana counted 14 different button styles in the app. She wants 6 weeks to build a proper design system. The roadmap has 3 features promised to customers in that window.",
+      when: (s) => s.team.length >= 4,
+      A: { title: "Give Hana the 6 weeks", fx: { cash: -2500, pmf: -2, morale: 5, techDebt: -5 }, log: "Hana's design system file has 212 components. Two promised features slipped.",
+           echo: { after: [10, 20], icon: "🚀", title: "Features ship in days now", text: "New screens are built from Hana's components in an afternoon. The last 3 features shipped in the time one used to take.", fx: { techDebt: -6, pmf: 3, morale: 4 } } },
+      B: { title: "Ship the promised features", fx: { pmf: 3, techDebt: 5, morale: -4, culture: -3 }, log: "All 3 features shipped. Hana's message to you was polite and very short." },
+    },
+    {
+      id: "dl_prod_10",
+      cat: "Product",
+      icon: "🩺",
+      title: "Moving patient records to a new database",
+      desc: "The old database can't meet the new data residency rules. Tariq can migrate 80,000 patient records in one weekend, or run both systems in parallel for 3 months.",
+      when: (s) => s.sector.id === "healthtech" && s.week >= 15,
+      A: { title: "Do it in one weekend", fx: { cash: -2000, techDebt: -10, clarity: -8, churn: 0.5 }, log: "Tariq and two engineers worked from Friday night to Sunday at 6pm. 31 records needed manual fixes." },
+      B: { title: "Run both systems for 3 months", fx: { baseBurn: 700, techDebt: -4, morale: -3, clarity: 2 }, log: "Every record is now written twice. The cloud bill noticed before anyone else did.",
+           echo: { after: [12, 20], icon: "🛡", title: "The auditor finds nothing", text: "The regulator's auditor spent two days in your systems and left with no findings. The parallel run left a clean trail for every record.", fx: { trust: 6, baseBurn: -700, xp: 40 } } },
+    },
+    {
+      id: "dl_prod_11",
+      cat: "Growth",
+      icon: "📰",
+      title: "Trusted by 500+ companies",
+      desc: "Your new marketing lead Salma wants the homepage to say 'Trusted by 500+ companies'. You have 140 paying teams. Counting every trial ever started, it's technically true.",
+      A: { title: "Publish the 500+ claim", fx: { users: 400, mrrPct: 0.04, culture: -4 }, log: "The new homepage went live. Demo requests went up the same week.",
+           echo: { after: [10, 22], icon: "🕵", title: "A journalist counts your customers", text: "A tech newsletter compared your 500+ claim with your own case studies page. Two prospects forwarded the article to you with a question mark.", fx: { trust: -6, users: -200, clarity: -6 } } },
+      B: { title: "Say 140 teams and mean it", fx: { users: 100, culture: 4, morale: -2, clarity: 2 }, log: "The homepage now says 140 teams. Salma rewrote the campaign over the weekend and didn't hide her mood." },
+    },
+    {
+      id: "dl_prod_12",
+      cat: "Growth",
+      icon: "💸",
+      title: "60% off before the fundraise",
+      desc: "Your seed meeting is in 8 weeks. A 60% discount for 3 months would roughly double new signups before then. Layla says nobody reads cohort tables at the first meeting.",
+      when: (s) => s.stage <= 2 && s.week >= 12,
+      A: { title: "Run the discount", fx: { users: 900, arpu: -4, trust: 6, cash: -2500 }, log: "The growth chart in the deck now bends upwards. The revenue line underneath it doesn't.",
+           echo: { after: [12, 20], icon: "📉", title: "The discount cliff", text: "The 3 months of 60% off ended. Half the discount cohort cancelled on the renewal page, and the investors who funded you watched it happen in the monthly update.", fx: { churn: 1.5, mrrPct: -0.08, trust: -5 } } },
+      B: { title: "Pitch with the real numbers", fx: { trust: -3, clarity: 5, arpu: 1 }, log: "The deck shows slower growth and clean retention. One partner asked why you weren't growing faster." },
+    },
+    {
+      id: "dl_prod_13",
+      cat: "Growth",
+      icon: "🤩",
+      title: "An influencer with 1.2M followers",
+      desc: "A lifestyle influencer in Dubai offers 3 posts and a story series for $12,000. Her agency sends a media kit with 1.2M followers and 6% engagement. Half your marketing budget for the quarter.",
+      when: (s) => s.cash >= 30000 && (s.sector.id === "ecommerce_marketplace" || s.sector.id === "edtech"),
+      A: { title: "Sign the influencer", fx: { cash: -12000, users: 1500, churn: 0.6 }, log: "The first post went up on Thursday evening. Your servers noticed by 9pm.",
+           echo: { after: [6, 12], icon: "📉", title: "The influencer crowd moves on", text: "Most of the people who signed up from the influencer's posts never came back after the first week. The cohort chart looks like a ski slope.", fx: { users: -400, churn: 0.4 } } },
+      B: { title: "Split it across 15 micro-creators", fx: { cash: -4000, users: 400, clarity: -4, pmf: 1 }, log: "You now manage 15 WhatsApp threads with creators. The signups are smaller and stickier." },
+    },
+    {
+      id: "dl_prod_14",
+      cat: "Growth",
+      icon: "💵",
+      title: "Pay $20 for every referral",
+      desc: "Your growth hire Youssef wants to pay $20 cash for every referred user who signs up. Credits worked poorly last time. Cash moves people, he says.",
+      A: { title: "Pay cash for referrals", fx: { cash: -4000, users: 1000, churn: 0.4 }, log: "The referral link spread through university group chats within a week.",
+           echo: { after: [5, 10], icon: "🕵", title: "The referral ring", text: "Youssef found 300 accounts created from the same few phones, all referred by one user who has collected the referral cash for each of them.", fx: { cash: -2500, users: -300, clarity: -4 } } },
+      B: { title: "Offer account credits instead", fx: { users: 300, arpu: -1, clarity: -2, cash: -800 }, log: "Credits went out. Referrals came in slowly, mostly from people who already loved you." },
+    },
+    {
+      id: "dl_prod_15",
+      cat: "Growth",
+      icon: "🧲",
+      title: "Invite all your contacts",
+      desc: "Youssef's test of a pre-ticked 'invite all your contacts' box tripled invites. It also brought 40 complaints in two days, one from someone's former manager.",
+      when: (s) => s.activeUsers >= 300,
+      A: { title: "Keep the box pre-ticked", fx: { users: 1200, churn: 0.8, pmf: -3, culture: -4 }, log: "Invites keep flowing. So do screenshots of your invite email on social media." },
+      B: { title: "Untick it and ask nicely", fx: { users: 150, culture: 4, trust: -3, morale: 2 }, log: "Invites fell back to normal. Youssef quietly removed the test from his growth report.",
+           echo: { after: [10, 20], icon: "🫶", title: "People trust your emails", text: "Your invite and notification emails now get opened at twice the industry rate. Users say they don't mute you, which is rare.", fx: { churn: -0.6, pmf: 2 } } },
+    },
+    {
+      id: "dl_prod_16",
+      cat: "Growth",
+      icon: "🏢",
+      title: "A telecom wants to bundle you",
+      desc: "Sahel Telecom wants to bundle your product into its business plans across 4 countries. They want a 30% revenue share and 2 years of exclusivity in the region.",
+      when: (s) => s.stage >= 2 && s.monthlyRevenue >= 5000,
+      A: { title: "Sign the bundle deal", fx: { mrrPct: 0.15, arpu: -3, clarity: -5, trust: 4 }, log: "The contract was 47 pages. Sahel's logo went on your homepage by Monday.",
+           echo: { after: [12, 24], icon: "⚔", title: "Sahel wants a say in the roadmap", text: "Sahel's account team now sends a weekly feature list, marked as priority. Their customers are a third of your revenue, and they know it.", fx: { pmf: -4, cofounder: -6, morale: -5 } } },
+      B: { title: "Decline and sell direct", fx: { trust: -4, clarity: 3, culture: 2, mrrPct: 0.02 }, log: "Sahel's partnerships manager said the door stays open. He didn't sound like he meant it." },
+    },
+    {
+      id: "dl_prod_17",
+      cat: "Growth",
+      icon: "🎪",
+      title: "Main stage in Riyadh, three weeks out",
+      desc: "A speaker dropped out and the organisers of a big tech conference in Riyadh offer you the main stage. The new version you'd want to demo is half-built.",
+      when: (s) => s.week >= 8,
+      A: { title: "Take the stage and demo it", fx: { users: 800, trust: 5, techDebt: 8, morale: -8 }, log: "The demo worked on the second try. The video of your talk has 40,000 views.",
+           echo: { after: [4, 10], icon: "😬", title: "The conference signups hit the bugs", text: "People who signed up after the Riyadh talk found the half-built features you demoed. Your support inbox has a new tag: 'saw it on stage'.", fx: { churn: 0.8, clarity: -4 } } },
+      B: { title: "Decline and ship it properly", fx: { clarity: 4, morale: 4, trust: -4 }, log: "The organisers gave the slot to a competitor. You watched the livestream from the office." },
+    },
+    {
+      id: "dl_prod_18",
+      cat: "Growth",
+      icon: "📡",
+      title: "Run ads in a new country",
+      desc: "Organic signups from Cairo doubled last quarter without any marketing. Youssef wants $6,000 for a paid campaign there and an Arabic-speaking support hire.",
+      when: (s) => s.monthlyRevenue >= 6000 || s.stage >= 2,
+      A: { title: "Launch the Cairo campaign", fx: { cash: -6000, users: 900, arpu: -2, baseBurn: 300 }, log: "The campaign went live with Egyptian Arabic copy. The cost per signup was half the home market's.",
+           echo: { after: [14, 26], icon: "🌱", title: "Cairo starts paying", text: "The Cairo users who joined from the campaign are converting to paid plans. Three of them are companies with more than 200 staff.", fx: { mrrPct: 0.08, pmf: 2 } } },
+      B: { title: "Double down at home", fx: { mrrPct: 0.03, users: 100, trust: -2, clarity: 2 }, log: "The budget went to the home market. Cairo keeps signing up on its own, slowly." },
+    },
+  ];
+
+  const DL_PEOPLE = [
+    {
+      id: "dl_ppl_01",
+      cat: "People",
+      icon: "👥",
+      title: "Your first hire wants to lead engineering",
+      desc: "Karim joined when there was no salary and no office. Now he wants the Head of Engineering title. He is loyal, fast and liked, and he has never managed anyone.",
+      when: (s) => s.team.length >= 4,
+      A: { title: "Promote Karim", fx: { morale: 6, culture: 3, techDebt: 5 }, log: "Karim announced it himself in the team channel. Three people replied with the same fire emoji.",
+           echo: { after: [10, 20], icon: "🕳", title: "Karim's team is drowning", text: "Karim's sprint reviews now run two hours and ship very little. Two engineers have quietly asked to report to Tariq instead.", fx: { morale: -6, techDebt: 6, cofounder: -4 } } },
+      B: { title: "Hire a senior lead above him", fx: { cash: -3000, baseBurn: 600, morale: -6, techDebt: -4, culture: -2 }, log: "You paid a recruiter and found a lead with ten years behind her. Karim took the news without a word and went back to his desk." },
+    },
+    {
+      id: "dl_ppl_02",
+      cat: "People",
+      icon: "🏠",
+      title: "Your best designer wants to go fully remote",
+      desc: "Rana is moving to Amman with her husband. She wants to keep her job from there, full time, with no office days. Nobody on the team works remotely yet.",
+      A: { title: "Approve it and make it work", fx: { morale: 4, culture: -3, clarity: -2 }, log: "Rana now joins standup from a kitchen in Amman. The rest of the team keeps forgetting to unmute.",
+           echo: { after: [8, 16], icon: "📝", title: "Rana's written reviews caught on", text: "Rana's written design reviews became the template. The whole team now writes decisions down before the meeting, not after.", fx: { culture: 4, techDebt: -3 } } },
+      B: { title: "Keep the office rule", fx: { morale: -5, culture: 2, cash: -2500 }, log: "Rana gave notice two weeks later. The recruiter's fee for her replacement came to $2,500." },
+    },
+    {
+      id: "dl_ppl_03",
+      cat: "People",
+      icon: "⚔",
+      title: "Two engineers are fighting in public",
+      desc: "Youssef and Hana disagree about the API rewrite. It started in a pull request and ended in a 1am Slack thread the whole company read over breakfast.",
+      when: (s) => s.team.length >= 4,
+      A: { title: "Sit them down and make the call", fx: { morale: -4, techDebt: -3, clarity: -3, xp: 30 }, log: "You chose Hana's design. Youssef said \"fine\" in a voice that meant the opposite." },
+      B: { title: "Split them into separate squads", fx: { morale: 3, techDebt: 4, culture: -3 }, log: "Each of them now owns half the codebase. The Slack channel went quiet overnight.",
+           echo: { after: [6, 14], icon: "🧩", title: "Two squads, two login systems", text: "Youssef's squad and Hana's squad each built their own authentication flow. Merging them will take a full sprint.", fx: { techDebt: 7, morale: -4 } } },
+    },
+    {
+      id: "dl_ppl_04",
+      cat: "People",
+      icon: "💸",
+      title: "Your star engineer wants a 30% raise",
+      desc: "Salma has an offer from a bank in Dubai. She'd rather stay, she says, but she sent you the offer letter as a PDF at 11pm. You can't afford it without cutting somewhere else.",
+      when: (s) => s.team.length >= 3,
+      A: { title: "Match the offer", fx: { baseBurn: 900, morale: 3, clarity: -2 }, log: "Salma signed the new contract the same morning. Your spreadsheet now shows one month less runway.",
+           echo: { after: [10, 20], icon: "😬", title: "Everyone knows what Salma earns", text: "The number came out over lunch. Three people have asked for a \"market adjustment\" conversation this month.", fx: { morale: -6, baseBurn: 400, culture: -3 } } },
+      B: { title: "Offer equity instead of cash", fx: { equity: -1, baseBurn: 200, morale: -3, culture: 2 }, log: "Salma took a small raise and a block of options. She said she'd think about whether options pay rent." },
+    },
+    {
+      id: "dl_ppl_05",
+      cat: "People",
+      icon: "🤝",
+      title: "The candidate is Nour's friend",
+      desc: "Hadi went to university with Nour and needs a job. He interviewed well enough. The other finalist, a stranger from a job board, was clearly sharper.",
+      A: { title: "Hire Hadi", fx: { partner: 6, culture: -4, techDebt: 3 }, log: "Hadi started on Sunday. Nour cooked dinner for both of you that night." },
+      B: { title: "Hire the stronger stranger", fx: { partner: -6, techDebt: -3, culture: 3 }, log: "The new hire shipped her first fix in three days. Dinner at home was quiet that week." },
+    },
+    {
+      id: "dl_ppl_06",
+      cat: "People",
+      icon: "🕵",
+      title: "An engineer is moonlighting for a competitor",
+      desc: "Mazen's name shows up in the commit history of a rival's public repository, every night between 10pm and 2am. He also owns your billing service, alone.",
+      when: (s) => s.team.length >= 3,
+      A: { title: "Let him go today", fx: { morale: -5, culture: 4, techDebt: 4, cash: -2000 }, log: "Mazen left with one month's severance and his laptop wiped. Nobody else knows how billing works.",
+           echo: { after: [8, 16], icon: "🛠", title: "The billing service finally got rewritten", text: "The engineer who inherited billing rewrote the parts only Mazen understood. Deploys stopped breaking on Thursdays.", fx: { techDebt: -6, morale: 3 } } },
+      B: { title: "Warn him and keep him", fx: { culture: -6, morale: 2, clarity: -3 }, log: "Mazen apologised and promised it was over. Two engineers saw him leave your office smiling." },
+    },
+    {
+      id: "dl_ppl_07",
+      cat: "People",
+      icon: "📉",
+      title: "Layoffs or pay cuts",
+      desc: "Runway is down to five months. You can cut 3 roles, or cut everyone's salary by 20%, yours included. Tariq says either way, decide by Thursday.",
+      when: (s) => s.team.length >= 5,
+      A: { title: "Cut 3 roles", fx: { baseBurn: -800, morale: -12, culture: -4, trust: 4 }, log: "Three people packed their desks on a Tuesday. The ones who stayed went to lunch together and didn't invite you." },
+      B: { title: "Cut everyone's pay by 20%", fx: { baseBurn: -600, morale: -7, culture: 4, clarity: -3 }, log: "Nobody left. The all-hands ended with one question: when does it come back?",
+           echo: { after: [10, 22], icon: "📭", title: "The pay cut is still in place", text: "Months later, nobody's salary has been restored. Your two best engineers took recruiter calls this week.", fx: { morale: -8, culture: -3 } } },
+    },
+    {
+      id: "dl_ppl_08",
+      cat: "People",
+      icon: "🧩",
+      title: "Tariq doesn't want this hire",
+      desc: "Ziad would be your first head of sales. He closed big deals at his last company. Tariq met him for an hour and called him \"a very good LinkedIn post\".",
+      when: (s) => s.monthlyRevenue >= 2000,
+      A: { title: "Hire Ziad anyway", fx: { cofounder: -10, mrrPct: 0.06, baseBurn: 1000 }, log: "Ziad booked six meetings in his first week. Tariq didn't come to his welcome lunch.",
+           echo: { after: [8, 18], icon: "📊", title: "Ziad's pipeline is mostly air", text: "Ziad's pipeline looks huge on the dashboard, but half the deals have been \"closing next week\" for a month. Tariq has stopped commenting.", fx: { mrrPct: -0.04, cofounder: -6 } } },
+      B: { title: "Pass and keep looking", fx: { cofounder: 6, clarity: -3, mrrPct: -0.02 }, log: "You told Ziad no. You're still the one doing every sales call, now with Tariq's quiet gratitude." },
+    },
+    {
+      id: "dl_ppl_09",
+      cat: "People",
+      icon: "⚖",
+      title: "Your first HR complaint",
+      desc: "Dina, a junior developer, emails you about comments a senior engineer keeps making in code reviews. She asks you not to make it \"a big thing\". There is no HR person.",
+      when: (s) => s.team.length >= 5,
+      A: { title: "Bring in an outside investigator", fx: { cash: -4000, culture: 6, morale: -2, clarity: -2 }, log: "An external consultant interviewed six people over two weeks. The engineer received a written warning.",
+           echo: { after: [8, 16], icon: "🫶", title: "A candidate heard how you handled it", text: "A senior candidate said a friend on your team told her how the complaint was handled. She signed the next day.", fx: { culture: 3, morale: 4 } } },
+      B: { title: "Handle it yourself, quietly", fx: { clarity: -5, culture: -3, morale: 2, xp: 30 }, log: "You had a long coffee with the engineer. He said he'd been joking. Dina said thank you and nothing else.",
+           echo: { after: [10, 24], icon: "🚨", title: "The complaint came back louder", text: "A second complaint about the same engineer arrived, this time copied to Layla Fahmy.", fx: { trust: -6, culture: -5, morale: -4 } } },
+    },
+    {
+      id: "dl_ppl_10",
+      cat: "People",
+      icon: "🌱",
+      title: "The early team's options are almost vested",
+      desc: "Your first five employees are close to fully vested. The next round could be a year away. A refresh grant would come out of your own stake.",
+      when: (s) => s.stage >= 2,
+      A: { title: "Grant a refresh from your stake", fx: { equity: -2, morale: 8, culture: 4 }, log: "You handed out new option letters one by one. Karim read his twice and hugged you.",
+           echo: { after: [12, 26], icon: "🌅", title: "The early team stayed", text: "Four of the first five are still here a year on. Recruiters stopped messaging them because nobody answers.", fx: { morale: 4, techDebt: -4 } } },
+      B: { title: "Wait for the next round", fx: { morale: -5, trust: 3, clarity: 2 }, log: "Layla liked the clean cap table. The early team noticed nobody brought it up." },
+    },
+    {
+      id: "dl_ppl_11",
+      cat: "Money",
+      icon: "💵",
+      title: "Pay yourself, or buy more runway",
+      desc: "You haven't taken a salary in over a year. Nour has been paying the rent. A $1,200 monthly salary would cost you about a month of runway by year end.",
+      when: (s) => s.week >= 12,
+      A: { title: "Pay yourself $1,200 a month", fx: { baseBurn: 1200, partner: 8, clarity: 6, trust: -2 }, log: "The first payslip was small and felt enormous. Nour framed it as a joke and put it on the fridge." },
+      B: { title: "Stay at zero", fx: { partner: -8, family: -4, clarity: -4, trust: 3 }, log: "Layla called it disciplined. Your father asked, again, when the company would pay you.",
+           echo: { after: [10, 20], icon: "🌧", title: "Nour's spreadsheet", text: "Nour put the household budget on the kitchen table and asked, quietly, how many more months.", fx: { partner: -8, clarity: -6 } } },
+    },
+    {
+      id: "dl_ppl_12",
+      cat: "Money",
+      icon: "🦈",
+      title: "A competitor wants to invest",
+      desc: "Sanad Systems, a bigger rival, offers $25,000 for 4% with no board seat. Their head of strategy says it's \"just a friendly partnership\".",
+      when: (s) => s.stage >= 2,
+      A: { title: "Take Sanad's money", fx: { cash: 25000, equity: -4, trust: -6 }, log: "The money landed in four days. Layla read the press note and didn't reply for a week.",
+           echo: { after: [10, 22], icon: "🔍", title: "Sanad wants a quarterly sync", text: "Sanad's team now asks for a quarterly call about your product plans. Two prospects asked if you're being acquired.", fx: { mrrPct: -0.05, trust: -4 } } },
+      B: { title: "Decline politely", fx: { trust: 4, clarity: -4, morale: -2 }, log: "You said no. Sanad's head of strategy said the door stays open, in a tone that suggested otherwise." },
+    },
+    {
+      id: "dl_ppl_13",
+      cat: "Money",
+      icon: "🏦",
+      title: "The bank wants your apartment as collateral",
+      desc: "A local bank will lend the company $30,000 at a fair rate. The catch is a personal guarantee, secured on the apartment you share with Nour.",
+      when: (s) => s.monthlyRevenue >= 3000,
+      A: { title: "Sign the personal guarantee", fx: { cash: 30000, baseBurn: 700, family: -6, partner: -6, clarity: -5 }, log: "You signed eleven pages in a branch office that smelled of carpet. Nour read every one of them first.",
+           echo: { after: [16, 28], icon: "🧾", title: "The bank's quarterly review", text: "The bank now wants management accounts every quarter. Your Sunday nights belong to a spreadsheet.", fx: { clarity: -5, xp: 20 } } },
+      B: { title: "Walk away from the loan", fx: { clarity: 3, partner: 3, morale: -3, mrrPct: -0.03 }, log: "You froze the two hires the loan would have paid for. Nour slept better than you did." },
+    },
+    {
+      id: "dl_ppl_14",
+      cat: "Money",
+      icon: "🏷",
+      title: "Raise prices on existing customers",
+      desc: "Your earliest customers pay half of what new ones do. A 25% increase for everyone would fix the margins. Omar Sabry has already heard a rumour.",
+      when: (s) => s.monthlyRevenue >= 2000,
+      A: { title: "Raise prices 25% for everyone", fx: { mrrPct: 0.15, churn: 1.2, trust: 3 }, log: "The email went out on a Monday. By Wednesday you had forty replies, most of them polite.",
+           echo: { after: [6, 14], icon: "📈", title: "The price rise settled", text: "Most customers grumbled and stayed. The ones who left were the ones filing half the support tickets.", fx: { churn: -0.8, morale: 3 } } },
+      B: { title: "Grandfather existing customers", fx: { mrrPct: 0.03, churn: -0.3, trust: -3 }, log: "Only new customers pay the new price. Omar sent a thank-you voice note." },
+    },
+    {
+      id: "dl_ppl_15",
+      cat: "Money",
+      icon: "🧾",
+      title: "Northwind wants 120-day payment terms",
+      desc: "Northwind Retail will triple its contract, but its procurement team insists on paying 120 days after each invoice. You'd be funding their purchase for four months.",
+      when: (s) => s.monthlyRevenue >= 4000,
+      A: { title: "Accept 120-day terms", fx: { mrrPct: 0.12, cash: -6000, clarity: -4 }, log: "The contract is signed. Revenue is up on paper, and your bank balance is down in reality.",
+           echo: { after: [12, 22], icon: "⏳", title: "Northwind's invoice is late", text: "Day 120 came and went. Northwind's accounts payable says the invoice \"is in the system\".", fx: { cash: -5000, clarity: -5 } } },
+      B: { title: "Push back to 45 days", fx: { mrrPct: 0.04, clarity: -2, xp: 30 }, log: "Northwind signed a smaller pilot on 45-day terms. Their buyer called you \"a tough negotiator\", not warmly." },
+    },
+    {
+      id: "dl_ppl_16",
+      cat: "Money",
+      icon: "🏢",
+      title: "An office to win the hiring war",
+      desc: "Two senior candidates turned you down after visiting the co-working space. A real office with your name on the door would add about $1,400 a month.",
+      when: (s) => s.team.length >= 4,
+      A: { title: "Lease the office", fx: { baseBurn: 1400, morale: 8, culture: 5 }, log: "Tariq assembled the desks himself. The team stayed late the first week just because they could.",
+           echo: { after: [8, 18], icon: "🤩", title: "Candidates came to the office", text: "Two senior engineers accepted offers after an afternoon in the new space. One said the coffee machine closed it.", fx: { morale: 4, techDebt: -4 } } },
+      B: { title: "Stay in the co-working space", fx: { morale: -4, culture: -2, clarity: 2, trust: 2 }, log: "You booked the meeting room for interviews again. Someone else's birthday cake was on the table." },
+    },
+    {
+      id: "dl_ppl_17",
+      cat: "Money",
+      icon: "👼",
+      title: "Layla offers a bridge, with teeth",
+      desc: "Layla Fahmy offers a $30,000 bridge note to get you to the next round. The terms: a 35% discount and a valuation cap well below what you pitched.",
+      when: (s) => !!s.org.board,
+      A: { title: "Take the bridge", fx: { cash: 30000, equity: -4, boardTrust: -3 }, log: "The note was signed over WhatsApp and a PDF. Your next round just got more expensive." },
+      B: { title: "Decline and cut the burn", fx: { baseBurn: -700, morale: -6, boardTrust: 4, trust: 2 }, log: "You cancelled two tools and a contractor. Layla said she respected it, and meant it.",
+           echo: { after: [8, 18], icon: "🏛", title: "The board noticed the discipline", text: "At the board meeting, Layla pointed to your burn chart and moved on. The next agenda item took four minutes.", fx: { boardTrust: 5, trust: 4 } } },
+    },
+    {
+      id: "dl_ppl_18",
+      cat: "Money",
+      icon: "💳",
+      title: "A cheaper payment provider",
+      desc: "A new payment provider offers fees 1.1% lower than your current one. Their compliance team is three people, and their reviews mention frozen payouts.",
+      when: (s) => s.monthlyRevenue >= 2000,
+      A: { title: "Switch providers", fx: { baseBurn: -500, techDebt: 5 }, log: "Tariq migrated the integration over a weekend. The first monthly statement was noticeably smaller.",
+           echo: { after: [6, 16], icon: "🧊", title: "Your payouts are frozen", text: "The new provider held 9 days of payouts for a \"routine compliance review\". Payroll went out late.", fx: { cash: -6000, morale: -6, trust: -3 } } },
+      B: { title: "Keep the current provider", fx: { arpu: -1, clarity: 2, trust: 2 }, log: "You stayed. The fees are higher, and the money arrives every Tuesday without fail." },
+    },
+  ];
+
+  const DL_LIFE = [
+    {
+      id: "dl_life_01",
+      cat: "Ethics",
+      icon: "🔒",
+      title: "A customer's data would make your pitch deck sing",
+      desc: "Your best case study is Omar Sabry's company: real revenue, real growth, his team's names on the chart. He never agreed to be in a deck. The investor meeting is Thursday.",
+      when: (s) => s.monthlyRevenue >= 2000,
+      A: { title: "Use the real numbers without asking", fx: { trust: 5, clarity: -3 }, log: "The slide landed. A partner asked who the customer was, and you told them.",
+           echo: { after: [8, 16], icon: "🕵", title: "Omar saw the deck", text: "A forwarded PDF reached Omar Sabry through a mutual friend. His figures were on slide 9. He is polite on the phone and has stopped answering WhatsApp messages.", fx: { mrrPct: -0.06, churn: 0.5 } } },
+      B: { title: "Ask Omar first and wait", fx: { trust: -3, clarity: 3, xp: 15 }, log: "Omar agreed to anonymised figures only. The slide is vaguer, and one investor said so." },
+    },
+    {
+      id: "dl_life_02",
+      cat: "Ethics",
+      icon: "🧾",
+      title: "A client wants an invoice dated last quarter",
+      desc: "A new enterprise client asks you to date their first invoice to March so it lands in last year's budget. It's $6,000 you would otherwise wait months for.",
+      when: (s) => s.monthlyRevenue >= 1500,
+      A: { title: "Backdate it and get paid", fx: { cash: 6000, clarity: -4 }, log: "The money arrived in four days. The invoice says March.",
+           echo: { after: [14, 26], icon: "⚖", title: "The client's auditors have questions", text: "The client's year-end audit flagged an invoice dated before your contract was signed. Their finance team wants a call, and so does your accountant.", fx: { cash: -2500, clarity: -6, trust: -3 } } },
+      B: { title: "Date it today and explain why", fx: { mrrPct: -0.03, culture: 3, xp: 20 }, log: "They grumbled and pushed the purchase to the next budget cycle. The contract still stands." },
+    },
+    {
+      id: "dl_life_03",
+      cat: "Ethics",
+      icon: "📰",
+      title: "A journalist asks how many users you have",
+      desc: "The interview is going well. You have 4,100 active users. The reporter mentions the other startup in the piece claimed 20,000 and then leaves a pause for you to fill.",
+      A: { title: "Round up generously", fx: { users: 400, trust: 3, clarity: -3 }, log: "The article said ten thousand. Sign-ups ticked up that week.",
+           echo: { after: [10, 20], icon: "📉", title: "Someone did the maths", text: "An analyst compared your app-store rankings with the article's figure and posted the thread. Layla Fahmy sent it to you without comment.", fx: { trust: -8, users: -150 } } },
+      B: { title: "Give the real number", fx: { morale: -3, trust: 3, xp: 20 }, log: "The piece described you as the smaller player. Two people on the team mentioned it at lunch." },
+    },
+    {
+      id: "dl_life_04",
+      cat: "Ethics",
+      icon: "🧲",
+      title: "Growth wants a harder cancellation flow",
+      desc: "Your growth lead proposes four confirmation screens and a mandatory call before anyone can cancel. The model says churn drops by a third.",
+      when: (s) => s.week >= 10,
+      A: { title: "Ship the new flow", fx: { churn: -1, mrrPct: 0.04, culture: -4 }, log: "Cancellations fell in the first month. Support tickets containing the word trapped went up.",
+           echo: { after: [8, 18], icon: "🐦", title: "Your cancellation flow goes viral", text: "A user's screen recording of your four-screen exit got more views than any launch you've ever done. The replies are not kind.", fx: { users: -300, churn: 0.8, pmf: -2 } } },
+      B: { title: "Keep one-click cancel", fx: { churn: 0.3, culture: 3, pmf: 1 }, log: "The growth lead said fine, and quietly revised the forecast downward." },
+    },
+    {
+      id: "dl_life_05",
+      cat: "Ethics",
+      icon: "💳",
+      title: "A billing bug overcharged 140 customers",
+      desc: "Tariq found it at midnight: for three months, annual plans were billed an extra month. Nobody has complained yet. A full refund comes to about $4,800.",
+      A: { title: "Refund everyone and tell them", fx: { cash: -4800, churn: -0.3, cofounder: 3 }, log: "You sent the email at 9am. Seventeen customers replied to say thank you. One cancelled.",
+           echo: { after: [10, 20], icon: "🫶", title: "A customer remembers the refund", text: "A finance director you refunded brings it up on a reference call with a prospect. The prospect signs the same week.", fx: { mrrPct: 0.05, xp: 15 } } },
+      B: { title: "Fix it and refund only on request", fx: { cash: -400, cofounder: -5, clarity: -3, xp: 10 }, log: "The bug is fixed and three refunds went out. Tariq asked twice whether you had sent the email." },
+    },
+    {
+      id: "dl_life_06",
+      cat: "Ethics",
+      icon: "🦈",
+      title: "An investor wants your honest take on a competitor",
+      desc: "Over coffee, a fund partner asks what you really think of Saqr Labs, who are raising at the same time. You know their CTO left in June and their churn is bad.",
+      A: { title: "Tell them what you know", fx: { trust: 4, clarity: -2 }, log: "The partner took notes. Saqr Labs did not get a second meeting.",
+           echo: { after: [8, 20], icon: "📨", title: "Your comments travelled", text: "Saqr Labs' founder messages you: an investor repeated your words to them, almost verbatim. Two engineers you hoped to hire are their close friends.", fx: { morale: -4, culture: -3, trust: -2 } } },
+      B: { title: "Talk only about your own company", fx: { trust: -2, culture: 2, xp: 15 }, log: "The partner smiled and moved on. The meeting ended ten minutes early." },
+    },
+    {
+      id: "dl_life_07",
+      cat: "Personal",
+      icon: "🎉",
+      title: "A family wedding clashes with the fund's partner meeting",
+      desc: "The only slot the partners have is Saturday at 11. Your cousin's wedding starts at 4 in Alexandria, a five-hour drive away. Your mother has already told everyone you're coming.",
+      A: { title: "Take the meeting, miss the wedding", fx: { trust: 5, family: -10, clarity: -3 }, log: "The meeting went well. Your mother sent a photo of the empty chair with your name card on it.",
+           echo: { after: [6, 14], icon: "🏠", title: "The wedding comes up again", text: "At a family lunch, an aunt asks why you missed your cousin's wedding. Your mother answers for you, a little too quickly.", fx: { family: -5, clarity: -3 } } },
+      B: { title: "Ask Layla to move the meeting", fx: { trust: -4, family: 6, clarity: 4 }, log: "Layla moved it by a week. The partners noticed. You danced at the wedding and slept in the back seat all the way home." },
+    },
+    {
+      id: "dl_life_08",
+      cat: "Personal",
+      icon: "❤",
+      title: "Nour asks for one weekend with no laptop",
+      desc: "Nour has booked two nights at a quiet place on the coast and asks, gently, that the laptop stays home. A customer launch is scheduled for Monday.",
+      A: { title: "Go, and leave the laptop", fx: { partner: 10, clarity: 8, morale: -3 }, log: "Tariq handled two small fires alone. You came back Sunday night and slept nine hours.",
+           echo: { after: [8, 16], icon: "🌅", title: "The weekend still shows", text: "Nour tells friends the coast trip was the best weekend of the year. You notice you've been sleeping better ever since.", fx: { partner: 4, clarity: 5 } } },
+      B: { title: "Go, but bring the laptop", fx: { partner: -6, clarity: -2, churn: -0.2 }, log: "The launch went smoothly. Nour read a book on the balcony while you were on calls." },
+    },
+    {
+      id: "dl_life_09",
+      cat: "Personal",
+      icon: "🧓",
+      title: "Your father asks when you'll get a real job",
+      desc: "At Friday dinner, your father mentions that a friend's son just joined a bank in Dubai on a very good salary. He doesn't ask a question. He just waits.",
+      A: { title: "Show him the numbers", fx: { family: 4, clarity: -3 }, log: "You opened the dashboard on your phone. He studied it for a long time, then asked what MRR meant.",
+           echo: { after: [10, 22], icon: "🤝", title: "Your father has been asking around", text: "An old colleague of your father's calls: he heard about your company and wants to introduce you to a client. Your father never mentioned it.", fx: { mrrPct: 0.04, family: 6 } } },
+      B: { title: "Change the subject", fx: { clarity: 2, family: -4 }, log: "Your mother brought out dessert early. Nobody mentioned banks again that night." },
+    },
+    {
+      id: "dl_life_10",
+      cat: "Personal",
+      icon: "🩺",
+      title: "You've cancelled the doctor twice",
+      desc: "The tightness in your chest comes back on Sunday nights. The clinic has a slot Tuesday at 10 sharp, exactly when Omar Sabry wants to walk through the renewal.",
+      when: (s) => s.mentalClarity < 40 || s.week >= 30,
+      A: { title: "Keep the appointment", fx: { clarity: 8, family: 2, mrrPct: -0.02 }, log: "The doctor says stress, and sleep, and asks what you do for a living. Omar rescheduled, a little stiffly." },
+      B: { title: "Take Omar's call", fx: { mrrPct: 0.03, clarity: -6 }, log: "The renewal is signed. The clinic sent an automatic message offering a new slot.",
+           echo: { after: [6, 14], icon: "🩺", title: "Sunday nights get worse", text: "The tightness now comes midweek too. Nour books the appointment without asking and drives you there.", fx: { clarity: -8, partner: -3, cash: -400 } } },
+    },
+    {
+      id: "dl_life_11",
+      cat: "Personal",
+      icon: "💸",
+      title: "Your savings ran out this month",
+      desc: "You haven't paid yourself in five months and rent is due. Your uncle has offered $8,000 at no interest and with no deadline, which is its own kind of deadline.",
+      when: (s) => s.week >= 16,
+      A: { title: "Accept your uncle's loan", fx: { clarity: 6, family: -4 }, log: "The money arrived the next day with a voice note: pay it back whenever.",
+           echo: { after: [12, 26], icon: "🏠", title: "Your uncle asks how things are going", text: "Your uncle hasn't mentioned the $8,000. But he asks about the company every time you visit, and now so does the rest of the family.", fx: { family: -4, clarity: -4 } } },
+      B: { title: "Start paying yourself a small salary", fx: { cash: -3000, baseBurn: 600, clarity: 4, trust: -2 }, log: "It isn't much. Layla asked about the new line in the burn report." },
+    },
+    {
+      id: "dl_life_12",
+      cat: "Personal",
+      icon: "🤝",
+      title: "A friend's startup needs you for a month",
+      desc: "Karim, a friend from university, is three weeks from running out of money and asks for help with his fundraising deck and a few investor introductions.",
+      A: { title: "Give him your evenings", fx: { clarity: -5, partner: -3, xp: 30 }, log: "His deck got sharper. Your own to-do list got longer, and dinner got later.",
+           echo: { after: [10, 24], icon: "🤝", title: "Karim closes his round", text: "Karim's round closed. He sends you two warm customer introductions and tells everyone who helped him get there.", fx: { mrrPct: 0.05, trust: 3 } } },
+      B: { title: "Send him a list and say no", fx: { clarity: 4, family: -3 }, log: "Karim said he understood. His mother called your mother the following week." },
+    },
+    {
+      id: "dl_life_13",
+      cat: "Personal",
+      icon: "😮‍💨",
+      title: "You haven't slept past 5am in a month",
+      desc: "You wake at 4:40 with your heart already running through the cash forecast. Nour has started sleeping in the other room so that at least one of you gets some rest.",
+      when: (s) => s.mentalClarity < 40,
+      A: { title: "Cut your week to fifty hours", fx: { clarity: 10, partner: 5, mrrPct: -0.03 }, log: "Some emails now wait until morning. Nobody seems to notice except you." },
+      B: { title: "Push through until the round closes", fx: { clarity: -6, partner: -6, trust: 3 }, log: "You answer investor emails before dawn. Layla says your replies have never been faster.",
+           echo: { after: [6, 14], icon: "🥴", title: "You make an expensive mistake", text: "Running on four hours of sleep, you approve a contract renewal at the old, lower price. Nobody catches it for a month.", fx: { cash: -3000, clarity: -4 } } },
+    },
+    {
+      id: "dl_life_14",
+      cat: "Personal",
+      icon: "🧘",
+      title: "A therapist has an opening on Wednesdays",
+      desc: "A founder friend recommends a therapist who works with people like you: $90 a session, Wednesdays at 6. In your head you've been calling it burnout for a while.",
+      when: (s) => s.mentalClarity < 40 || s.week >= 24,
+      A: { title: "Book the first six sessions", fx: { cash: -540, clarity: 6, partner: 3 }, log: "The first session was mostly silence. The second one was not.",
+           echo: { after: [8, 18], icon: "🧠", title: "Wednesdays are working", text: "You catch yourself pausing before replying to a hard email from Layla, and the reply is better for it. Nour says you laugh more.", fx: { clarity: 10, partner: 4, trust: 2 } } },
+      B: { title: "Not now, maybe after the round", fx: { clarity: -5, pmf: 1, xp: 10 }, log: "You saved the therapist's number in your phone. Wednesday evenings went back to the roadmap." },
+    },
+    {
+      id: "dl_life_15",
+      cat: "Crisis",
+      icon: "🚨",
+      title: "The servers go down on launch day",
+      desc: "Your launch post is live, 3,000 people are on the waitlist, and the app has been returning errors for 40 minutes. Tariq thinks it's the database.",
+      A: { title: "Pause the launch and post an update", fx: { users: -200, clarity: 3, cofounder: 4 }, log: "You posted an honest update. The relaunch two days later got half the attention and none of the angry replies." },
+      B: { title: "Throw money at bigger servers", fx: { cash: -4000, users: 600, techDebt: 8 }, log: "Bigger servers bought you the evening. The database problem is still there.",
+           echo: { after: [6, 14], icon: "💥", title: "The database fails again", text: "Under ordinary Tuesday traffic, the same database error comes back. This time there's no launch to blame it on.", fx: { churn: 0.8, techDebt: 6, cofounder: -4 } } },
+    },
+    {
+      id: "dl_life_16",
+      cat: "Crisis",
+      icon: "🐦",
+      title: "Tariq's post is going viral for the wrong reasons",
+      desc: "Tariq posted a late-night thread complaining about junior developers. It has 2 million views and your company's name in his bio. Two candidates have already withdrawn.",
+      A: { title: "Ask Tariq to apologise publicly", fx: { cofounder: -8, culture: 4, morale: 2 }, log: "The apology was short and sincere enough. Tariq didn't speak to you until Thursday." },
+      B: { title: "Stay quiet and let it pass", fx: { cofounder: 4, culture: -5 }, log: "The thread dropped off the feed within a week. The search results did not.",
+           echo: { after: [8, 20], icon: "🔍", title: "The thread follows you into hiring", text: "Your best engineering candidate in months asks, in the final interview, whether your CTO still feels that way about juniors.", fx: { morale: -4, culture: -3, techDebt: 3 } } },
+    },
+    {
+      id: "dl_life_17",
+      cat: "Crisis",
+      icon: "☣",
+      title: "Customer emails turn up on a public forum",
+      desc: "A security researcher sends you a link: 1,200 customer email addresses from an old export file, posted on a forum. Your lawyer says you may not be obliged to announce it.",
+      when: (s) => s.activeUsers >= 300,
+      A: { title: "Tell every customer today", fx: { churn: 0.6, users: -150, trust: 2, culture: 3 }, log: "The email went out at 6pm. Most replies asked one thing: is my password safe? It was." },
+      B: { title: "Fix it and disclose only if asked", fx: { clarity: -4, cash: -800, users: 100 }, log: "The file is gone and the growth campaign kept running. The researcher asked twice whether you would disclose.",
+           echo: { after: [10, 24], icon: "📰", title: "A newsletter found the forum post", text: "A tech newsletter writes up the leak and notes that you never told customers. Three of them forward it to you with one-line emails.", fx: { churn: 1, trust: -6, users: -250 } } },
+    },
+    {
+      id: "dl_life_18",
+      cat: "Crisis",
+      icon: "🚪",
+      title: "Your lead engineer resigns on demo day",
+      desc: "Yasmin, who built half the product, hands in her notice at 8am. The investor demo is at 2pm, and she's the only one who knows the new feature's quirks.",
+      A: { title: "Ask her to run the demo anyway", fx: { trust: 3, morale: -4, clarity: -3 }, log: "She did it, professionally, and left at 4. The investors never knew." },
+      B: { title: "Demo the old version yourself", fx: { trust: -4, morale: 3, clarity: 2 }, log: "The demo was safe and slightly dull. Yasmin stayed late to write handover notes nobody had asked for.",
+           echo: { after: [8, 18], icon: "📨", title: "Yasmin sends someone your way", text: "Yasmin recommends a former colleague who is looking for a new role. The interview takes twenty minutes to turn into an offer.", fx: { morale: 4, techDebt: -5 } } },
+    },
+    {
+      id: "dl_life_19",
+      cat: "Crisis",
+      icon: "🏦",
+      title: "Your payment provider froze your payouts",
+      desc: "A spike in refunds triggered a review. $18,000 of customer payments is on hold for up to 90 days, and payroll is in 9 days.",
+      when: (s) => s.monthlyRevenue >= 3000,
+      A: { title: "Bridge payroll with a short-term loan", fx: { cash: 10000, baseBurn: 400, clarity: -3 }, log: "The bank approved it at 14% with a personal guarantee. Payroll went out on time.",
+           echo: { after: [12, 24], icon: "💵", title: "The frozen payouts are released", text: "The provider releases the held funds with a one-line email. You pay the loan off early, minus the fees.", fx: { cash: 4000, clarity: 4 } } },
+      B: { title: "Ask the team to defer a week's pay", fx: { cash: 3000, morale: -8, culture: -3 }, log: "Everyone agreed. Two people asked, privately, whether this would happen again." },
+    },
+    {
+      id: "dl_life_20",
+      cat: "Crisis",
+      icon: "🏛",
+      title: "A letter from the consumer protection authority",
+      desc: "The authority wants to know, within 30 days, why your auto-renewal sends no reminder email. Your lawyer bills by the hour.",
+      when: (s) => s.week >= 12,
+      A: { title: "Hire a specialist firm", fx: { cash: -5000, clarity: 4, trust: 2 }, log: "The firm's reply ran to eleven pages and was very calm. The authority closed the file." },
+      B: { title: "Write the reply yourselves", fx: { cash: -500, clarity: -6, xp: 25 }, log: "You and Tariq wrote it over two nights. You learned more about consumer law than you ever wanted to.",
+           echo: { after: [8, 18], icon: "⚖", title: "The authority writes back", text: "The authority has follow-up questions on four points of your reply, and a fine for the missing reminders.", fx: { cash: -3000, clarity: -4 } } },
+    },
+    {
+      id: "dl_life_21",
+      cat: "Crisis",
+      icon: "🌧",
+      title: "The office flooded overnight",
+      desc: "A pipe burst on the floor above. Four laptops, the whiteboard with next quarter's plan and most of the carpet are ruined. The landlord says the insurance will take weeks.",
+      A: { title: "Go fully remote for a month", fx: { cash: 1500, culture: -4, morale: -2 }, log: "The rent you saved paid for new laptops. Video standups got shorter and quieter." },
+      B: { title: "Rent a co-working space this week", fx: { cash: -3500, morale: 4, culture: 2 }, log: "The co-working space has good coffee and a loud team next door. Nobody missed a day.",
+           echo: { after: [6, 14], icon: "🏢", title: "The insurance cheque arrives", text: "The insurer finally pays out for the laptops and the carpet. It's less than you hoped and more than you expected.", fx: { cash: 3000, clarity: 2 } } },
+    },
+    {
+      id: "dl_life_22",
+      cat: "Crisis",
+      icon: "🌫",
+      title: "A wave of fake one-star reviews",
+      desc: "Overnight, 60 one-star reviews appeared on your app page, most from accounts created this week. Your rating fell from 4.6 to 3.1 in a day.",
+      A: { title: "Report them and wait", fx: { users: -250, clarity: 2 }, log: "The platform removed most of them after eleven days. Downloads dipped in the meantime." },
+      B: { title: "Ask happy customers to post reviews", fx: { users: 150, morale: 2, clarity: -3, cash: -500 }, log: "Forty customers posted reviews within a day. Two of them mentioned you had asked, which the platform does not love.",
+           echo: { after: [6, 16], icon: "⚠", title: "The app store sends a warning", text: "The app store flags a pattern of solicited reviews and hides your page from search results for a fortnight.", fx: { users: -300, pmf: -1 } } },
+    },
+  ];
+
+  const DL_MENA = [
+    {
+      id: "dl_mena_01",
+      cat: "Middle East",
+      icon: "⚖",
+      title: "An uncle offers wasta to unstick your licence",
+      desc: "Your commercial registration and licence have said 'under review' for 9 weeks. No CR, no corporate bank account. Your uncle knows the deputy director: one call, no money. But favours here get collected.",
+      A: { title: "Let your uncle make the call", fx: { clarity: 6, mrrPct: 0.05, family: 4, culture: -3 }, log: "The CR is approved 4 days later. Nobody asks how, and you notice you don't want anyone to.",
+           echo: { after: [12, 24], icon: "🎲", title: "Your uncle collects the favour", text: "Your uncle's friend wants in on your first government tender, as the 'local partner' taking 30%. Saying no now costs more than it would have.", fx: { family: -6, clarity: -6, culture: -4 } } },
+      B: { title: "Wait in the queue like everyone else", fx: { clarity: -6, mrrPct: -0.04, family: -3, culture: 4 }, log: "You resubmit the file with the missing stamp. Your uncle calls it pride. Tariq tells the story to the team at lunch, approvingly." },
+    },
+    {
+      id: "dl_mena_02",
+      cat: "Middle East",
+      icon: "🏦",
+      title: "The central bank's sandbox opens a new cohort",
+      desc: "The central bank's regulatory sandbox takes 12 fintechs a year. The application runs 80 pages and wants a compliance officer on payroll. Inside, you can test with real money. Outside, you stay a vendor to a licensed bank.",
+      when: (s) => s.sector.id === "fintech",
+      A: { title: "Apply and hire a compliance officer", fx: { cash: -4000, baseBurn: 1200, trust: 6, clarity: -5 }, log: "Rania, 11 years in bank compliance, joins. The application goes in with a cover letter in Arabic and annexes in English.",
+           echo: { after: [14, 26], icon: "✅", title: "You're in the sandbox", text: "The acceptance letter arrives on official letterhead. Two banks that ignored your emails now want a meeting, and Layla forwards the letter to everyone she knows.", fx: { trust: 10, mrrPct: 0.1, pmf: 4 } } },
+      B: { title: "Stay a white-label vendor for the bank", fx: { mrrPct: 0.05, pmf: -3, morale: -3 }, log: "The partner bank keeps the licence, the customer and 40% of the margin. You keep shipping and invoicing." },
+    },
+    {
+      id: "dl_mena_03",
+      cat: "Middle East",
+      icon: "☁",
+      title: "A new rule says customer data must stay in the country",
+      desc: "A data-residency regulation gives you 6 months to move personal data onto in-country servers. The local cloud costs 3x what you pay now and its managed database is a version behind. Tariq has already sighed twice.",
+      A: { title: "Migrate to the local cloud now", fx: { baseBurn: 900, techDebt: 6, cofounder: -4, trust: 4 }, log: "Tariq spends 3 weeks rewriting the backup scripts. A 'Data hosted locally' badge goes on the pricing page.",
+           echo: { after: [10, 20], icon: "🏢", title: "A government entity asks where its data lives", text: "A semi-government procurement team sends a 40-question security form. Question 1 is about data residency. You're one of only two bidders who can answer yes.", fx: { mrrPct: 0.12, trust: 4 } } },
+      B: { title: "Request an extension and keep building", fx: { morale: 4, pmf: 2, clarity: -6 }, log: "Your lawyer files the extension request. The team keeps shipping features instead of moving databases.",
+           echo: { after: [12, 22], icon: "⚠", title: "The extension was refused", text: "The regulator publishes its list of approved extensions. You're not on it. The migration now has to happen in 5 weeks, in your busiest month.", fx: { techDebt: 10, morale: -8 } } },
+    },
+    {
+      id: "dl_mena_04",
+      cat: "Middle East",
+      icon: "🩺",
+      title: "The health ministry says your app needs a licence",
+      desc: "An inspector says your symptom checker counts as a medical device. The licence needs a clinical validation study with a hospital: 5 months and about $12,000. A competitor quietly renamed its app a 'wellness companion'.",
+      when: (s) => s.sector.id === "healthtech",
+      A: { title: "Fund the clinical study", fx: { cash: -8000, pmf: 4, trust: 6, clarity: -4 }, log: "Dr. Hala at a university hospital agrees to run the study. The first ethics committee meeting lasts 4 hours and ends with a request for more forms.",
+           echo: { after: [16, 28], icon: "🏆", title: "The licence comes through", text: "You're the only licensed app in the category. Two insurers ask to list you on their member portals, and the 'wellness companion' just got a warning letter.", fx: { mrrPct: 0.15, trust: 8 } } },
+      B: { title: "Rebrand it as a wellness app", fx: { pmf: -4, users: -150, clarity: 6, morale: 3 }, log: "The symptom checker becomes 'daily tips for your wellbeing'. Doctors stop recommending it. The inspector stops calling." },
+    },
+    {
+      id: "dl_mena_05",
+      cat: "Middle East",
+      icon: "🧊",
+      title: "Your gateway froze your money on a Thursday afternoon",
+      desc: "The payment gateway froze $18,000 of settlements 'for review'. Your biggest client's bank transfer is now 3 months late. It's Thursday afternoon, the weekend starts tomorrow, and payroll is due Sunday.",
+      when: (s) => s.monthlyRevenue >= 2000,
+      A: { title: "Cover payroll from your own savings", fx: { family: -6, morale: 6, clarity: -6 }, log: "You make the transfer from your personal account at 11pm. Nobody on the team knows how close payroll came.",
+           echo: { after: [6, 12], icon: "💵", title: "The money finally lands", text: "The gateway releases the $18,000 after 23 days and 4 emails to a risk team with no names. The client's transfer arrives the same week. You pay yourself back first.", fx: { clarity: 6, family: 4 } } },
+      B: { title: "Delay payroll and tell the team why", fx: { morale: -10, culture: 4, clarity: 3 }, log: "You explain it in the team WhatsApp group. Four people reply with a heart. One doesn't reply at all." },
+    },
+    {
+      id: "dl_mena_06",
+      cat: "Middle East",
+      icon: "💳",
+      title: "Cash on delivery is 60% of your orders",
+      desc: "60% of orders are cash on delivery and 1 in 4 gets refused at the door. The courier sits on your cash for two weeks. You want to push cards, but your processor just raised its fee from 2.2% to 2.9% overnight.",
+      when: (s) => s.sector.id === "ecommerce_marketplace",
+      A: { title: "Add a fee for cash on delivery", fx: { cash: 3000, users: -250, arpu: 2, churn: 0.4 }, log: "A small COD fee appears at checkout. Refused deliveries drop. So do orders from outside the capital.",
+           echo: { after: [10, 18], icon: "📈", title: "Customers learn to pay by card", text: "Card payments are now 55% of orders. Refusals at the door are down by half, and the courier owes you a lot less money.", fx: { cash: 4000, arpu: 2 } } },
+      B: { title: "Keep COD free and chase the courier", fx: { users: 300, cash: -3000, clarity: -4 }, log: "Order volume holds. You call the courier's finance manager every Tuesday. He now has you saved as 'the startup'." },
+    },
+    {
+      id: "dl_mena_07",
+      cat: "Middle East",
+      icon: "🌅",
+      title: "Ramadan: usage peaks at 2am and the team wants shorter days",
+      desc: "Last Ramadan your usage tripled after Taraweeh and peaked at 2am. Marketing wants a $5,000 Ramadan campaign. The team wants office hours of 11am to 3pm. Someone has to watch the servers at suhoor.",
+      A: { title: "Run the campaign and staff a night shift", fx: { cash: -5000, users: 900, morale: -6, techDebt: 4 }, log: "Tariq and two engineers work from iftar to suhoor. On the 12th of Ramadan the database falls over for 18 minutes, and they're awake to fix it.",
+           echo: { after: [6, 12], icon: "📉", title: "The Ramadan users left after Eid", text: "Half the users who joined in Ramadan haven't opened the app since Eid. The other half are still here, and they still use it at midnight.", fx: { users: -300, pmf: 2 } } },
+      B: { title: "Give short days and skip the campaign", fx: { morale: 8, culture: 4, users: -100, mrrPct: -0.03 }, log: "Standup moves to 11:15am. No campaign. A competitor's lantern ads are on every feed until Eid.",
+           echo: { after: [8, 14], icon: "🫶", title: "The team remembers Ramadan", text: "In the anonymous team survey, 'how Ramadan was handled' is the most mentioned reason people like working here. Two candidates bring it up in interviews.", fx: { culture: 4, morale: 4 } } },
+    },
+    {
+      id: "dl_mena_08",
+      cat: "Middle East",
+      icon: "🎉",
+      title: "The team expects an Eid bonus",
+      desc: "Nobody asked directly, but Ahmed in sales mentioned that his last employer paid half a month's salary before Eid. Doing the same would cost $7,000: about 3 weeks of runway.",
+      when: (s) => s.team.length >= 3,
+      A: { title: "Pay the Eid bonus", fx: { cash: -7000, morale: 10, culture: 3 }, log: "The bonus lands two days before Eid. Your phone fills with Eid stickers and one long voice note from Ahmed's mother." },
+      B: { title: "Send gifts and a personal note instead", fx: { cash: -1200, morale: -5, clarity: 3 }, log: "Everyone gets a box of dates, a handwritten card and a voucher. Someone posts a photo of the box in the group with a polite thumbs-up.",
+           echo: { after: [8, 16], icon: "🚪", title: "Ahmed takes another offer", text: "Ahmed resigns for a bank job 'with proper benefits'. In his exit chat he says the dates were very good.", fx: { morale: -6, mrrPct: -0.04 } } },
+    },
+    {
+      id: "dl_mena_09",
+      cat: "Middle East",
+      icon: "📅",
+      title: "August: the buyers are in London and the weddings are at home",
+      desc: "Your 4 biggest deals wait on people who are in London or Salalah until September. Meanwhile your cousin and your best friend from university both get married in the same week. The burn doesn't take a holiday.",
+      when: (s) => s.monthlyRevenue >= 2000,
+      A: { title: "Fly to London and chase the deals", fx: { cash: -4500, family: -8, xp: 40 }, log: "You spend 9 days pitching people in polo shirts in Knightsbridge cafés. Your mother sends the wedding videos, one by one.",
+           echo: { after: [8, 14], icon: "🤝", title: "The London coffee closes a deal", text: "The CFO you met in a London café signs in September, while 3 other deals are still 'waiting for the new budget'.", fx: { mrrPct: 0.12, trust: 3 } } },
+      B: { title: "Stay home for the weddings and slow down", fx: { family: 8, clarity: 6, mrrPct: -0.04 }, log: "You dance at both weddings and sleep past 8am for the first time in a year. The pipeline doesn't move at all." },
+    },
+    {
+      id: "dl_mena_10",
+      cat: "Middle East",
+      icon: "🏠",
+      title: "Your parents found you a government job",
+      desc: "Your father's friend can get you a ministry position: stable salary, housing allowance, out by 2:30pm. Your mother has already told your aunts. They want an answer before Friday lunch.",
+      A: { title: "Decline it, in person, with respect", fx: { family: -10, clarity: 6, morale: 3 }, log: "You explain over lunch. Your father says nothing for a long time, then asks how many months of runway you have.",
+           echo: { after: [14, 26], icon: "❤", title: "Your father brings up the startup", text: "At a family gathering, your father tells an uncle about your company and uses the word 'founder' in English. He has been reading about it.", fx: { family: 10, clarity: 4 } } },
+      B: { title: "Ask for a year before deciding", fx: { family: 4, clarity: -6, xp: 20 }, log: "Your mother tells the aunts it is 'being arranged'. The offer, and the question, now have a deadline.",
+           echo: { after: [20, 30], icon: "⏳", title: "The year is almost up", text: "Your father's friend calls about the ministry position again. The startup is still alive, and now you have to say no to a man who waited for you.", fx: { family: -8, clarity: -4 } } },
+    },
+    {
+      id: "dl_mena_11",
+      cat: "Middle East",
+      icon: "👥",
+      title: "Your aunt needs a job for her son",
+      desc: "Your aunt calls: her son Karim graduated 8 months ago and is 'just sitting at home'. He's kind, unfocused and has never worked in a company. She has already told him you'll find something.",
+      A: { title: "Hire Karim as an operations assistant", fx: { family: 8, baseBurn: 700, culture: -4, morale: -3 }, log: "Karim starts on Sunday. He is first in the office every morning and last to finish reading any document.",
+           echo: { after: [10, 20], icon: "🌱", title: "Karim found his thing", text: "Karim turned out to be excellent with couriers and angry customers. Support complaints are down, and he now has opinions about the CRM.", fx: { churn: -0.5, morale: 4 } } },
+      B: { title: "Help him find a job somewhere else", fx: { family: -8, culture: 3, clarity: -3 }, log: "You spend two evenings rewriting Karim's CV. Your aunt thanks you in a tone that means the opposite." },
+    },
+    {
+      id: "dl_mena_12",
+      cat: "Middle East",
+      icon: "🏛",
+      title: "A government fund will match your round, with conditions",
+      desc: "A state-backed fund offers to match Layla's cheque if you move your HQ to its city, reach 60% local hires within 18 months, and give it a board observer seat.",
+      when: (s) => s.stage <= 2,
+      A: { title: "Take the match and the conditions", fx: { cash: 25000, trust: 6, baseBurn: 1200, equity: -3 }, log: "The term sheet comes in Arabic and English, with the Arabic version prevailing. Your lawyer reads it twice.",
+           echo: { after: [14, 26], icon: "🔍", title: "The fund's quarterly compliance pack", text: "Every quarter the fund asks for payslips, residency data and a headcount by nationality. Your finance person now loses 3 days to it each time.", fx: { clarity: -5, baseBurn: 300 } } },
+      B: { title: "Close the round with angels only", fx: { cash: 8000, equity: -2, trust: -3, clarity: 4 }, log: "Layla brings in 3 angels for a smaller round. You keep your HQ, your board and a nagging question about the money you didn't take." },
+    },
+    {
+      id: "dl_mena_13",
+      cat: "Middle East",
+      icon: "🚀",
+      title: "Demo day is in another city",
+      desc: "The accelerator's demo day is in Riyadh; your team and customers are in Cairo. Going means two weeks away, $3,500 in flights and hotel, and 4 minutes on stage in front of 300 investors.",
+      when: (s) => s.stage <= 2,
+      A: { title: "Fly in and pitch on stage", fx: { cash: -3500, trust: 6, clarity: -4, morale: -3 }, log: "You rehearse the 4 minutes 31 times. On stage the clicker dies at slide 6 and you finish without it.",
+           echo: { after: [6, 14], icon: "👼", title: "A demo-day investor follows up", text: "A family-office partner from the second row sends a WhatsApp: 'Still raising?' His first cheque would be bigger than your last round.", fx: { trust: 8, cash: 10000, equity: -2 } } },
+      B: { title: "Send a recorded pitch and keep selling", fx: { mrrPct: 0.05, trust: -4, morale: 2 }, log: "Your video plays between two live pitches with the audio too low. Back in Cairo, you close two deals that week." },
+    },
+    {
+      id: "dl_mena_14",
+      cat: "Middle East",
+      icon: "🐳",
+      title: "A competitor backed by a sovereign fund enters your market",
+      desc: "A new player launched with a $40M round led by a sovereign fund, a free year for every customer and billboards on every highway. Three of your customers forwarded you its launch email.",
+      when: (s) => s.week >= 12,
+      A: { title: "Hold your price and over-serve customers", fx: { churn: 1, pmf: 4, morale: -3, mrrPct: -0.05 }, log: "You call every top customer yourself. Omar Sabry says he'll stay, 'but give me a reason by next quarter'.",
+           echo: { after: [16, 28], icon: "🔥", title: "The free year ends", text: "The competitor ends its free tier and triples its prices to show revenue to its fund. Four customers who left you come back, slightly embarrassed.", fx: { mrrPct: 0.1, churn: -1 } } },
+      B: { title: "Move to the segment they ignore", fx: { pmf: -4, techDebt: 5, clarity: 5, churn: -0.5 }, log: "You stop fighting for their customers and go after the small businesses their sales team never calls." },
+    },
+    {
+      id: "dl_mena_15",
+      cat: "Middle East",
+      icon: "🎯",
+      title: "Saudi Arabia or Egypt as your second market?",
+      desc: "Saudi means bigger contracts, 4x the price point, a local entity, work visas and a nationalisation quota for every hire. Egypt means 110 million people, cheap talent and a currency that lost half its value in two years.",
+      when: (s) => s.stage >= 2 || s.monthlyRevenue >= 5000,
+      A: { title: "Go to Saudi Arabia", fx: { cash: -10000, baseBurn: 1200, arpu: 6, clarity: -4 }, log: "You hire Faisal as country manager and learn that your next two hires must be Saudi before the visa for your engineer gets approved.",
+           echo: { after: [14, 26], icon: "📈", title: "Your first Saudi enterprise contract", text: "A Riyadh logistics group signs a two-year contract. One customer now pays more each month than your first 50 did combined.", fx: { mrrPct: 0.15, trust: 5 } } },
+      B: { title: "Go to Egypt", fx: { users: 1200, cash: -3000, arpu: -3, morale: 4 }, log: "You hire 6 people in Cairo for what one senior hire costs in Dubai. The pricing page now has a second currency.",
+           echo: { after: [10, 20], icon: "📉", title: "The pound moves again", text: "The Egyptian pound drops another 20% overnight. Revenue from Egypt is flat in pounds and down in dollars, but the Cairo team is the strongest you've had.", fx: { mrrPct: -0.05, morale: 4 } } },
+    },
+    {
+      id: "dl_mena_16",
+      cat: "Middle East",
+      icon: "💻",
+      title: "Your product isn't really Arabic-first",
+      desc: "Your app was built in English and translated. In user tests, Gulf users trip over Egyptian phrasing, dates break in right-to-left, and the charts read backwards. A proper Arabic-first interface is 10 weeks of work.",
+      A: { title: "Rebuild the interface Arabic-first", fx: { cash: -5000, mrrPct: -0.03, techDebt: -6, pmf: 5 }, log: "Mariam, your new UX writer, drafts every screen in Arabic first. Tariq finds 214 hardcoded 'left' values in the CSS.",
+           echo: { after: [10, 20], icon: "🤩", title: "Users say it speaks like them", text: "App store reviews start saying the app 'speaks like us'. Conversion from Arabic-language ads is up by a third.", fx: { users: 800, pmf: 3 } } },
+      B: { title: "Fix the worst bugs and move on", fx: { cash: -800, techDebt: 4, pmf: -2, morale: 3 }, log: "The date bug is fixed. The charts still run left to right, and the Saudi onboarding still greets people with an Egyptian 'ezayak'." },
+    },
+    {
+      id: "dl_mena_17",
+      cat: "Exit",
+      icon: "🦈",
+      title: "A super-app offers to acqui-hire your team",
+      desc: "A regional super-app wants your engineers, not your product. The offer is $1.2M, mostly as retention bonuses for the team. Your investors would get their money back and little else.",
+      when: (s) => s.week >= 25 && s.monthlyRevenue >= 10000,
+      A: { title: "Decline and tell the team about it", fx: { morale: 6, culture: 4, cofounder: -4, trust: 3 }, log: "You tell the team at Sunday standup. Someone asks how much. You tell them that too.",
+           echo: { after: [8, 16], icon: "🕵", title: "The super-app recruits your engineers directly", text: "Two of your engineers get messages from the super-app's recruiter with salaries you can't match. One of them says yes.", fx: { morale: -8, techDebt: 6 } } },
+      B: { title: "Negotiate a better price", fx: { clarity: -6, trust: 4, morale: -4, xp: 40 }, log: "Your lawyer asks for an NDA and a data room. The team notices you're taking a lot of calls in the stairwell." },
+    },
+    {
+      id: "dl_mena_18",
+      cat: "Exit",
+      icon: "🤝",
+      title: "Your main competitor proposes a merger",
+      desc: "Yousef, who runs your fiercest competitor, invites you to dinner and proposes a 50/50 merger. Together you'd own the market. Apart, you're both burning money on the same discounts.",
+      when: (s) => s.week >= 25 && s.monthlyRevenue >= 10000,
+      A: { title: "Explore the merger", fx: { clarity: -6, trust: 6, mrrPct: 0.06, cofounder: -6 }, log: "Due diligence starts. You learn that Yousef's churn is worse than yours, and he learns that your margins are.",
+           echo: { after: [10, 20], icon: "⚔", title: "Who will be CEO?", text: "The talks reach the last question: who runs the combined company. Yousef says his board insists on him. Tariq says if it's Yousef, he's out.", fx: { cofounder: -8, clarity: -6 } } },
+      B: { title: "Decline and keep competing", fx: { cash: -3000, morale: 4, clarity: 4 }, log: "You pay for dinner. The next morning, his team launches a 40% discount." },
+    },
+    {
+      id: "dl_mena_19",
+      cat: "Exit",
+      icon: "💰",
+      title: "An investor offers to buy some of your shares",
+      desc: "The growth fund leading your next round offers to buy 3% of the company from you directly, paid into your personal account. Layla thinks founders who take money off the table lose their hunger.",
+      when: (s) => s.week >= 25 && s.monthlyRevenue >= 10000,
+      A: { title: "Sell the shares", fx: { equity: -3, clarity: 10, family: 8, trust: -5 }, log: "You pay off the apartment and your parents' car loan. For the first time in two years, you sleep through the night.",
+           echo: { after: [10, 20], icon: "📓", title: "Layla raises it at the board", text: "At the next board meeting Layla asks how 'personally committed' you still are. She says it with a smile. It goes in the minutes.", fx: { boardTrust: -6, trust: -4 } } },
+      B: { title: "Keep every share", fx: { clarity: -4, trust: 4, partner: -5 }, log: "You decline politely. Nour asks, very calmly, how much longer the two of you will live like this." },
+    },
+    {
+      id: "dl_mena_20",
+      cat: "Exit",
+      icon: "🔒",
+      title: "A strategic buyer wants 60 days of exclusivity",
+      desc: "A regional logistics group sends a letter of intent at a valuation you didn't dare say out loud. The catch: 60 days of exclusivity, with no talks with any other buyer or investor.",
+      when: (s) => s.week >= 25 && s.monthlyRevenue >= 10000,
+      A: { title: "Sign the exclusivity letter", fx: { clarity: -6, trust: 5, morale: -4, xp: 50 }, log: "The data room opens. Their 14 analysts ask for every contract since day one.",
+           echo: { after: [8, 14], icon: "📉", title: "The buyer cuts the price at the last minute", text: "Two days before exclusivity ends, the buyer 'revisits the valuation' by 35%. Every other conversation went cold during those two months.", fx: { trust: -8, clarity: -8 } } },
+      B: { title: "Refuse exclusivity and invite other offers", fx: { trust: -4, clarity: -3, xp: 30 }, log: "The buyer says they'll 'reflect' and goes quiet. Layla asks why you'd turn away the only offer on the table.",
+           echo: { after: [8, 18], icon: "🐳", title: "Two buyers at the table", text: "A rival group asks for a meeting. The first buyer comes back with a better offer and no exclusivity. Layla calls it the best email of her year.", fx: { trust: 8, clarity: 4 } } },
+    },
+    {
+      id: "dl_mena_21",
+      cat: "Exit",
+      icon: "🧩",
+      title: "A telecom wants to license your tech, not buy you",
+      desc: "A national telecom wants to white-label your platform for its 20 million subscribers: $15,000 a month, a 3-year contract, exclusive in the country. It doesn't want your company, just your best engineers' time.",
+      when: (s) => s.week >= 25 && s.monthlyRevenue >= 10000,
+      A: { title: "Sign the licensing deal", fx: { mrrPct: 0.18, cash: 15000, pmf: -4, techDebt: 8, morale: -4 }, log: "The contract is 64 pages. Clause 31 says you can't sell to any other telecom in the country.",
+           echo: { after: [12, 24], icon: "🔄", title: "The telecom's roadmap becomes yours", text: "The telecom now sends a monthly 'priority list'. Three of your engineers work only on it, and your own product hasn't shipped a feature in two months.", fx: { pmf: -4, morale: -4 } } },
+      B: { title: "Hold out for an acquisition", fx: { clarity: -4, trust: 4, pmf: 2 }, log: "You tell them you're open to a bigger conversation. They say they'll take it to the committee." },
+    },
+  ];
+
+  const MAIL_EXTRA = [
+    {
+      kind: "mail",
+      id: "mx_noise_01",
+      from: "📧 Rana · GrowthStack Agency",
+      title: "We can 10x your SEO in 30 days",
+      body: "Quick question: who handles your organic growth? We've helped 200+ startups rank on page one. Do you have 15 minutes this week?",
+      left: { label: "Book a call", fx: { clarity: -3 }, log: "Forty minutes of slides. Nothing you could use." },
+      right: { label: "Archive", log: "Archived. Thirty seconds well saved." },
+    },
+    {
+      kind: "mail",
+      id: "mx_noise_02",
+      from: "🎓 ScaleUp Academy · Live masterclass",
+      title: "LIVE: How we scaled to $10M ARR in 18 months",
+      body: "Join 3,000 founders this Thursday. Seats are limited. Replay available for VIP members only.",
+      left: { label: "Register and attend", fx: { clarity: -4 }, log: "Ninety minutes. The last twenty were a pitch for a $499 course." },
+      right: { label: "Archive", log: "Archived. Thursday evening stays yours." },
+    },
+    {
+      kind: "mail",
+      id: "mx_noise_03",
+      from: "📧 Karim · PipelinePro CRM",
+      title: "Quick question",
+      body: "Hi! Are you the right person to talk to about your sales process? If not, could you point me to who is?",
+      left: { label: "Reply: what is it?", fx: { clarity: -3 }, log: "You replied once. You have now received six follow-ups in four days." },
+      right: { label: "Archive", log: "Archived. The fifth follow-up will be archived too." },
+    },
+    {
+      kind: "mail",
+      id: "mx_noise_04",
+      from: "🎪 Future Founders Summit · Dubai",
+      title: "You've been selected to speak on our main stage",
+      body: "Our committee loved your story. The speaker package is $2,500 and includes a 10-minute slot and a gala dinner seat.",
+      left: { label: "Buy the speaker slot", fx: { cash: -2500, clarity: -3 }, log: "Your 10 minutes were at 9am on day two. Forty people, mostly other speakers." },
+      right: { label: "Archive", log: "Archived. Real stages don't send invoices." },
+    },
+    {
+      kind: "mail",
+      id: "mx_noise_05",
+      from: "📰 The Founder Digest · Weekly",
+      title: "47 links every founder must read this week",
+      body: "Hot takes, funding rounds, a thread on morning routines, and why everyone is wrong about pricing.",
+      left: { label: "Read all 47", fx: { clarity: -4 }, log: "Two hours later you knew who raised what. Your own roadmap hadn't moved." },
+      right: { label: "Archive", log: "Archived. Nothing in it was about your customers." },
+    },
+    {
+      kind: "mail",
+      id: "mx_noise_06",
+      from: "📱 Sameh · Founder Brand Coach",
+      title: "Your LinkedIn is leaving money on the table",
+      body: "I helped 300 founders go viral. Join my free 7-day challenge: one post a day, and you'll never chase investors again.",
+      left: { label: "Join the challenge", fx: { clarity: -5, morale: -2 }, log: "Day three: a post about what your morning coffee taught you about leadership. The team saw it." },
+      right: { label: "Archive", log: "Archived. Your customers aren't on day three of a challenge." },
+    },
+    {
+      kind: "mail",
+      id: "mx_noise_07",
+      from: "💼 Dina · Executive search",
+      title: "Exciting VP Product role at a fast-growing scale-up",
+      body: "Your profile caught my eye. The package is very competitive. Open to a confidential chat?",
+      left: { label: "Hear them out", fx: { clarity: -3, cofounder: -3 }, log: "The call was vague. Tariq saw the calendar invite and didn't ask about it." },
+      right: { label: "Archive", log: "Archived. You already have a job. It just doesn't pay yet." },
+    },
+    {
+      kind: "mail",
+      id: "mx_noise_08",
+      from: "🏆 MENA Innovation Awards",
+      title: "Congratulations! You're a finalist: Top 40 Under 40",
+      body: "To confirm your place, please pay the $900 nomination fee. Includes a trophy and a certificate.",
+      left: { label: "Pay the fee", fx: { cash: -900, clarity: -1 }, log: "You won. So did everyone else who paid. The trophy is heavier than it looks." },
+      right: { label: "Archive", log: "Archived. An award you pay for is an invoice with a ribbon." },
+    },
+    {
+      kind: "mail",
+      id: "mx_noise_09",
+      from: "🤖 Ziad · ChainLoop Labs",
+      title: "Let's tokenise your user community",
+      body: "Your users could own a piece of your growth. We handle the token, the whitepaper and the Telegram group.",
+      left: { label: "Take the intro call", fx: { clarity: -4, trust: -1 }, log: "An hour of diagrams. Layla heard about it and sent a single question mark." },
+      right: { label: "Archive", log: "Archived. Your users want the product to work." },
+    },
+    {
+      kind: "mail",
+      id: "mx_noise_10",
+      from: "📧 Hassan · DevForce Outsourcing",
+      title: "We noticed your website loads slowly",
+      body: "Our team of 120 engineers can rebuild your platform in 6 weeks at a fraction of the cost. Free audit attached.",
+      left: { label: "Open the free audit", fx: { clarity: -3 }, log: "A 30-page PDF that could describe any website. Tariq read it out loud for laughs." },
+      right: { label: "Archive", log: "Archived. Your website loads fine." },
+    },
+    {
+      kind: "mail",
+      id: "mx_noise_11",
+      from: "📧 Hana Qasim · Graduate researcher",
+      title: "Survey request: 10 minutes for my thesis",
+      body: "I'm interviewing 40 clinic and shop owners about the software they pay for. Could I ask you a few questions too?",
+      left: { label: "Reply and help", fx: { clarity: -2, pmf: 2, xp: 20 }, log: "She shared her notes. 11 of her 40 interviews described the exact problem you solve." },
+      right: { label: "Archive", fx: { pmf: -1 }, log: "Archived. A month later her findings went around every founder group. You weren't in them." },
+    },
+    {
+      kind: "mail",
+      id: "mx_noise_12",
+      from: "📧 Accounts · Gulf Freight Group",
+      title: "Quick question about invoicing",
+      body: "We're on your monthly plan. Do you offer annual invoicing? Our finance system needs it before the new quarter.",
+      left: { label: "Reply with an annual offer", fx: { cash: 3000, mrrPct: 0.03, clarity: -1 }, log: "They paid a year upfront and added two seats while they were at it." },
+      right: { label: "Archive", fx: { mrrPct: -0.02 }, log: "Archived. Six weeks later they moved to a competitor that invoices annually." },
+    },
+    {
+      kind: "mail",
+      id: "mx_thread_01",
+      after: { id: "demo_crash", side: "left", weeks: 6 },
+      from: "📧 Omar Sabry · Key customer",
+      title: "I told our CFO about the weekend you fixed it",
+      body: "He wants your product in our two other branches. He also wants a proper proposal, not a WhatsApp message.",
+      left: { label: "Send a proposal tonight", fx: { mrrPct: 0.08, clarity: -4 }, log: "Proposal sent at midnight. Signed by Thursday. You slept on Friday." },
+      right: { label: "Ask for a case study first", fx: { users: 120, pmf: 2, mrrPct: 0.03 }, log: "Omar agreed to a case study. The expansion will wait a quarter." },
+    },
+    {
+      kind: "mail",
+      id: "mx_thread_02",
+      after: { id: "demo_crash", side: "right", weeks: 8 },
+      from: "📧 Omar Sabry · Key customer",
+      title: "About that discount",
+      body: "Our renewal is next month. We'd like to keep the discounted price. Two of my peers have asked what we pay.",
+      left: { label: "Back to full price", fx: { mrrPct: 0.03, churn: 0.4, clarity: -2 }, log: "Omar paid full price. He also invited two of your competitors to pitch." },
+      right: { label: "Keep the discount", fx: { arpu: -2, churn: -0.3 }, log: "Omar renewed. His peers asked for the same price within a week." },
+      ignore: { fx: { mrrPct: -0.06 }, log: "No reply from you. His procurement team took that as a no." },
+    },
+    {
+      kind: "mail",
+      id: "mx_thread_03",
+      after: { id: "poach", side: "left", weeks: 10 },
+      from: "💼 Tariq Mansour · CTO",
+      title: "Thinking like an owner now",
+      body: "Our cloud bill is double what it should be. Give me two quiet weeks, no features, and I'll cut it in half.",
+      left: { label: "Give him the two weeks", fx: { baseBurn: -500, cofounder: 6, pmf: -1 }, log: "The bill dropped by half. The roadmap slipped by two weeks. Tariq looked pleased for once." },
+      right: { label: "Features first, sorry", fx: { pmf: 2, cofounder: -6, techDebt: 3 }, log: "Tariq shipped the features. He didn't mention the cloud bill again." },
+    },
+    {
+      kind: "mail",
+      id: "mx_thread_04",
+      after: { id: "poach", side: "right", weeks: 12 },
+      from: "💼 Tariq Mansour · CTO",
+      title: "They called again. This time it wasn't money.",
+      body: "Big Tech offered me a Head of Engineering title. Here I'm the guy who keeps the servers up. What am I building toward?",
+      left: { label: "Give him a real stake", fx: { equity: -2, cofounder: 10, baseBurn: -300 }, log: "You moved part of his salary into equity. He stopped checking his phone in meetings." },
+      right: { label: "Talk about the next two years", fx: { clarity: -4, cofounder: 4, morale: 2 }, log: "Three hours in a cafe. No title change, but a plan he helped write." },
+      ignore: { fx: { cofounder: -12, morale: -6 }, log: "Tariq took the interview. He didn't take the job. He didn't tell you either." },
+    },
+    {
+      kind: "mail",
+      id: "mx_thread_05",
+      after: { id: "angel_update", side: "left", weeks: 8 },
+      from: "👼 Layla Fahmy · Lead angel",
+      title: "Your update reached a fund partner",
+      body: "I forwarded your honest update to Mariam at a seed fund. She liked that you led with the bad news. She has 20 minutes Tuesday.",
+      left: { label: "Take the meeting", fx: { trust: 6, clarity: -4, xp: 30 }, log: "Mariam asked about churn first. You had the real number ready. She asked for the data room." },
+      right: { label: "Not raising yet, thank her", fx: { clarity: 2, trust: -2 }, log: "Layla said the door stays open. Mariam's calendar may not." },
+    },
+    {
+      kind: "mail",
+      id: "mx_thread_06",
+      after: { id: "refund", side: "left", weeks: 6 },
+      from: "🧾 Customer · The one you refunded",
+      title: "I'm back. And I'm bringing my team.",
+      body: "You refunded 11 months without arguing. My new company needs 6 seats. Can we start this week?",
+      left: { label: "Onboard them yourself", fx: { mrrPct: 0.05, pmf: 2, clarity: -4 }, log: "You ran the onboarding call yourself. They found two bugs and a feature idea." },
+      right: { label: "Send the help docs", fx: { mrrPct: 0.03, churn: 0.2 }, log: "They signed up. Two of the 6 seats never logged in." },
+    },
+    {
+      kind: "mail",
+      id: "mx_thread_07",
+      after: { id: "bank_pilot", side: "left", weeks: 10 },
+      from: "🏦 Regional bank · Information security",
+      title: "Audit scheduled for next week",
+      body: "Ahead of converting the pilot to a full contract, our auditors will review the security policy you shared.",
+      left: { label: "Hire a consultant now", fx: { cash: -4000, techDebt: -8, trust: 3 }, log: "The consultant rewrote half your weekend policy. The audit passed with three notes." },
+      right: { label: "Patch it ourselves", fx: { techDebt: 4, clarity: -8, morale: -4 }, log: "Four late nights. The audit passed, just. The team won't forget that week." },
+      ignore: { fx: { mrrPct: -0.1, trust: -3 }, log: "Nobody prepared. The pilot ended with a polite email on a Tuesday." },
+    },
+    {
+      kind: "mail",
+      id: "mx_thread_08",
+      after: { id: "press", side: "right", weeks: 12 },
+      from: "📰 Salma · Tech reporter",
+      title: "You said not yet. Is it yet?",
+      body: "I'm writing about 10 founders to watch this year. I remembered you. Deadline is Friday.",
+      left: { label: "Give the interview", fx: { trust: 6, users: 150, clarity: -4 }, log: "She asked about your churn and your burn. The piece was fair, and it ran on Sunday." },
+      right: { label: "Still not yet", fx: { clarity: 2, trust: -2 }, log: "The list ran with 10 founders. Layla asked why you weren't one of them." },
+    },
+  ];
+
+  // ================================================================ stories
+  // Phase 4 of the content plan: depth.
+  //   * a library of 80+ dilemmas (content/dl_*.js) dealt alongside the
+  //     original events, never repeating within a run
+  //   * echoes: choices that come back 4-30 weeks later, naming the week you
+  //     made them
+  //   * a Middle East calendar: Ramadan, the two Eids, the summer slowdown
+  //   * Nour and your parents join the Circle; neglect has its own ending
+  //   * the inbox gets noise and threads that remember (content/mail.js)
+  // shares App's scope (see economy.js / market.js / org.js).
+
+  const LIBRARY = [].concat(DL_PRODUCT, DL_PEOPLE, DL_LIFE, DL_MENA);
+
+  // new mail: noise to learn to ignore, and threads that follow up earlier answers
+  MAIL_EXTRA.forEach((c) => {
+    const side = (x) => x && { label: x.label, log: x.log, effects: {}, mx: x.fx };
+    INBOX.push({
+      id: c.id,
+      from: c.from,
+      title: c.title,
+      body: c.body,
+      when: c.after
+        ? (s) => {
+            const h = s.mailLog && s.mailLog[c.after.id];
+            return !!h && h.side === c.after.side && s.week - h.week >= c.after.weeks && !(s.inboxSeen || {})[c.id];
+          }
+        : c.when,
+      left: side(c.left),
+      right: side(c.right),
+      ignore: c.ignore && { log: c.ignore.log, effects: {}, mx: c.ignore.fx },
+    });
+  });
+
+  // labels for effect previews; Arabic BAD_UP words cover churn, tech debt and burn
+  const FX_LABELS = {
+    cash: "Cash",
+    mrrPct: "MRR",
+    users: "Users",
+    churn: "Churn",
+    morale: "Morale",
+    clarity: "Clarity",
+    techDebt: "Tech Debt",
+    trust: "Investor Trust",
+    arpu: "ARPU",
+    pmf: "Fit",
+    culture: "Culture",
+    cofounder: "Co‑founder", // non-breaking hyphen: a plain "-" would read as a minus sign in the effect chips
+    boardTrust: "Board trust",
+    equity: "Equity",
+    baseBurn: "Burn",
+    family: "Family",
+    partner: "Nour",
+    xp: "EXP",
+  };
+  const sign = (v) => (v < 0 ? "-" : "+");
+  function previewOf(fx) {
+    return Object.keys(fx || {})
+      .map((k) => {
+        const v = fx[k],
+          a = Math.abs(v);
+        if (k === "cash" || k === "baseBurn" || k === "arpu") return FX_LABELS[k] + " " + sign(v) + "$" + Math.round(a).toLocaleString();
+        if (k === "mrrPct") return FX_LABELS[k] + " " + sign(v) + Math.round(a * 100) + "%";
+        if (k === "churn" || k === "equity") return FX_LABELS[k] + " " + sign(v) + a + "%";
+        return FX_LABELS[k] + " " + sign(v) + Math.round(a);
+      })
+      .join(" | ");
+  }
+
+  const rel = (s, id) => (s.relationships || []).find((r) => r.id === id);
+  function applyFx(engine, fx) {
+    const s = engine.state,
+      o = ensureOrg(s),
+      m = ensureMarket(s);
+    for (const k in fx || {}) {
+      const v = fx[k];
+      if (k === "cash") s.cash += v;
+      else if (k === "mrrPct") {
+        let d = s.monthlyRevenue * v;
+        if (s.monthlyRevenue > 0 && Math.abs(d) < 150) d = 150 * Math.sign(v);
+        if (d > 0) d *= growthMult(s) * teamMult(s) * seasonMult(s);
+        s.monthlyRevenue = Math.max(0, Math.round(s.monthlyRevenue + d));
+      } else if (k === "users") s.activeUsers = Math.max(0, s.activeUsers + v);
+      else if (k === "churn") s.churnRate = clamp(s.churnRate + v, 0.5, 25);
+      else if (k === "morale") s.teamMorale = clamp(s.teamMorale + v, 0, 100);
+      else if (k === "clarity") s.mentalClarity = clamp(s.mentalClarity + v, 0, 100);
+      else if (k === "techDebt") s.techDebt = clamp(s.techDebt + v, 0, 100);
+      else if (k === "trust") s.investorTrust = clamp((s.investorTrust == null ? 80 : s.investorTrust) + v, 0, 100);
+      else if (k === "arpu") s.arpu = Math.max(5, s.arpu + v);
+      else if (k === "pmf") m.pmf = clamp(m.pmf + v, 0, 100);
+      else if (k === "culture") o.culture = clamp(o.culture + v, 0, 100);
+      else if (k === "cofounder") rel(s, "co") && (rel(s, "co").health = clamp(rel(s, "co").health + v, 0, 100));
+      else if (k === "boardTrust") o.board && (o.board.trust = clamp(o.board.trust + v, 0, 100));
+      else if (k === "equity") s.equity = clamp((s.equity == null ? 100 : s.equity) + v, 1, 100);
+      else if (k === "baseBurn") s.baseBurn = Math.max(0, s.baseBurn + (v > 0 ? v * 0.5 : v)); // permanent costs stack up over a run
+      else if (k === "family") rel(s, "fam") && (rel(s, "fam").health = clamp(rel(s, "fam").health + v, 0, 100));
+      else if (k === "partner") rel(s, "nour") && (rel(s, "nour").health = clamp(rel(s, "nour").health + v, 0, 100));
+      else if (k === "xp") s.founderExp += v;
+    }
+    engine.recalculate();
+  }
+
+  // consequences for some of the original game's dilemmas
+  const ENGINE_ECHOES = {
+    POP_002: { option_A: { after: [6, 12], icon: "🕳", title: "The bugs you shipped are now tickets", text: "The fast launch is still being paid for. Support spends half its week on bugs from launch day, and two customers asked for refunds.", fx: { techDebt: 8, churn: 0.5 } } },
+    POP_003: { option_A: { after: [8, 16], icon: "🚪", title: "Two good engineers resigned the same week", text: "They didn't mention the star performer in their exit interviews. They didn't have to.", fx: { morale: -12, culture: -8, techDebt: 6 } } },
+    POP_004: {
+      option_A: { after: [10, 20], icon: "🤝", title: "The apology is still paying off", text: "A customer who stayed after the outage just referred two companies. They said it was because you told the truth.", fx: { mrrPct: 0.05, trust: 4 } },
+      option_B: { after: [10, 22], icon: "📰", title: "A journalist found the outage logs", text: "The story about the \"routine maintenance\" ran this morning, right in the middle of your investor conversations.", fx: { trust: -12, churn: 1, clarity: -6 } },
+    },
+    POP_009: { option_B: { after: [8, 18], icon: "🌱", title: "She sent you a senior engineer", text: "The engineer you let go well referred a friend who was tired of big tech. He starts Monday at a fair salary.", fx: { techDebt: -8, morale: 6, xp: 40 } } },
+    POP_011: {
+      option_A: { after: [6, 12], icon: "🧘", title: "The week off is still paying off", text: "You've made fewer panicked decisions since you came back. The team noticed before you did.", fx: { clarity: 8, morale: 4 } },
+      option_B: { after: [6, 14], icon: "😵‍💫", title: "Your body sent the bill", text: "A migraine on a Tuesday, a week of bad sleep, and a doctor who said the word \"burnout\" twice.", fx: { clarity: -14, partner: -6 } },
+    },
+    POP_012: { option_A: { after: [12, 24], icon: "🏷", title: "Everyone wants the prepay discount", text: "Word got around. Three customers now ask for the same deal, and your new pricing page looks negotiable.", fx: { arpu: -3, mrrPct: -0.03 } } },
+  };
+
+  // ---------------------------------------------------------- the calendar
+  // A 52-week year. Ramadan moves about 11 days earlier every year.
+  function season(s) {
+    const year = Math.floor((s.week - 1) / 52),
+      w = ((s.week - 1) % 52) + 1,
+      ram = Math.max(2, 14 - 2 * year);
+    if (w >= ram && w < ram + 4) return "ramadan";
+    if (w === ram + 4) return "eid";
+    if (w === ram + 10) return "adha";
+    if (w >= 27 && w <= 34) return "summer";
+    return null;
+  }
+  const CONSUMER = { ecommerce_marketplace: 1, edtech: 1 };
+  function seasonMult(s) {
+    const t = season(s),
+      consumer = CONSUMER[s.sector && s.sector.id];
+    if (t === "ramadan") return consumer ? 1.15 : 0.9;
+    if (t === "summer") return consumer ? 0.9 : 0.75;
+    return 1;
+  }
+  const SEASON_NEWS = {
+    ramadan: ["🌅 Ramadan begins", "Shorter working days, long nights, and usage that peaks after iftar. Consumer products get busier; B2B decisions slow down."],
+    eid: ["🎉 Eid al-Fitr", "The office empties for a few days. Shoppers spend, and the team comes back rested."],
+    adha: ["🎉 Eid al-Adha", "A long holiday. Nobody answers email, and that's fine."],
+    summer: ["⛰ Summer slowdown", "Decision makers are travelling until September. B2B deals stall; plan for a slow two months."],
+  };
+
+  function ensureStory(s) {
+    if (!s.story) s.story = { seen: {}, echoes: [], season: null, nourWeek: -99, lonely: 0 };
+    if (s.relationships && !rel(s, "nour")) {
+      s.relationships.push({ id: "nour", name: "Nour", role: "Partner", health: 75, weeksSinceContact: 0 });
+      s.relationships.push({ id: "fam", name: "Mum & Dad", role: "Family", health: 70, weeksSinceContact: 0 });
+    }
+    return s.story;
+  }
+
+  // seasonal dilemmas only appear in their season, and open it when they can
+  const SEASONAL = { dl_mena_07: "ramadan", dl_mena_08: "eid", dl_mena_09: "summer" };
+  function libraryEvent(s, only) {
+    const st = ensureStory(s),
+      pool = LIBRARY.filter((d) => {
+        if (st.seen[d.id] || (only && d.id !== only)) return false;
+        if (SEASONAL[d.id] && SEASONAL[d.id] !== season(s)) return false;
+        try {
+          return !d.when || d.when(s);
+        } catch (e) {
+          return false;
+        }
+      });
+    if (!pool.length) return null;
+    const d = pool[Math.floor(Math.random() * pool.length)];
+    st.seen[d.id] = s.week;
+    return {
+      id: d.id,
+      icon: d.icon,
+      category: d.cat,
+      title: d.title,
+      description: d.desc,
+      option_A: { title: d.A.title, preview: previewOf(d.A.fx), effects: {}, log_text: d.A.log },
+      option_B: { title: d.B.title, preview: previewOf(d.B.fx), effects: {}, log_text: d.B.log },
+    };
+  }
+
+  function storyWeek(engine) {
+    const s = engine.state,
+      st = ensureStory(s),
+      notes = s.mkt ? s.mkt.notes : [];
+
+    // echoes that are due
+    const due = st.echoes.filter((e) => s.week >= e.due);
+    st.echoes = st.echoes.filter((e) => s.week < e.due);
+    due.forEach((e) => {
+      applyFx(engine, e.fx);
+      const good = Object.keys(e.fx).reduce((a, k) => a + (["churn", "techDebt", "baseBurn"].includes(k) ? -e.fx[k] : e.fx[k]), 0) > 0;
+      const when = `Your decision in week ${e.from}.`;
+      engine.addLog("⏪ " + e.title, e.text + " " + when, good ? "mentor" : "negative");
+      notes.push([e.icon, e.title + ". " + when, good ? 1 : -1]);
+    });
+
+    // the calendar
+    const now = season(s);
+    if (now !== st.season) {
+      st.season = now;
+      if (now) {
+        const [title, text] = SEASON_NEWS[now];
+        engine.addLog(title, text, "mentor");
+        notes.push([leadEmoji(title)[0], text, 0]);
+        if (now === "eid" || now === "adha") s.teamMorale = Math.min(100, s.teamMorale + 5);
+        if (now === "eid" && CONSUMER[s.sector && s.sector.id]) s.monthlyRevenue = Math.round(s.monthlyRevenue * 1.06);
+        const id = Object.keys(SEASONAL).find((k) => SEASONAL[k] === now);
+        if (id && (!s.pendingEvent || /^POP_/.test(s.pendingEvent.id))) s.pendingEvent = libraryEvent(s, id) || s.pendingEvent;
+      }
+    }
+
+    // the people outside work: they fade half as fast as business contacts
+    const nour = rel(s, "nour"),
+      fam = rel(s, "fam");
+    [nour, fam].forEach((r) => r && (r.health = Math.min(100, r.health + 1)));
+    if (nour && nour.health < 25 && s.week - st.nourWeek >= 12 && !s.pendingEvent) {
+      st.nourWeek = s.week;
+      s.pendingEvent = {
+        id: "ST_NOUR",
+        icon: "❤",
+        category: "Personal",
+        title: "Nour asks you to choose",
+        description: "\"I'm not asking you to quit. I'm asking whether there's still room for us in this.\" Nour has packed a bag for the weekend, for two.",
+        option_A: { title: "Go. Phone off for 48 hours", preview: "Nour +30 | Clarity +10 | Morale -4", effects: {}, log_text: "Two days, no laptop. You remembered why you started all of this." },
+        option_B: { title: "Ask for one more month", preview: "Nour -12 | EXP +30", effects: {}, log_text: "Nour unpacked the bag without saying anything." },
+      };
+    }
+    if (nour && nour.health <= 0 && (!fam || fam.health < 15)) {
+      if (++st.lonely >= 3 && !s.gameOver) {
+        s.gameOver = !0;
+        s.overType = "alone";
+        s.endReason = "You built a company, and lost everyone who'd have celebrated it.";
+      }
+    } else st.lonely = 0;
+
+    // more dilemmas: the original events mostly give way to the library
+    if (s.pendingEvent && /^POP_/.test(s.pendingEvent.id) && Math.random() < 0.6) {
+      const ev = libraryEvent(s);
+      if (ev) s.pendingEvent = ev;
+    } else if (!s.pendingEvent && s.week % 3 === 1 && s.week > 2 && Math.random() < 0.35) {
+      s.pendingEvent = libraryEvent(s);
+    }
+  }
+
+  (function () {
+    const P = Engine.StartupEngine.prototype;
+    if (P.__story) return;
+    P.__story = true;
+    const recalc = P.recalculate;
+    P.recalculate = function () {
+      ensureStory(this.state);
+      return recalc.call(this);
+    };
+    const advance = P.advanceWeek;
+    P.advanceWeek = function () {
+      advance.call(this);
+      if (!this.state.gameOver && !this.state.victory) storyWeek(this);
+      return this.recalculate();
+    };
+    const resolve = P.resolveEventChoice;
+    P.resolveEventChoice = function (key = "option_A") {
+      const s = this.state,
+        st = ensureStory(s),
+        ev = s.pendingEvent;
+      const res = resolve.call(this, key);
+      if (!ev) return res;
+      const d = LIBRARY.find((x) => x.id === ev.id);
+      const opt = d ? d[key === "option_A" ? "A" : "B"] : null;
+      if (opt) applyFx(this, opt.fx);
+      if (ev.id === "ST_NOUR") applyFx(this, key === "option_A" ? { partner: 30, clarity: 10, morale: -4 } : { partner: -12, xp: 30 });
+      const echo = opt ? opt.echo : ENGINE_ECHOES[ev.id] && ENGINE_ECHOES[ev.id][key];
+      if (echo) st.echoes.push({ due: s.week + rand(echo.after[0], echo.after[1]), from: s.week, icon: echo.icon, title: echo.title, text: echo.text, fx: echo.fx });
+      return this.recalculate();
+    };
+  })();
+
 
   function buildReport(before, after) {
     const rows = [
@@ -2886,7 +4225,9 @@ __d(function (g, r, i, a, m, _e, d) {
     const chooseMail = (card, side) => {
       const s = engine.state;
       s.inbox = s.inbox.filter((m) => m.id !== card.id);
-      const next = applyEffects(engine, card.title, card[side].label, fx(card[side], s), card[side].log);
+      s.mailLog = { ...(s.mailLog || {}), [card.id]: { side: side, week: s.week } }; // threads remember
+      let next = applyEffects(engine, card.title, card[side].label, fx(card[side], s), card[side].log);
+      if (card[side].mx) applyFx(engine, card[side].mx), (next = engine.state);
       setS({ ...next });
       buzz(12);
       notify(card[side].log, "info");
@@ -3316,7 +4657,9 @@ __d(function (g, r, i, a, m, _e, d) {
                             jsx(Text, { style: st.optionTitle, children: S.pendingEvent[key].title }),
                           ],
                         }),
-                        jsx(Chips, { items: previewChips(S.pendingEvent[key].preview), style: { marginTop: 10 } }),
+                        S.mentalClarity < 30
+                          ? jsx(Text, { style: [st.optionFog], children: "🌫️ Too foggy to read the consequences." })
+                          : jsx(View, { style: fogged && { opacity: fogOp }, children: jsx(Chips, { items: previewChips(S.pendingEvent[key].preview), style: { marginTop: 10 } }) }),
                       ],
                     },
                     key,
@@ -3667,6 +5010,7 @@ __d(function (g, r, i, a, m, _e, d) {
     optionTop: { flexDirection: "row", alignItems: "center", gap: 10 },
     optionKey: { width: 28, height: 28, borderRadius: 8, backgroundColor: COLOR.ink, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: COLOR.lineHot },
     optionKeyTxt: { fontFamily: "AzeretMono_600SemiBold", fontSize: 13, color: COLOR.text },
+    optionFog: { fontFamily: "Archivo_500Medium", fontSize: 12.5, color: COLOR.text3, marginTop: 10 },
     optionTitle: { flex: 1, fontFamily: "Archivo_600SemiBold", fontSize: 15, color: COLOR.text },
     noRight: { fontFamily: "AzeretMono_500Medium", fontSize: 10, letterSpacing: 1.5, color: COLOR.text3, textAlign: "center", marginTop: 6 },
     why: { backgroundColor: COLOR.panel2, borderRadius: 14, padding: 12, marginBottom: 14 },
@@ -4352,7 +5696,7 @@ __d(function(g,r,i,a,m,_e,d){"use strict";function e(e){return e&&e.__esModule?e
 __d(function(g,r,i,a,m,e,d){"use strict";Object.defineProperty(e,'__esModule',{value:!0}),Object.defineProperty(e,"default",{enumerable:!0,get:function(){return t}});var t=class{static alert(){}}},300,[]);
 __d(function(g,r,i,_a,m,_e,d){"use strict";function e(e){return e&&e.__esModule?e:{default:e}}Object.defineProperty(_e,'__esModule',{value:!0}),_e.ActivitiesScreen=function({onSelectActivity:e,gameState:a}){const C=a?.cash??0,b=!!a?.slotUsed,v=[...new Set(c.FOUNDER_ACTIVITIES.map(e=>e.category))];return(0,u.jsxs)(l.default,{style:y.container,children:[(0,u.jsx)(o.default,{style:y.title,children:"Founder Actions"}),(0,u.jsx)(o.default,{style:y.subtitle,children:b?"This week's action is used. It refills on Advance week.":"One action available this week."}),v.map(a=>(0,u.jsxs)(t.default,{children:[(0,u.jsx)(o.default,{style:[y.categoryLabel,{color:f[a]||s.COLOR.text3}],children:a.toUpperCase()}),c.FOUNDER_ACTIVITIES.filter(e=>e.category===a).map(l=>{const c=C>=l.cost_usd,v=!c||b;return(0,u.jsxs)(n.default,{style:[y.activityBox,{borderLeftColor:f[a]||s.COLOR.line},v&&y.activityBoxDisabled],disabled:v,onPress:()=>e(l),children:[(0,u.jsxs)(t.default,{style:y.activityMain,children:[(0,u.jsx)(o.default,{style:[y.activityName,v&&y.dimmed],children:l.name}),(0,u.jsx)(o.default,{style:y.activityEffects,children:O(l.kpi_effects)})]}),(0,u.jsx)(o.default,{style:[y.activityCost,!c&&y.unaffordable],children:0===l.cost_usd?'Free':`$${l.cost_usd.toLocaleString()}`})]},l.id)})]},a))]})},r(d[0]);var t=e(r(d[1])),o=e(r(d[2])),a=e(r(d[3])),l=e(r(d[4])),n=e(r(d[5])),c=r(d[6]),s=r(d[7]),u=r(d[8]);const f={Wellness:s.COLOR.vital,Network:s.COLOR.act,Governance:s.COLOR.fog,Crisis:s.COLOR.crit};function O(e={}){const t={mental_clarity:'Clarity',team_morale:'Morale',investor_trust:'Trust',tech_debt:'Tech Debt',churn_rate:'Churn',active_users:'Users'};return Object.entries(e).map(([e,o])=>`${t[e]||e} ${o>0?'+':''}${o}`).join('  \xb7  ')}const y=a.default.create({container:{flex:1,backgroundColor:s.COLOR.ink,padding:12},title:{...s.TYPE.screenTitle,color:s.COLOR.text,marginBottom:2},subtitle:{...s.TYPE.bodySmall,color:s.COLOR.text3,marginBottom:14},categoryLabel:{...s.TYPE.label,marginTop:10,marginBottom:6},activityBox:{backgroundColor:s.COLOR.panel,padding:12,borderRadius:8,marginBottom:8,borderWidth:1,borderColor:s.COLOR.line,borderLeftWidth:2,flexDirection:'row',justifyContent:'space-between',alignItems:'center',minHeight:44},activityBoxDisabled:{opacity:.38},activityMain:{flex:1,paddingRight:10},activityName:{...s.TYPE.sectionHeading,color:s.COLOR.text},activityEffects:{...s.TYPE.bodySmall,color:s.COLOR.text2,marginTop:3},activityCost:{...s.TYPE.figureInline,color:s.COLOR.vital},unaffordable:{color:s.COLOR.crit},dimmed:{color:s.COLOR.text3}})},301,[38,175,145,46,186,177,302,267,268]);
 __d(function(g,r,i,a,m,e,d){"use strict";Object.defineProperty(e,'__esModule',{value:!0}),Object.defineProperty(e,"FOUNDER_ACTIVITIES",{enumerable:!0,get:function(){return t}});const t=[{id:"ACT_WELL_01",name:"Take a Weekend Off",category:"Wellness",cost_usd:500,kpi_effects:{mental_clarity:18,team_morale:5},log_description_en:"Closed the laptop for two days. Nothing burned down and your head is clearer"},{id:"ACT_WELL_02",name:"Gym Workout",category:"Wellness",cost_usd:100,kpi_effects:{mental_clarity:6},log_description_en:"An hour of training. Small, cheap, and it compounds if you keep doing it"},{id:"ACT_WELL_03",name:"Executive Coaching Session",category:"Wellness",cost_usd:1500,kpi_effects:{mental_clarity:25,investor_trust:5},log_description_en:"Worked through the decisions you had been avoiding with someone who has seen it before"},{id:"ACT_WELL_04",name:"Therapy Session",category:"Wellness",cost_usd:400,kpi_effects:{mental_clarity:15},log_description_en:"Talked about the part of this that is not a business problem"},{id:"ACT_NET_01",name:"Attend a Global Tech Conference",category:"Network",cost_usd:2500,kpi_effects:{investor_trust:15,active_users:200,mental_clarity:-5},log_description_en:"Four days of hallway conversations. Exhausting, and two of them will matter"},{id:"ACT_NET_02",name:"Coffee with a VC Partner",category:"Network",cost_usd:100,kpi_effects:{investor_trust:10},log_description_en:"No ask, no deck. Just kept the relationship warm before you need it"},{id:"ACT_NET_03",name:"Founder Dinner",category:"Network",cost_usd:300,kpi_effects:{mental_clarity:10,investor_trust:5},log_description_en:"Spent an evening with people carrying the same weight. It helps more than it should"},{id:"ACT_GOV_01",name:"Expand the ESOP Equity Pool",category:"Governance",cost_usd:1e3,kpi_effects:{team_morale:20,investor_trust:-5},log_description_en:"Widened the option pool. The team noticed, and so did your cap table"},{id:"ACT_GOV_02",name:"Publish an Investor Update",category:"Governance",cost_usd:0,kpi_effects:{investor_trust:12,mental_clarity:-3},log_description_en:"Wrote the honest version, numbers included. Free, and it buys you patience later"},{id:"ACT_CRIS_01",name:"Codebase Refactoring Sprint",category:"Crisis",cost_usd:2e3,kpi_effects:{tech_debt:-25,churn_rate:-.5},log_description_en:"Froze features for a week and paid down the mess"},{id:"ACT_CRIS_02",name:"Execute Partial Layoffs",category:"Crisis",cost_usd:5e3,kpi_effects:{team_morale:-30,mental_clarity:-15},log_description_en:"Cut the team to survive. Severance paid, payroll lighter, and the room is very quiet"},{id:"ACT_CRIS_03",name:"Emergency All-Hands",category:"Crisis",cost_usd:0,kpi_effects:{team_morale:12,mental_clarity:-5},log_description_en:"Told the team the truth about the runway before the rumour did it for you"}]},302,[]);
-__d(function(g,r,i,a,m,_e,d){"use strict";function e(e){return e&&e.__esModule?e:{default:e}}Object.defineProperty(_e,'__esModule',{value:!0}),_e.GameOverScreen=function({gameState:e,onRestart:n}){const b=f[e?.overType||'bank']||f.bank,y=e?.mentalClarity??0,O=e?.week??0,C=b.lift?100:y,p=(e,t)=>(0,c.fogText)(e,C,t,O),k={opacity:(0,c.fogOpacity)(C)},x=[{label:'Weeks survived',value:`${O}`},{label:'Cash',value:p(`$${Math.round(e?.cash??0).toLocaleString()}`,'cash'),fogged:!0},{label:'Valuation',value:p(`$${Math.round(e?.valuation??0).toLocaleString()}`,'valuation'),fogged:!0},{label:'Clarity',value:`${Math.round(y)}%`},{label:'Morale',value:`${Math.round(e?.teamMorale??0)}%`}];return(0,u.jsxs)(t.default,{style:[h.container,{backgroundColor:b.ground}],children:[(0,u.jsx)(o.default,{style:[h.kicker,{color:b.accent}],children:b.kicker}),(0,u.jsx)(t.default,{style:[h.rule,{backgroundColor:b.accent}]}),(0,u.jsx)(o.default,{style:h.endTitle,children:b.title}),(0,u.jsx)(o.default,{style:h.endBody,children:b.body}),(0,u.jsx)(t.default,{style:h.ledger,children:x.map(e=>(0,u.jsxs)(t.default,{style:h.ledgerRow,children:[(0,u.jsx)(o.default,{style:h.ledgerLabel,children:e.label}),(0,u.jsx)(o.default,{style:[h.ledgerValue,e.fogged&&k],children:e.value})]},e.label))}),(0,u.jsx)(o.default,{style:[h.closing,{color:b.accent}],children:b.closing}),(0,u.jsx)(l.default,{style:[h.restartBtn,{backgroundColor:s.COLOR.panel2,borderColor:b.accent}],onPress:n,children:(0,u.jsx)(o.default,{style:h.restartTxt,children:"Start again"})})]})},r(d[0]);var t=e(r(d[1])),o=e(r(d[2])),n=e(r(d[3])),l=e(r(d[4])),c=r(d[5]),s=r(d[6]),u=r(d[7]);const f={bank:{ground:s.COLOR.ink,accent:s.COLOR.crit,kicker:'ENDING \xb7 OUT OF CASH',title:'The account is empty.',body:'Payroll does not clear this week. The company is done, and the people who worked for you found out from a bounced transfer, not from you.',closing:'The numbers resolve now. There is nothing left to misread.',lift:!0},burn:{ground:s.COLOR.burnoutGround,accent:s.COLOR.fog,kicker:'ENDING \xb7 OUT OF YOURSELF',title:'You ran out of yourself.',body:'The company is solvent. Revenue is growing. None of that is why you stopped being able to run it.',closing:'This is not a business failure. It is the one the category never shows you.',lift:!1},board:{ground:s.COLOR.ink,accent:s.COLOR.crit,kicker:'ENDING \xb7 REPLACED',title:'The board replaced you.',body:'They thanked you for everything you built and asked for your laptop by Friday. You gave away control one reasonable-looking term sheet at a time.',closing:'Read the board clause before you read the valuation.',lift:!0},cofounder:{ground:s.COLOR.ink,accent:s.COLOR.crit,kicker:'ENDING \xb7 CO-FOUNDER BREAKUP',title:'Tariq left, and the company went with him.',body:'Half the code, half the late nights and most of the reasons early customers trusted you walked out of the same door.',closing:'Most young startups die of founder problems, not market problems.',lift:!0},exit:{ground:s.COLOR.ink,accent:s.COLOR.gold,kicker:'ENDING \xb7 EXIT',title:'A hundred million dollars.',body:'You could read the number the whole way.',closing:'A hundred million dollars.',lift:!0}};const h=n.default.create({container:{flex:1,padding:24,justifyContent:'center'},kicker:{fontSize:9.5,fontWeight:'500',letterSpacing:1.3,textTransform:'uppercase'},rule:{height:2,width:32,marginTop:8,marginBottom:16},endTitle:{fontSize:25,fontWeight:'600',color:s.COLOR.text,letterSpacing:-.5,marginBottom:12},endBody:{fontSize:12.5,color:s.COLOR.text2,lineHeight:19,marginBottom:24},ledger:{borderTopWidth:1,borderTopColor:s.COLOR.line,borderBottomWidth:1,borderBottomColor:s.COLOR.line,paddingVertical:4,marginBottom:24},ledgerRow:{flexDirection:'row',justifyContent:'space-between',paddingVertical:8,borderBottomWidth:1,borderBottomColor:s.COLOR.line},ledgerLabel:{fontSize:11,color:s.COLOR.text3,letterSpacing:.4},ledgerValue:{fontSize:14,fontWeight:'600',color:s.COLOR.text,fontVariant:['tabular-nums']},closing:{fontSize:12.5,fontWeight:'500',lineHeight:19,marginBottom:28},restartBtn:{minHeight:48,borderRadius:8,borderWidth:1,alignItems:'center',justifyContent:'center'},restartTxt:{fontSize:13,fontWeight:'600',color:s.COLOR.text}})},303,[38,175,145,46,177,296,267,268]);
+__d(function(g,r,i,a,m,_e,d){"use strict";function e(e){return e&&e.__esModule?e:{default:e}}Object.defineProperty(_e,'__esModule',{value:!0}),_e.GameOverScreen=function({gameState:e,onRestart:n}){const b=f[e?.overType||'bank']||f.bank,y=e?.mentalClarity??0,O=e?.week??0,C=b.lift?100:y,p=(e,t)=>(0,c.fogText)(e,C,t,O),k={opacity:(0,c.fogOpacity)(C)},x=[{label:'Weeks survived',value:`${O}`},{label:'Cash',value:p(`$${Math.round(e?.cash??0).toLocaleString()}`,'cash'),fogged:!0},{label:'Valuation',value:p(`$${Math.round(e?.valuation??0).toLocaleString()}`,'valuation'),fogged:!0},{label:'Clarity',value:`${Math.round(y)}%`},{label:'Morale',value:`${Math.round(e?.teamMorale??0)}%`}];return(0,u.jsxs)(t.default,{style:[h.container,{backgroundColor:b.ground}],children:[(0,u.jsx)(o.default,{style:[h.kicker,{color:b.accent}],children:b.kicker}),(0,u.jsx)(t.default,{style:[h.rule,{backgroundColor:b.accent}]}),(0,u.jsx)(o.default,{style:h.endTitle,children:b.title}),(0,u.jsx)(o.default,{style:h.endBody,children:b.body}),(0,u.jsx)(t.default,{style:h.ledger,children:x.map(e=>(0,u.jsxs)(t.default,{style:h.ledgerRow,children:[(0,u.jsx)(o.default,{style:h.ledgerLabel,children:e.label}),(0,u.jsx)(o.default,{style:[h.ledgerValue,e.fogged&&k],children:e.value})]},e.label))}),(0,u.jsx)(o.default,{style:[h.closing,{color:b.accent}],children:b.closing}),(0,u.jsx)(l.default,{style:[h.restartBtn,{backgroundColor:s.COLOR.panel2,borderColor:b.accent}],onPress:n,children:(0,u.jsx)(o.default,{style:h.restartTxt,children:"Start again"})})]})},r(d[0]);var t=e(r(d[1])),o=e(r(d[2])),n=e(r(d[3])),l=e(r(d[4])),c=r(d[5]),s=r(d[6]),u=r(d[7]);const f={bank:{ground:s.COLOR.ink,accent:s.COLOR.crit,kicker:'ENDING \xb7 OUT OF CASH',title:'The account is empty.',body:'Payroll does not clear this week. The company is done, and the people who worked for you found out from a bounced transfer, not from you.',closing:'The numbers resolve now. There is nothing left to misread.',lift:!0},burn:{ground:s.COLOR.burnoutGround,accent:s.COLOR.fog,kicker:'ENDING \xb7 OUT OF YOURSELF',title:'You ran out of yourself.',body:'The company is solvent. Revenue is growing. None of that is why you stopped being able to run it.',closing:'This is not a business failure. It is the one the category never shows you.',lift:!1},board:{ground:s.COLOR.ink,accent:s.COLOR.crit,kicker:'ENDING \xb7 REPLACED',title:'The board replaced you.',body:'They thanked you for everything you built and asked for your laptop by Friday. You gave away control one reasonable-looking term sheet at a time.',closing:'Read the board clause before you read the valuation.',lift:!0},cofounder:{ground:s.COLOR.ink,accent:s.COLOR.crit,kicker:'ENDING \xb7 CO-FOUNDER BREAKUP',title:'Tariq left, and the company went with him.',body:'Half the code, half the late nights and most of the reasons early customers trusted you walked out of the same door.',closing:'Most young startups die of founder problems, not market problems.',lift:!0},alone:{ground:s.COLOR.burnoutGround,accent:s.COLOR.fog,kicker:'ENDING \xb7 ALONE',title:'You built a company, and lost everyone who would have celebrated it.',body:'Nour moved out in the spring. Your parents stopped asking how it was going. The company is still running. You are not sure who it is for.',closing:'The people outside the company are not a distraction from it.',lift:!1},exit:{ground:s.COLOR.ink,accent:s.COLOR.gold,kicker:'ENDING \xb7 EXIT',title:'A hundred million dollars.',body:'You could read the number the whole way.',closing:'A hundred million dollars.',lift:!0}};const h=n.default.create({container:{flex:1,padding:24,justifyContent:'center'},kicker:{fontSize:9.5,fontWeight:'500',letterSpacing:1.3,textTransform:'uppercase'},rule:{height:2,width:32,marginTop:8,marginBottom:16},endTitle:{fontSize:25,fontWeight:'600',color:s.COLOR.text,letterSpacing:-.5,marginBottom:12},endBody:{fontSize:12.5,color:s.COLOR.text2,lineHeight:19,marginBottom:24},ledger:{borderTopWidth:1,borderTopColor:s.COLOR.line,borderBottomWidth:1,borderBottomColor:s.COLOR.line,paddingVertical:4,marginBottom:24},ledgerRow:{flexDirection:'row',justifyContent:'space-between',paddingVertical:8,borderBottomWidth:1,borderBottomColor:s.COLOR.line},ledgerLabel:{fontSize:11,color:s.COLOR.text3,letterSpacing:.4},ledgerValue:{fontSize:14,fontWeight:'600',color:s.COLOR.text,fontVariant:['tabular-nums']},closing:{fontSize:12.5,fontWeight:'500',lineHeight:19,marginBottom:28},restartBtn:{minHeight:48,borderRadius:8,borderWidth:1,alignItems:'center',justifyContent:'center'},restartTxt:{fontSize:13,fontWeight:'600',color:s.COLOR.text}})},303,[38,175,145,46,177,296,267,268]);
 __r(3);
 __r(0);
 </script>
