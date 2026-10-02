@@ -233,6 +233,7 @@ function (g, r, i, a, m, _e, d) {
 // @include content/notes_c.js
 // @include content/playbook.js
 // @include teach.js
+// @include guide.js
 
   function buildReport(before, after) {
     const rows = [
@@ -342,14 +343,15 @@ function (g, r, i, a, m, _e, d) {
         children: jsx(StatusBar, { barStyle: "dark-content" }),
       });
 
-    const start = ({ founderName, companyName, sectorId, avatar, mode, challenge }) => {
+    const start = ({ founderName, companyName, sectorId, avatar, mode, challenge, guided }) => {
       const eng = new Engine.StartupEngine(founderName, companyName, sectorId);
       eng.state.avatar = avatar || "avatar_m1";
       ensureFeatureState(eng.state);
       if (challenge && CHALLENGES[challenge]) eng.state.challenge = challenge;
       applyMode(eng, challenge && CHALLENGES[challenge] ? CHALLENGES[challenge].mode : mode);
       setEndingOpen(false);
-      dealInbox(eng.state, 1);
+      startGuide(eng.state, !challenge && guided !== false);
+      if (unlocked(eng.state, "inbox")) dealInbox(eng.state, 1);
       clearSave();
       setSaved(null);
       setEngine(eng);
@@ -443,7 +445,8 @@ function (g, r, i, a, m, _e, d) {
         streakNote = ["🧊", "Streak lost at " + before.streak + ". You missed last week's target.", -1];
         next.streak = 0;
       }
-      dealInbox(next, next.pendingEvent ? 1 : 2);
+      if (unlocked(next, "inbox")) dealInbox(next, next.pendingEvent ? 1 : 2);
+      queueIntros(next);
       engine.recalculate();
       setS({ ...next });
       buzz(12);
@@ -487,6 +490,13 @@ function (g, r, i, a, m, _e, d) {
         return notify((r.win ? "✅ " : "❌ ") + r.text, r.win ? "ok" : "bad");
       }
       act(r, okText);
+    };
+    const closeIntro = () => {
+      const g = engine.state.guide;
+      g.seen[g.intro] = 1;
+      g.intro = null;
+      queueIntros(engine.state);
+      setS({ ...engine.state });
     };
     const roundName = ROUND_NAMES[S.stage] || "Growth";
     const pitchDone = (title, effects, log) => {
@@ -617,14 +627,14 @@ function (g, r, i, a, m, _e, d) {
       contentContainerStyle: st.tiles,
       children: [
         guide && tile("t", targetDone ? "✅" : "🎯", targetDone ? "Target done" : "Weekly target", targetDone ? "+" + (S.streak || 0) + " streak" : "+" + (target.reward_exp || 50) + " XP", "#FFE8E1", () => setGuideOpen(true), S.streak ? "🔥" + S.streak : null, targetDone),
-        tile("f", "🔍", "Customers", fitLabel, "#E5EEFF", () => setCustOpen(true), S.mkt && S.mkt.talkWeek !== S.week ? "!" : null, false),
-        tile("i", "📨", "Inbox", inboxN ? inboxN + " new" : "All clear", "#FFF4D6", () => inboxN && setInboxOpen(true), inboxN || null, !inboxN),
+        unlocked(S, "customers") && tile("f", "🔍", "Customers", fitLabel, "#E5EEFF", () => setCustOpen(true), S.mkt && S.mkt.talkWeek !== S.week ? "!" : null, false),
+        unlocked(S, "inbox") && tile("i", "📨", "Inbox", inboxN ? inboxN + " new" : "All clear", "#FFF4D6", () => inboxN && setInboxOpen(true), inboxN || null, !inboxN),
         tile("m", "💵", "Money", S.defaultAlive ? "Default alive" : runwayLabel + " runway", "#E2F6EA", () => setMoneyOpen(true), null, false),
         tile("a", fogged && !S.slotUsed ? "🧘" : "⚡", fogged && !S.slotUsed ? "Rest now" : "Your action", S.slotUsed ? "used" : "1 left", "#E3F7EA", () => setTab("actions"), null, S.slotUsed),
-        tile("p", "💼", "Fundraise", raisedThisStage(S) ? "Raised ✓" : canPitch(S) ? roundName : S.week < pitchFrom(S) ? `Week ${pitchFrom(S)}+` : "Not now", "#E5EEFF", () => (canPitch(S) ? setPitchOpen(true) : notify(raisedThisStage(S) ? "Next round opens at the next milestone." : S.slotUsed ? "Pitching needs this week's action." : S.week < pitchFrom(S) ? `Investors take meetings from week ${pitchFrom(S)}.` : "Investors will take a meeting in " + pitchCooldown(S) + " wk.", "info")), null, !canPitch(S)),
+        unlocked(S, "fundraise") && tile("p", "💼", "Fundraise", raisedThisStage(S) ? "Raised ✓" : canPitch(S) ? roundName : S.week < pitchFrom(S) ? `Week ${pitchFrom(S)}+` : "Not now", "#E5EEFF", () => (canPitch(S) ? setPitchOpen(true) : notify(raisedThisStage(S) ? "Next round opens at the next milestone." : S.slotUsed ? "Pitching needs this week's action." : S.week < pitchFrom(S) ? `Investors take meetings from week ${pitchFrom(S)}.` : "Investors will take a meeting in " + pitchCooldown(S) + " wk.", "info")), null, !canPitch(S)),
         S.challenge && CHALLENGES[S.challenge] && tile("g", CHALLENGES[S.challenge].icon, "Challenge", `Week ${S.week}/${CHALLENGES[S.challenge].deadline}`, "#E2F6EA", () => notify("🎯 " + CHALLENGES[S.challenge].goal, "info"), null, false),
-        tile("b", "📓", "Playbook", BOOK.size + "/" + PLAYBOOK.length + " pages", "#FFF4D6", () => setBookOpen(true), null, false),
-        tile("c", "🤝", "Circle", weakTie ? "Needs you" : "All good", "#F1E8FF", () => setTab("circle"), weakTie ? "!" : null, false),
+        (BOOK.size > 0 || !S.guide || S.guide.off) && tile("b", "📓", "Playbook", BOOK.size + "/" + PLAYBOOK.length + " pages", "#FFF4D6", () => setBookOpen(true), null, false),
+        unlocked(S, "circle") && tile("c", "🤝", "Circle", weakTie ? "Needs you" : "All good", "#F1E8FF", () => setTab("circle"), weakTie ? "!" : null, false),
       ],
     });
 
@@ -706,7 +716,7 @@ function (g, r, i, a, m, _e, d) {
         statBar("🧠", "Clarity", S.mentalClarity, Math.round(S.mentalClarity) + "%"),
         statBar("🤝", "Morale", S.teamMorale, Math.round(S.teamMorale) + "%"),
         statBar("⏳", "Runway", runwayPct, ft(S.defaultAlive ? "Default alive" : runwayLabel, "runway"), true, 3),
-        statBar("🔍", "Fit", S.mkt && S.mkt.seen ? S.mkt.seen.value : 0, S.mkt && S.mkt.seen ? "~" + Math.round(S.mkt.seen.value / 5) * 5 + "%" : "?", false, 8),
+        unlocked(S, "customers") && statBar("🔍", "Fit", S.mkt && S.mkt.seen ? S.mkt.seen.value : 0, S.mkt && S.mkt.seen ? "~" + Math.round(S.mkt.seen.value / 5) * 5 + "%" : "?", false, 8),
         statBar("💼", "Trust", S.investorTrust == null ? 80 : S.investorTrust, Math.round(S.investorTrust == null ? 80 : S.investorTrust) + "%"),
         fogged && jsx(View, { pointerEvents: "none", dataSet: { ff: "fog" }, style: [st.fogLayer, { opacity: 0.2 + 0.4 * fogAmt }] }),
       ],
@@ -1035,12 +1045,13 @@ function (g, r, i, a, m, _e, d) {
                 "adv",
               );
             const on = tab === t.key;
-            const dot = (t.key === "actions" && !S.slotUsed) || (t.key === "circle" && weakTie);
+            const locked = (t.key === "team" || t.key === "circle") && !unlocked(S, t.key);
+            const dot = !locked && ((t.key === "actions" && !S.slotUsed) || (t.key === "circle" && weakTie));
             return jsxs(
               Touchable,
               {
-                style: st.navItem,
-                onPress: () => setTab(on ? "hq" : t.key),
+                style: [st.navItem, locked && { opacity: 0.35 }],
+                onPress: () => (locked ? notify(`🔒 Unlocks in week ${unlockWeek(t.key)}.`, "info") : setTab(on ? "hq" : t.key)),
                 activeOpacity: 0.7,
                 children: [
                   jsxs(View, {
@@ -1074,6 +1085,18 @@ function (g, r, i, a, m, _e, d) {
         guideModal,
         S.perkChoice && !report && !S.pendingEvent && jsx(PerkModal, { S: S, onPick: pickPerk }),
         inboxOpen && !report && !S.pendingEvent && !S.perkChoice && jsx(InboxModal, { S: S, onChoose: chooseMail, onClose: () => setInboxOpen(false) }),
+        S.guide && S.guide.intro && !report && !S.pendingEvent && !(S.teach && S.teach.note && mentorOn()) &&
+          jsx(IntroCard, {
+            S: S,
+            onDone: () => closeIntro(),
+            onOpen: (id) => {
+              closeIntro();
+              if (id === "customers") setCustOpen(true);
+              else if (id === "inbox") (engine.state.inbox || []).length ? setInboxOpen(true) : notify("Your first messages arrive next week.", "info");
+              else if (id === "fundraise") canPitch(engine.state) ? setPitchOpen(true) : notify("Tap Fundraise when you're ready to pitch.", "info");
+              else setTab(id);
+            },
+          }),
         bookOpen && jsx(PlaybookModal, { onClose: () => setBookOpen(false), notify: notify }),
         S.teach && S.teach.note && !report && !S.pendingEvent && mentorOn() &&
           jsx(MentorModal, {

@@ -191,7 +191,20 @@ function (g, r, i, a, m, _e, d) {
       [company, setCompany] = React.useState("Adamos AI"),
       [avatar, setAvatar] = React.useState("avatar_m1"),
       [mode, setMode] = React.useState("venture"),
-      [challenge, setChallenge] = React.useState(null);
+      [challenge, setChallenge] = React.useState(null),
+      [guided, setGuided] = React.useState(() => {
+        try {
+          return window.localStorage.getItem("founderFog.guided") !== "off";
+        } catch (e) {
+          return true;
+        }
+      });
+    const toggleGuided = () => {
+      try {
+        window.localStorage.setItem("founderFog.guided", guided ? "off" : "on");
+      } catch (e) {}
+      setGuided(!guided);
+    };
 
     if (step === 0)
       return jsx(Title, { saved: saved, onResume: onResume, onDiscard: onDiscard, onNew: () => (setChallenge(null), setStep(1)), onChallenges: () => setStep("ch") });
@@ -345,6 +358,22 @@ function (g, r, i, a, m, _e, d) {
               ),
             }),
             !challenge && jsx(Text, { style: st.modeDesc, children: modeInfo.desc }),
+            !challenge &&
+              jsxs(Touchable, {
+                style: st.guideRow,
+                activeOpacity: 0.85,
+                onPress: toggleGuided,
+                children: [
+                  jsx(View, { style: [st.check, guided && st.checkOn], children: guided ? jsx(Text, { style: st.checkTick, children: "✓" }) : null }),
+                  jsxs(View, {
+                    style: { flex: 1 },
+                    children: [
+                      jsx(Text, { style: st.guideTitle, children: "Guided first month" }),
+                      jsx(Text, { style: st.guideSub, children: "New systems unlock one week at a time. Turn off if you've played before." }),
+                    ],
+                  }),
+                ],
+              }),
             jsxs(View, {
               style: st.brief,
               dataSet: { ff: "rise1" },
@@ -387,7 +416,7 @@ function (g, r, i, a, m, _e, d) {
           children: jsx(Touchable, {
             style: [st.primaryBtn, !ready && { opacity: 0.4 }],
             disabled: !ready,
-            onPress: () => onStartGame({ founderName: founder.trim(), companyName: company.trim(), sectorId: sector.id, avatar: avatar, mode: mode, challenge: challenge }),
+            onPress: () => onStartGame({ founderName: founder.trim(), companyName: company.trim(), sectorId: sector.id, avatar: avatar, mode: mode, challenge: challenge, guided: guided }),
             activeOpacity: 0.85,
             children: jsx(Text, { style: st.primaryTxt, children: "Found " + (company.trim() || "the company") + " ▸" }),
           }),
@@ -403,6 +432,12 @@ function (g, r, i, a, m, _e, d) {
     heroFog: { position: "absolute", left: -40, right: -40, bottom: 20, height: 70 },
     rule2: { flexDirection: "row", alignItems: "flex-start", gap: 6, marginTop: 10, backgroundColor: COLOR.panel2, borderRadius: 10, padding: 8 },
     rule2Txt: { ...TYPE.body, flex: 1, fontSize: 12.5, lineHeight: 17, color: COLOR.text2 },
+    guideRow: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#FFFFFF", borderRadius: 14, padding: 12, marginTop: 10 },
+    check: { width: 26, height: 26, borderRadius: 8, borderWidth: 2, borderColor: COLOR.lineHot, alignItems: "center", justifyContent: "center" },
+    checkOn: { backgroundColor: COLOR.vital, borderColor: COLOR.vital },
+    checkTick: { color: "#fff", fontFamily: "Archivo_600SemiBold", fontSize: 15 },
+    guideTitle: { fontFamily: "Archivo_600SemiBold", fontSize: 14.5, color: COLOR.text },
+    guideSub: { ...TYPE.body, fontSize: 12.5, lineHeight: 17, color: COLOR.text2, marginTop: 2 },
     modes: { flexDirection: "row", gap: 8, marginTop: 4 },
     modeOpt: { flex: 1, alignItems: "center", gap: 4, paddingVertical: 10, paddingHorizontal: 4, borderRadius: 14, backgroundColor: "#FFFFFF", borderWidth: 2, borderColor: "transparent" },
     modeOn: { borderColor: "#2D7FF9", backgroundColor: "#E9F0FF" },
