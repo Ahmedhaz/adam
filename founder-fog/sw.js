@@ -1,6 +1,6 @@
 // Founder Fog service worker: the whole game is one self-contained HTML file,
 // so caching the shell is enough for full offline play.
-const CACHE = 'founder-fog-v1';
+const CACHE = 'founder-fog-v2';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', (e) => {

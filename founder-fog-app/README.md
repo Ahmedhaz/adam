@@ -33,8 +33,34 @@ After changing anything in `../founder-fog`, run `npx cap sync`.
 Icons and splash screens come from `assets/icon.png`
 (`npx @capacitor/assets generate`).
 
-## Notes
-- `index.html` is the compiled Expo web build of the Founder Fog artifact;
-  the original React Native source wasn't found in the repos, so edits to
-  gameplay need that source.
-- The game doesn't save progress between sessions; closing the app restarts it.
+## Changing the game
+`../founder-fog/index.html` is **generated**, so don't edit it by hand. The
+original game only exists as the compiled Expo web build of the Founder Fog
+artifact (`enhance/original.html`); the React Native source wasn't found in
+any repo. Enhancements are applied on top of it:
+
+- `enhance/App.js` replaces the main game screen (Metro module 144)
+- `enhance/build.py` applies small patches to the game engine and wraps the
+  page for mobile (PWA head, safe areas)
+
+```bash
+python3 founder-fog-app/enhance/build.py   # rebuild ../founder-fog/index.html
+cd founder-fog-app && npx cap sync         # copy into the native projects
+```
+
+### What the enhanced version changes
+- **Autosave:** progress is saved after every move; on launch you get
+  *Continue* / *Discard*
+- **Feedback:** every action shows a toast; failed actions now say why
+  (not enough cash, action already used) instead of silently doing nothing,
+  and each week ends with a summary (cash, MRR, clarity, morale)
+- **More room on small screens:** the four stats sit in one row, and the
+  weekly target card collapses
+- **No free target claims:** the *Complete target* button handed out EXP and
+  cash without doing anything. A target is now completed by executing one of
+  its strategies, once per week
+- **The fog actually rolls in:** clarity drains each week (−2, more when
+  runway is under 6 or 3 months or morale is under 40), so resting through
+  *Actions* matters and the burnout ending can happen
+- Rounded cash in the weekly log, a dot on *Actions* when the weekly action
+  is unused, and larger tap targets
