@@ -64,6 +64,8 @@ any repo. Enhancements are applied on top of it:
   content is `content/notes_*.js` and `content/playbook.js`
   (`content/check_teach.mjs` validates them, `content/BRIEF_TEACH.md`
   is the brief)
+- `enhance/guide.js` is the guided first month: features unlock one week at
+  a time with a one-card intro (switch on the setup screen)
 - `enhance/build.py` applies small patches to the game engine and wraps the
   page for mobile (PWA head, safe areas)
 

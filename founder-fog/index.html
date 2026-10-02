@@ -5245,6 +5245,80 @@ __d(function (g, r, i, a, m, _e, d) {
     term: { fontFamily: "Archivo_600SemiBold", fontSize: 15, color: COLOR.text },
   });
 
+  // ================================================================ guide
+  // A guided first month: a new player meets one system at a time instead of
+  // ten at once. Features unlock by week, each with a one-card intro; the
+  // engine keeps running underneath (nothing is paused, only hidden), except
+  // the inbox, which isn't dealt until it unlocks so unseen mail can't
+  // punish anyone. Off for old saves, challenges and players who turn it off.
+  // shares App's scope.
+
+  const GUIDE_KEY = "founderFog.guided";
+  const FEATURES = [
+    { id: "welcome", week: 1, icon: "🚀", title: "Your first week", text: "Hit the weekly target, use your one action, then press +1 Week. Tap your bank balance any time to see where the money goes." },
+    { id: "customers", week: 2, icon: "🔍", title: "Customers", text: "Growth only works when people really want what you make. Talking to 5 customers each week is free, and it shows you your product-market fit." },
+    { id: "inbox", week: 3, icon: "📨", title: "Your inbox", text: "Customers, investors and your team will write to you. Swipe to answer. Some messages punish silence; some are noise worth ignoring." },
+    { id: "team", week: 4, icon: "👥", title: "Hiring", text: "Every hire has a job, and your first ten set the culture. New people take 4 weeks to reach full speed, so hire before the pain is daily." },
+    { id: "fundraise", week: 5, icon: "💼", title: "Fundraising", text: "Investors will take a meeting now. Read the whole term sheet, not just the valuation. The money lands only after due diligence." },
+    { id: "circle", week: 6, icon: "🤝", title: "Your circle", text: "Your co-founder, your investors, key customers and the people at home. Every relationship fades unless you reach out." },
+  ];
+
+  function guidedDefault() {
+    try {
+      return window.localStorage.getItem(GUIDE_KEY) !== "off";
+    } catch (e) {
+      return true;
+    }
+  }
+  function setGuidedDefault(on) {
+    try {
+      window.localStorage.setItem(GUIDE_KEY, on ? "on" : "off");
+    } catch (e) {}
+  }
+
+  // a save without s.guide (older versions) sees everything
+  const unlocked = (s, id) => !s.guide || s.guide.off || s.week >= (FEATURES.find((f) => f.id === id) || { week: 0 }).week;
+  const unlockWeek = (id) => (FEATURES.find((f) => f.id === id) || { week: 0 }).week;
+
+  function startGuide(s, on) {
+    s.guide = { off: !on, seen: {}, intro: null };
+    if (on) queueIntros(s);
+  }
+  // the next feature whose week has come and whose card hasn't been shown
+  function queueIntros(s) {
+    const g = s.guide;
+    if (!g || g.off || g.intro) return;
+    const f = FEATURES.find((x) => s.week >= x.week && !g.seen[x.id]);
+    if (f) g.intro = f.id;
+  }
+
+  function IntroCard({ S, onDone, onOpen }) {
+    const f = FEATURES.find((x) => x.id === S.guide.intro);
+    if (!f) return null;
+    const step = FEATURES.indexOf(f) + 1;
+    return jsx(Modal, {
+      visible: !0,
+      transparent: !0,
+      animationType: "fade",
+      onRequestClose: onDone,
+      children: jsx(View, {
+        style: tst.overlay,
+        children: jsxs(View, {
+          style: [tst.note, { borderTopColor: COLOR.vital }],
+          dataSet: { ff: "pop" },
+          children: [
+            jsx(Text, { style: [tst.kicker, { color: COLOR.vital }], children: f.id === "welcome" ? "WELCOME" : `NEW · ${step}/${FEATURES.length}` }),
+            jsx(View, { style: { alignSelf: "center", marginTop: 10 }, dataSet: { ff: "float" }, children: jsx(Pic, { e: f.icon, size: 72 }) }),
+            jsx(Text, { style: [tst.lesson, { textAlign: "center" }], children: f.title }),
+            jsx(Text, { style: [tst.example, { textAlign: "center" }], children: f.text }),
+            f.id !== "welcome" && jsx(Touchable, { style: tst.primary, activeOpacity: 0.85, onPress: () => onOpen(f.id), children: jsx(Text, { style: tst.primaryTxt, children: "Show me" }) }),
+            jsx(Touchable, { style: f.id === "welcome" ? tst.primary : tst.secondary, activeOpacity: 0.85, onPress: onDone, children: jsx(Text, { style: f.id === "welcome" ? tst.primaryTxt : tst.secondaryTxt, children: f.id === "welcome" ? "Let's go" : "Later" }) }),
+          ],
+        }),
+      }),
+    });
+  }
+
 
   function buildReport(before, after) {
     const rows = [
@@ -5354,14 +5428,15 @@ __d(function (g, r, i, a, m, _e, d) {
         children: jsx(StatusBar, { barStyle: "dark-content" }),
       });
 
-    const start = ({ founderName, companyName, sectorId, avatar, mode, challenge }) => {
+    const start = ({ founderName, companyName, sectorId, avatar, mode, challenge, guided }) => {
       const eng = new Engine.StartupEngine(founderName, companyName, sectorId);
       eng.state.avatar = avatar || "avatar_m1";
       ensureFeatureState(eng.state);
       if (challenge && CHALLENGES[challenge]) eng.state.challenge = challenge;
       applyMode(eng, challenge && CHALLENGES[challenge] ? CHALLENGES[challenge].mode : mode);
       setEndingOpen(false);
-      dealInbox(eng.state, 1);
+      startGuide(eng.state, !challenge && guided !== false);
+      if (unlocked(eng.state, "inbox")) dealInbox(eng.state, 1);
       clearSave();
       setSaved(null);
       setEngine(eng);
@@ -5455,7 +5530,8 @@ __d(function (g, r, i, a, m, _e, d) {
         streakNote = ["🧊", "Streak lost at " + before.streak + ". You missed last week's target.", -1];
         next.streak = 0;
       }
-      dealInbox(next, next.pendingEvent ? 1 : 2);
+      if (unlocked(next, "inbox")) dealInbox(next, next.pendingEvent ? 1 : 2);
+      queueIntros(next);
       engine.recalculate();
       setS({ ...next });
       buzz(12);
@@ -5499,6 +5575,13 @@ __d(function (g, r, i, a, m, _e, d) {
         return notify((r.win ? "✅ " : "❌ ") + r.text, r.win ? "ok" : "bad");
       }
       act(r, okText);
+    };
+    const closeIntro = () => {
+      const g = engine.state.guide;
+      g.seen[g.intro] = 1;
+      g.intro = null;
+      queueIntros(engine.state);
+      setS({ ...engine.state });
     };
     const roundName = ROUND_NAMES[S.stage] || "Growth";
     const pitchDone = (title, effects, log) => {
@@ -5629,14 +5712,14 @@ __d(function (g, r, i, a, m, _e, d) {
       contentContainerStyle: st.tiles,
       children: [
         guide && tile("t", targetDone ? "✅" : "🎯", targetDone ? "Target done" : "Weekly target", targetDone ? "+" + (S.streak || 0) + " streak" : "+" + (target.reward_exp || 50) + " XP", "#FFE8E1", () => setGuideOpen(true), S.streak ? "🔥" + S.streak : null, targetDone),
-        tile("f", "🔍", "Customers", fitLabel, "#E5EEFF", () => setCustOpen(true), S.mkt && S.mkt.talkWeek !== S.week ? "!" : null, false),
-        tile("i", "📨", "Inbox", inboxN ? inboxN + " new" : "All clear", "#FFF4D6", () => inboxN && setInboxOpen(true), inboxN || null, !inboxN),
+        unlocked(S, "customers") && tile("f", "🔍", "Customers", fitLabel, "#E5EEFF", () => setCustOpen(true), S.mkt && S.mkt.talkWeek !== S.week ? "!" : null, false),
+        unlocked(S, "inbox") && tile("i", "📨", "Inbox", inboxN ? inboxN + " new" : "All clear", "#FFF4D6", () => inboxN && setInboxOpen(true), inboxN || null, !inboxN),
         tile("m", "💵", "Money", S.defaultAlive ? "Default alive" : runwayLabel + " runway", "#E2F6EA", () => setMoneyOpen(true), null, false),
         tile("a", fogged && !S.slotUsed ? "🧘" : "⚡", fogged && !S.slotUsed ? "Rest now" : "Your action", S.slotUsed ? "used" : "1 left", "#E3F7EA", () => setTab("actions"), null, S.slotUsed),
-        tile("p", "💼", "Fundraise", raisedThisStage(S) ? "Raised ✓" : canPitch(S) ? roundName : S.week < pitchFrom(S) ? `Week ${pitchFrom(S)}+` : "Not now", "#E5EEFF", () => (canPitch(S) ? setPitchOpen(true) : notify(raisedThisStage(S) ? "Next round opens at the next milestone." : S.slotUsed ? "Pitching needs this week's action." : S.week < pitchFrom(S) ? `Investors take meetings from week ${pitchFrom(S)}.` : "Investors will take a meeting in " + pitchCooldown(S) + " wk.", "info")), null, !canPitch(S)),
+        unlocked(S, "fundraise") && tile("p", "💼", "Fundraise", raisedThisStage(S) ? "Raised ✓" : canPitch(S) ? roundName : S.week < pitchFrom(S) ? `Week ${pitchFrom(S)}+` : "Not now", "#E5EEFF", () => (canPitch(S) ? setPitchOpen(true) : notify(raisedThisStage(S) ? "Next round opens at the next milestone." : S.slotUsed ? "Pitching needs this week's action." : S.week < pitchFrom(S) ? `Investors take meetings from week ${pitchFrom(S)}.` : "Investors will take a meeting in " + pitchCooldown(S) + " wk.", "info")), null, !canPitch(S)),
         S.challenge && CHALLENGES[S.challenge] && tile("g", CHALLENGES[S.challenge].icon, "Challenge", `Week ${S.week}/${CHALLENGES[S.challenge].deadline}`, "#E2F6EA", () => notify("🎯 " + CHALLENGES[S.challenge].goal, "info"), null, false),
-        tile("b", "📓", "Playbook", BOOK.size + "/" + PLAYBOOK.length + " pages", "#FFF4D6", () => setBookOpen(true), null, false),
-        tile("c", "🤝", "Circle", weakTie ? "Needs you" : "All good", "#F1E8FF", () => setTab("circle"), weakTie ? "!" : null, false),
+        (BOOK.size > 0 || !S.guide || S.guide.off) && tile("b", "📓", "Playbook", BOOK.size + "/" + PLAYBOOK.length + " pages", "#FFF4D6", () => setBookOpen(true), null, false),
+        unlocked(S, "circle") && tile("c", "🤝", "Circle", weakTie ? "Needs you" : "All good", "#F1E8FF", () => setTab("circle"), weakTie ? "!" : null, false),
       ],
     });
 
@@ -5718,7 +5801,7 @@ __d(function (g, r, i, a, m, _e, d) {
         statBar("🧠", "Clarity", S.mentalClarity, Math.round(S.mentalClarity) + "%"),
         statBar("🤝", "Morale", S.teamMorale, Math.round(S.teamMorale) + "%"),
         statBar("⏳", "Runway", runwayPct, ft(S.defaultAlive ? "Default alive" : runwayLabel, "runway"), true, 3),
-        statBar("🔍", "Fit", S.mkt && S.mkt.seen ? S.mkt.seen.value : 0, S.mkt && S.mkt.seen ? "~" + Math.round(S.mkt.seen.value / 5) * 5 + "%" : "?", false, 8),
+        unlocked(S, "customers") && statBar("🔍", "Fit", S.mkt && S.mkt.seen ? S.mkt.seen.value : 0, S.mkt && S.mkt.seen ? "~" + Math.round(S.mkt.seen.value / 5) * 5 + "%" : "?", false, 8),
         statBar("💼", "Trust", S.investorTrust == null ? 80 : S.investorTrust, Math.round(S.investorTrust == null ? 80 : S.investorTrust) + "%"),
         fogged && jsx(View, { pointerEvents: "none", dataSet: { ff: "fog" }, style: [st.fogLayer, { opacity: 0.2 + 0.4 * fogAmt }] }),
       ],
@@ -6047,12 +6130,13 @@ __d(function (g, r, i, a, m, _e, d) {
                 "adv",
               );
             const on = tab === t.key;
-            const dot = (t.key === "actions" && !S.slotUsed) || (t.key === "circle" && weakTie);
+            const locked = (t.key === "team" || t.key === "circle") && !unlocked(S, t.key);
+            const dot = !locked && ((t.key === "actions" && !S.slotUsed) || (t.key === "circle" && weakTie));
             return jsxs(
               Touchable,
               {
-                style: st.navItem,
-                onPress: () => setTab(on ? "hq" : t.key),
+                style: [st.navItem, locked && { opacity: 0.35 }],
+                onPress: () => (locked ? notify(`🔒 Unlocks in week ${unlockWeek(t.key)}.`, "info") : setTab(on ? "hq" : t.key)),
                 activeOpacity: 0.7,
                 children: [
                   jsxs(View, {
@@ -6086,6 +6170,18 @@ __d(function (g, r, i, a, m, _e, d) {
         guideModal,
         S.perkChoice && !report && !S.pendingEvent && jsx(PerkModal, { S: S, onPick: pickPerk }),
         inboxOpen && !report && !S.pendingEvent && !S.perkChoice && jsx(InboxModal, { S: S, onChoose: chooseMail, onClose: () => setInboxOpen(false) }),
+        S.guide && S.guide.intro && !report && !S.pendingEvent && !(S.teach && S.teach.note && mentorOn()) &&
+          jsx(IntroCard, {
+            S: S,
+            onDone: () => closeIntro(),
+            onOpen: (id) => {
+              closeIntro();
+              if (id === "customers") setCustOpen(true);
+              else if (id === "inbox") (engine.state.inbox || []).length ? setInboxOpen(true) : notify("Your first messages arrive next week.", "info");
+              else if (id === "fundraise") canPitch(engine.state) ? setPitchOpen(true) : notify("Tap Fundraise when you're ready to pitch.", "info");
+              else setTab(id);
+            },
+          }),
         bookOpen && jsx(PlaybookModal, { onClose: () => setBookOpen(false), notify: notify }),
         S.teach && S.teach.note && !report && !S.pendingEvent && mentorOn() &&
           jsx(MentorModal, {
@@ -6655,7 +6751,20 @@ __d(function (g, r, i, a, m, _e, d) {
       [company, setCompany] = React.useState("Adamos AI"),
       [avatar, setAvatar] = React.useState("avatar_m1"),
       [mode, setMode] = React.useState("venture"),
-      [challenge, setChallenge] = React.useState(null);
+      [challenge, setChallenge] = React.useState(null),
+      [guided, setGuided] = React.useState(() => {
+        try {
+          return window.localStorage.getItem("founderFog.guided") !== "off";
+        } catch (e) {
+          return true;
+        }
+      });
+    const toggleGuided = () => {
+      try {
+        window.localStorage.setItem("founderFog.guided", guided ? "off" : "on");
+      } catch (e) {}
+      setGuided(!guided);
+    };
 
     if (step === 0)
       return jsx(Title, { saved: saved, onResume: onResume, onDiscard: onDiscard, onNew: () => (setChallenge(null), setStep(1)), onChallenges: () => setStep("ch") });
@@ -6809,6 +6918,22 @@ __d(function (g, r, i, a, m, _e, d) {
               ),
             }),
             !challenge && jsx(Text, { style: st.modeDesc, children: modeInfo.desc }),
+            !challenge &&
+              jsxs(Touchable, {
+                style: st.guideRow,
+                activeOpacity: 0.85,
+                onPress: toggleGuided,
+                children: [
+                  jsx(View, { style: [st.check, guided && st.checkOn], children: guided ? jsx(Text, { style: st.checkTick, children: "✓" }) : null }),
+                  jsxs(View, {
+                    style: { flex: 1 },
+                    children: [
+                      jsx(Text, { style: st.guideTitle, children: "Guided first month" }),
+                      jsx(Text, { style: st.guideSub, children: "New systems unlock one week at a time. Turn off if you've played before." }),
+                    ],
+                  }),
+                ],
+              }),
             jsxs(View, {
               style: st.brief,
               dataSet: { ff: "rise1" },
@@ -6851,7 +6976,7 @@ __d(function (g, r, i, a, m, _e, d) {
           children: jsx(Touchable, {
             style: [st.primaryBtn, !ready && { opacity: 0.4 }],
             disabled: !ready,
-            onPress: () => onStartGame({ founderName: founder.trim(), companyName: company.trim(), sectorId: sector.id, avatar: avatar, mode: mode, challenge: challenge }),
+            onPress: () => onStartGame({ founderName: founder.trim(), companyName: company.trim(), sectorId: sector.id, avatar: avatar, mode: mode, challenge: challenge, guided: guided }),
             activeOpacity: 0.85,
             children: jsx(Text, { style: st.primaryTxt, children: "Found " + (company.trim() || "the company") + " ▸" }),
           }),
@@ -6867,6 +6992,12 @@ __d(function (g, r, i, a, m, _e, d) {
     heroFog: { position: "absolute", left: -40, right: -40, bottom: 20, height: 70 },
     rule2: { flexDirection: "row", alignItems: "flex-start", gap: 6, marginTop: 10, backgroundColor: COLOR.panel2, borderRadius: 10, padding: 8 },
     rule2Txt: { ...TYPE.body, flex: 1, fontSize: 12.5, lineHeight: 17, color: COLOR.text2 },
+    guideRow: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#FFFFFF", borderRadius: 14, padding: 12, marginTop: 10 },
+    check: { width: 26, height: 26, borderRadius: 8, borderWidth: 2, borderColor: COLOR.lineHot, alignItems: "center", justifyContent: "center" },
+    checkOn: { backgroundColor: COLOR.vital, borderColor: COLOR.vital },
+    checkTick: { color: "#fff", fontFamily: "Archivo_600SemiBold", fontSize: 15 },
+    guideTitle: { fontFamily: "Archivo_600SemiBold", fontSize: 14.5, color: COLOR.text },
+    guideSub: { ...TYPE.body, fontSize: 12.5, lineHeight: 17, color: COLOR.text2, marginTop: 2 },
     modes: { flexDirection: "row", gap: 8, marginTop: 4 },
     modeOpt: { flex: 1, alignItems: "center", gap: 4, paddingVertical: 10, paddingHorizontal: 4, borderRadius: 14, backgroundColor: "#FFFFFF", borderWidth: 2, borderColor: "transparent" },
     modeOn: { borderColor: "#2D7FF9", backgroundColor: "#E9F0FF" },
