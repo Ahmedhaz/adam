@@ -1,0 +1,11 @@
+{
+  "appId": "com.ahmedhaz.founderfog",
+  "appName": "Founder Fog",
+  "webDir": "../founder-fog",
+  "backgroundColor": "#10151A",
+  "android": { "backgroundColor": "#10151A" },
+  "ios": { "backgroundColor": "#10151A", "contentInset": "never" },
+  "plugins": {
+    "StatusBar": { "style": "DARK", "backgroundColor": "#10151A", "overlaysWebView": false }
+  }
+}
