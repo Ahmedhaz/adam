@@ -47,7 +47,7 @@ any repo. Enhancements are applied on top of it:
   page for mobile (PWA head, safe areas)
 
 ```bash
-python3 founder-fog-app/enhance/build.py   # rebuild ../founder-fog/index.html
+python3 founder-fog-app/enhance/build.py   # rebuild ../founder-fog/index.html and ar.html
 cd founder-fog-app && npx cap sync         # copy into the native projects
 ```
 
@@ -65,6 +65,20 @@ cd founder-fog-app && npx cap sync         # copy into the native projects
   and a vignette around the screen that thicken as clarity drops
 - Icon tab bar with attention dots, a pulsing *End week* button when there's
   nothing left to do, and motion that respects reduced-motion settings
+
+### Arabic version
+`../founder-fog/ar.html` is the same game in Arabic, right-to-left, with IBM Plex
+Sans Arabic embedded. The title screen has an English / العربية switch; the
+choice is remembered, and first launch follows the device language.
+
+- `enhance/ar.json` maps `"<module>|<English string>"` → Arabic (`null` = code,
+  leave as is). `enhance/translate.mjs` extracts candidate strings from the
+  bundle and swaps them in at build time
+- `enhance/ar-translation-guide.md` has the glossary and rules for adding or
+  editing translations
+- After changing any visible text, re-run extraction to find new strings:
+  `node enhance/translate.mjs extract <bundle.js> cands.json`, then add the
+  missing keys to `ar.json` and rebuild
 
 ### Gameplay systems (v3)
 - **Inbox:** 1–2 short messages every week (customers, co-founder, investors,

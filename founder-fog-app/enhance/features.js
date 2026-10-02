@@ -714,7 +714,8 @@
     stampLeft: { right: 18, borderColor: "#2f6fd0", transform: [{ rotate: "8deg" }] },
     stampRight: { left: 18, borderColor: "#1f8a52", transform: [{ rotate: "-8deg" }] },
     stampTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 13, color: "#1b1712", textTransform: "uppercase" },
-    choiceRow: { flexDirection: "row", gap: 10, width: "100%", maxWidth: 460, marginTop: 14 },
+    // stays left-to-right in Arabic so the buttons sit on the side you swipe toward
+    choiceRow: { direction: "ltr", flexDirection: "row", gap: 10, width: "100%", maxWidth: 460, marginTop: 14 },
     choice: { flex: 1, backgroundColor: COLOR.panel, borderRadius: 16, padding: 12, borderWidth: 1.5, borderColor: COLOR.line, alignItems: "center", minHeight: 64, justifyContent: "center" },
     choiceOn: { borderColor: COLOR.act, backgroundColor: "#1d2733" },
     choiceLabel: { fontFamily: "Archivo_600SemiBold", fontSize: 13.5, color: COLOR.text, textAlign: "center" },

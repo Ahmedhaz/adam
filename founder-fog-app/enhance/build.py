@@ -12,11 +12,16 @@ so enhancements are applied as patches on top of it:
 
 Run:  python3 founder-fog-app/enhance/build.py
 """
+import base64
 import pathlib
 import re
+import subprocess
+import tempfile
 
 HERE = pathlib.Path(__file__).resolve().parent
 OUT = HERE.parent.parent / "founder-fog" / "index.html"
+OUT_AR = OUT.with_name("ar.html")
+DICT_AR = HERE / "ar.json"
 
 MODULES = {144: "App.js", 265: "Onboarding.js"}
 
@@ -47,11 +52,34 @@ ENGINE_PATCHES = [
     ),
 ]
 
+# Code-level tweaks that only the Arabic build needs.
+ARABIC_PATCHES = [
+    # activity category colours are keyed by the (now translated) category names
+    ("const f={Wellness:s.COLOR.vital,Network:s.COLOR.act,Governance:s.COLOR.fog,Crisis:s.COLOR.crit}",
+     'const f={"\u0627\u0644\u0639\u0627\u0641\u064a\u0629":s.COLOR.vital,"\u0627\u0644\u0639\u0644\u0627\u0642\u0627\u062a":s.COLOR.act,'
+     '"\u0627\u0644\u062d\u0648\u0643\u0645\u0629":s.COLOR.fog,"\u0627\u0644\u0623\u0632\u0645\u0627\u062a":s.COLOR.crit}'),
+    # activity effect labels: keep "+18" together in right-to-left text
+    ("`${t[e]||e} ${o>0?'+':''}${o}`", "`${t[e]||e} \u2066${o>0?'+':''}${o}\u2069`"),
+]
+
 HEAD = """<!doctype html>
-<html lang="ar">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <title>Founder Fog</title>
+<script>
+  // Language: remember the player's choice; first visit follows the device language.
+  (function () {
+    var page = document.documentElement.lang, pref = null;
+    try { pref = localStorage.getItem("founderFog.lang"); } catch (e) {}
+    var want = pref || ((navigator.language || "").toLowerCase().indexOf("ar") === 0 ? "ar" : "en");
+    if (want !== page) location.replace(want === "ar" ? "ar.html" : "index.html");
+  })();
+  // Keep Western digits everywhere (the fog scrambles 0-9; Arabic locales would switch to Arabic-Indic).
+  (function (orig) {
+    Number.prototype.toLocaleString = function (locale, opts) { return orig.call(this, locale || "en-US", opts); };
+  })(Number.prototype.toLocaleString);
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, shrink-to-fit=no">
 <meta name="description" content="Founder Fog — a startup survival game. Run your company week by week, manage runway, team and your own mental clarity.">
 <meta name="mobile-web-app-capable" content="yes">
@@ -144,6 +172,44 @@ def main():
 
     OUT.write_text(HEAD + bundle + TAIL, encoding="utf-8")
     print(f"wrote {OUT} ({OUT.stat().st_size:,} bytes)")
+
+    # 3. Arabic build: same bundle with visible strings swapped (translate.mjs), right-to-left
+    if DICT_AR.exists():
+        build_arabic(bundle)
+
+
+def arabic_head():
+    """The English head, switched to Arabic/RTL, with IBM Plex Sans Arabic embedded for Arabic glyphs."""
+    fonts = HERE / "fonts"
+    urange = (fonts / "plex-unicode-range.txt").read_text().strip()
+    faces = []
+    for family, weight in [("Archivo_400Regular", 400), ("Archivo_500Medium", 500), ("Archivo_600SemiBold", 600),
+                           ("AzeretMono_400Regular", 400), ("AzeretMono_500Medium", 500), ("AzeretMono_600SemiBold", 600)]:
+        b64 = base64.b64encode((fonts / f"plex-ar-{weight}.woff2").read_bytes()).decode()
+        faces.append(f'  @font-face {{ font-family: "{family}"; src: url(data:font/woff2;base64,{b64}) format("woff2"); unicode-range: {urange}; }}')
+    rtl_css = "\n".join(faces) + """
+  /* letter-spacing breaks Arabic letter joining */
+  html[dir="rtl"] * { letter-spacing: 0 !important; }
+"""
+    head = HEAD.replace('<html lang="en">', '<html lang="ar" dir="rtl">', 1)
+    head = head.replace("<style>", "<style>\n" + rtl_css, 1)
+    return head
+
+
+def build_arabic(bundle):
+    with tempfile.TemporaryDirectory() as tmp:
+        src, out = pathlib.Path(tmp) / "en.js", pathlib.Path(tmp) / "ar.js"
+        src.write_text(bundle, encoding="utf-8")
+        subprocess.run(["node", str(HERE / "translate.mjs"), "apply", str(src), str(DICT_AR), str(out), "--isolate-numbers"], check=True)
+        ar = out.read_text(encoding="utf-8")
+    for old, new in ARABIC_PATCHES:
+        assert ar.count(old) == 1, f"arabic patch not found: {old[:50]}"
+        ar = ar.replace(old, new)
+    # arrows point the other way in a right-to-left UI
+    ar = ar.replace("\u25b8", "\u25c2").replace("\\u25b8", "\\u25c2")
+    ar = ar.replace('"\u2039"', '"\u203a"')
+    OUT_AR.write_text(arabic_head() + ar + TAIL, encoding="utf-8")
+    print(f"wrote {OUT_AR} ({OUT_AR.stat().st_size:,} bytes)")
 
 
 if __name__ == "__main__":

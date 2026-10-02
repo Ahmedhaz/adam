@@ -28,7 +28,18 @@ function (g, r, i, a, m, _e, d) {
   const DIFF_COLOR = { Hard: COLOR.crit, Moderate: COLOR.fog, Easy: COLOR.vital };
 
   const money = (v) => "$" + Math.round(v).toLocaleString();
-  const cleanName = (n) => String(n || "").replace(/^\d+\.\s*/, "");
+  const cleanName = (n) => String(n || "").replace(/^[\d\u0660-\u0669]+\.\s*/, "");
+
+  // The Arabic build is the same code served as ar.html with <html lang="ar" dir="rtl">.
+  const IS_AR = typeof document !== "undefined" && document.documentElement.lang === "ar";
+  const sectorName = (s) => cleanName(IS_AR ? s.name_ar || s.name_en : s.name_en);
+  const sectorAlt = (s) => cleanName(IS_AR ? s.name_en : s.name_ar);
+  function switchLanguage() {
+    try {
+      window.localStorage.setItem("founderFog.lang", IS_AR ? "en" : "ar");
+    } catch (err) {}
+    window.location.replace(IS_AR ? "index.html" : "ar.html");
+  }
   function sectorNumbers(s) {
     const monthlyBurn = 2e3 * (s.burn_multiplier || 1) + 1500;
     return { burnWeek: monthlyBurn / 4, runway: s.initial_cash / monthlyBurn };
@@ -39,6 +50,7 @@ function (g, r, i, a, m, _e, d) {
       style: st.titleWrap,
       children: [
         jsx(View, { dataSet: { ff: "fogbank" }, pointerEvents: "none", style: st.titleFog }),
+        jsx(Touchable, { style: st.langPill, onPress: switchLanguage, children: jsx(Text, { style: st.langTxt, children: IS_AR ? "English" : "\u0627\u0644\u0639\u0631\u0628\u064a\u0629" }) }),
         jsxs(View, {
           style: st.titleCenter,
           children: [
@@ -147,13 +159,13 @@ function (g, r, i, a, m, _e, d) {
                         jsxs(View, {
                           style: { flex: 1 },
                           children: [
-                            jsx(Text, { style: st.sectorName, children: cleanName(s.name_en) }),
-                            jsx(Text, { style: st.sectorAr, numberOfLines: 1, children: cleanName(s.name_ar) }),
+                            jsx(Text, { style: st.sectorName, children: sectorName(s) }),
+                            jsx(Text, { style: st.sectorAr, numberOfLines: 1, children: sectorAlt(s) }),
                           ],
                         }),
                         jsx(View, {
                           style: [st.diff, { borderColor: DIFF_COLOR[s.difficulty_en] || COLOR.line }],
-                          children: jsx(Text, { style: [st.diffTxt, { color: DIFF_COLOR[s.difficulty_en] || COLOR.text2 }], children: s.difficulty_en }),
+                          children: jsx(Text, { style: [st.diffTxt, { color: DIFF_COLOR[s.difficulty_en] || COLOR.text2 }], children: IS_AR ? s.difficulty_ar || s.difficulty_en : s.difficulty_en }),
                         }),
                       ],
                     }),
@@ -168,7 +180,7 @@ function (g, r, i, a, m, _e, d) {
                         jsxs(View, { style: st.stat, children: [jsx(Text, { style: st.statV, children: v }), jsx(Text, { style: st.statL, children: l })] }, l),
                       ),
                     }),
-                    on && s.desc_en && jsx(Text, { style: st.desc, children: s.desc_en }),
+                    on && jsx(Text, { style: st.desc, children: IS_AR ? s.what_it_does : s.desc_en }),
                     on && s.what_it_sells && jsx(Text, { style: st.descAr, children: s.what_it_sells }),
                   ],
                 },
@@ -182,7 +194,7 @@ function (g, r, i, a, m, _e, d) {
               style: st.primaryBtn,
               onPress: () => setStep(2),
               activeOpacity: 0.85,
-              children: jsx(Text, { style: st.primaryTxt, children: "Continue with " + cleanName(sector.name_en).split(" ")[0] + " ▸" }),
+              children: jsx(Text, { style: st.primaryTxt, children: "Continue with " + sectorName(sector).split(" ")[0] + " ▸" }),
             }),
           }),
         ],
@@ -192,7 +204,7 @@ function (g, r, i, a, m, _e, d) {
     return jsxs(View, {
       style: st.container,
       children: [
-        jsx(StepHeader, { step: 2, title: "Name your company", sub: ICONS[sector.id] + "  " + cleanName(sector.name_en), onBack: () => setStep(1) }),
+        jsx(StepHeader, { step: 2, title: "Name your company", sub: ICONS[sector.id] + "  " + sectorName(sector), onBack: () => setStep(1) }),
         jsxs(ScrollView, {
           style: { flex: 1 },
           contentContainerStyle: st.list,
@@ -259,6 +271,8 @@ function (g, r, i, a, m, _e, d) {
     logoMark: { fontSize: 64, textAlign: "center" },
     logo: { fontFamily: "AzeretMono_600SemiBold", fontSize: 26, letterSpacing: 4, color: COLOR.text, textAlign: "center" },
     logoTag: { ...TYPE.body, fontSize: 14, lineHeight: 21, color: COLOR.text2, textAlign: "center", maxWidth: 300 },
+    langPill: { position: "absolute", top: 16, right: 16, zIndex: 5, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, backgroundColor: COLOR.panel, borderWidth: 1, borderColor: COLOR.lineHot },
+    langTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 13, color: COLOR.text },
     titleActions: { gap: 12, width: "100%", maxWidth: 440, alignSelf: "center" },
     saveCard: {
       flexDirection: "row",

@@ -43,11 +43,11 @@ function (g, r, i, a, m, _e, d) {
     jsxs = J.jsxs;
 
   const TABS = [
-    { key: "HQ", icon: "🏢", label: "HQ" },
-    { key: "Journal", icon: "📓", label: "Journal" },
-    { key: "Departments", icon: "👥", label: "Team" },
-    { key: "Relationships", icon: "🤝", label: "Circle" },
-    { key: "Activities", icon: "⚡", label: "Actions" },
+    { key: "hq", icon: "🏢", label: "HQ" },
+    { key: "journal", icon: "📓", label: "Journal" },
+    { key: "team", icon: "👥", label: "Team" },
+    { key: "circle", icon: "🤝", label: "Circle" },
+    { key: "actions", icon: "⚡", label: "Actions" },
   ];
   const STAGE_NAMES = { 1: "Pre-seed", 2: "Seed", 3: "Series A", 4: "Unicorn" };
 
@@ -86,19 +86,22 @@ function (g, r, i, a, m, _e, d) {
   }
 
   // ---------- formatting ----------
-  const money = (v) => (v < 0 ? "−$" : "$") + Math.abs(Math.round(v)).toLocaleString();
+  // Numbers are wrapped in left-to-right isolates so "+$3,000" keeps its order inside Arabic text.
+  const ltr = (x) => "\u2066" + x + "\u2069";
+  const money = (v) => ltr((v < 0 ? "−$" : "$") + Math.abs(Math.round(v)).toLocaleString());
   const compact = (v) => {
     const a = Math.abs(v),
       s = v < 0 ? "−$" : "$";
-    if (a >= 1e6) return s + (a / 1e6).toFixed(a >= 1e7 ? 0 : 1) + "M";
-    if (a >= 1e4) return s + Math.round(a / 1e3) + "k";
-    return s + Math.round(a).toLocaleString();
+    if (a >= 1e6) return ltr(s + (a / 1e6).toFixed(a >= 1e7 ? 0 : 1) + "M");
+    if (a >= 1e4) return ltr(s + Math.round(a / 1e3) + "k");
+    return ltr(s + Math.round(a).toLocaleString());
   };
-  const signed = (v, unit) => (v > 0 ? "+" : "−") + Math.abs(Math.round(v)).toLocaleString() + (unit || "");
-  const signedMoney = (v) => (v > 0 ? "+$" : "−$") + Math.abs(Math.round(v)).toLocaleString();
+  const signed = (v, unit) => ltr((v > 0 ? "+" : "−") + Math.abs(Math.round(v)).toLocaleString() + (unit || ""));
+  const signedMoney = (v) => ltr((v > 0 ? "+$" : "−$") + Math.abs(Math.round(v)).toLocaleString());
 
   // Higher is worse for these metrics, so their "+" is shown in red.
-  const BAD_UP = /tech debt|churn|cac|burn/i;
+  const BAD_UP = /tech debt|churn|cac|burn|\u0627\u0644\u062f\u064a\u0646 \u0627\u0644\u062a\u0642\u0646\u064a|\u0627\u0644\u062a\u0633\u0631\u0651?\u0628|\u062a\u0643\u0644\u0641\u0629 \u0627\u0644\u0627\u0633\u062a\u062d\u0648\u0627\u0630|\u0627\u0644\u062d\u0631\u0642/i;
+  const BAD_KEYS = ["techDebt", "churnRate", "cac", "baseBurn"];
   const EFFECT_LABELS = {
     cash: ["Cash", "$"],
     monthlyRevenue: ["MRR", "$"],
@@ -129,7 +132,7 @@ function (g, r, i, a, m, _e, d) {
       const label = meta[0],
         unit = meta[1];
       const txt = unit === "$" ? label + " " + signedMoney(v) : label + " " + signed(v, unit);
-      const good = BAD_UP.test(label) ? v < 0 : v > 0;
+      const good = BAD_KEYS.includes(k) ? v < 0 : v > 0;
       out.push({ text: txt, tone: k === "founderExp" ? 2 : good ? 1 : -1 });
     });
     return out;
@@ -143,10 +146,11 @@ function (g, r, i, a, m, _e, d) {
       .filter(Boolean)
       .map((p) => {
         const m = p.match(/[+\-−]/);
-        if (!m || /\$0\b/.test(p)) return { text: p, tone: 0 };
+        const text = p.replace(/[+\-\u2212]?\$?[\d][\d,.]*[%kM]?\$?/g, ltr);
+        if (!m || /\$0\b/.test(p)) return { text: text, tone: 0 };
         const up = m[0] === "+";
         const good = BAD_UP.test(p) ? !up : up;
-        return { text: p, tone: good ? 1 : -1 };
+        return { text: text, tone: good ? 1 : -1 };
       });
   }
 
@@ -204,7 +208,7 @@ function (g, r, i, a, m, _e, d) {
     if (parseFloat(after.runwayMonths) < 3) notes.push(["⏳", "Under 3 months of runway. Cut burn or bring in cash.", -1]);
     if (!before.slotUsed) notes.push(["⚡", "You didn't use last week's personal action.", 0]);
     if (after.pendingEvent) notes.push(["⚖️", "A decision is waiting for you.", 0]);
-    if (after.inbox && after.inbox.length) notes.push(["📨", after.inbox.length + " new message" + (after.inbox.length > 1 ? "s" : "") + " in your inbox.", 0]);
+    if (after.inbox && after.inbox.length) notes.push(["📨", after.inbox.length === 1 ? "1 new message in your inbox." : after.inbox.length + " new messages in your inbox.", 0]);
     return { week: before.week, rows: rows, notes: notes, quest: after.currentTarget && after.currentTarget.title, nextWeek: after.week };
   }
   function addNote(report, note) {
@@ -222,7 +226,7 @@ function (g, r, i, a, m, _e, d) {
     });
     const [engine, setEngine] = React.useState(null),
       [S, setS] = React.useState(null),
-      [tab, setTab] = React.useState("HQ"),
+      [tab, setTab] = React.useState("hq"),
       [guideOpen, setGuideOpen] = React.useState(false),
       [saved, setSaved] = React.useState(readSave),
       [toast, setToast] = React.useState(null),
@@ -279,7 +283,7 @@ function (g, r, i, a, m, _e, d) {
       setSaved(null);
       setEngine(eng);
       setS({ ...eng.state });
-      setTab("HQ");
+      setTab("hq");
       setReport(null);
     };
     const resume = () => {
@@ -288,14 +292,14 @@ function (g, r, i, a, m, _e, d) {
       ensureFeatureState(eng.state);
       setEngine(eng);
       setS({ ...eng.state });
-      setTab("HQ");
+      setTab("hq");
     };
     const restart = () => {
       clearSave();
       setSaved(null);
       setEngine(null);
       setS(null);
-      setTab("HQ");
+      setTab("hq");
       setReport(null);
     };
 
@@ -369,10 +373,10 @@ function (g, r, i, a, m, _e, d) {
       buzz(12);
       if (next.gameOver || next.victory) return;
       const rep = buildReport(before, next);
-      if (ignored) addNote(rep, ["📭", ignored + " message" + (ignored > 1 ? "s" : "") + " went unanswered" + (has(next, "delegator") ? " (Delegator: no harm done)." : "."), -1]);
+      if (ignored) addNote(rep, ["📭", (ignored === 1 ? "1 message went unanswered." : ignored + " messages went unanswered.") + (has(next, "delegator") ? " Delegator: no harm done." : ""), -1]);
       if (streakNote) addNote(rep, streakNote);
       setReport(rep);
-      setTab("HQ");
+      setTab("hq");
     };
 
     const chooseMail = (card, side) => {
@@ -468,7 +472,7 @@ function (g, r, i, a, m, _e, d) {
               children: [
                 jsx(Text, { style: st.kicker, children: "IN THE BANK" }),
                 jsx(Text, { style: [st.heroCash, { opacity: fogOp }], children: ft(money(S.cash), "cashBig") }),
-                jsx(Text, { style: st.heroEquity, children: "you own " + (S.equity == null ? 100 : S.equity).toFixed(S.equity < 100 ? 1 : 0) + "%" }),
+                jsx(Text, { style: st.heroEquity, children: "you own " + ltr((S.equity == null ? 100 : S.equity).toFixed(S.equity < 100 ? 1 : 0) + "%") }),
               ],
             }),
           ],
@@ -615,10 +619,10 @@ function (g, r, i, a, m, _e, d) {
         jsxs(View, {
           style: st.actionRow,
           children: [
-            jsx(Touchable, { style: [st.actionBtn, fogged && !S.slotUsed && st.actionBtnHot], onPress: () => setTab("Activities"), children: jsx(Text, { style: st.actionBtnTxt, children: "⚡ Actions" }) }),
+            jsx(Touchable, { style: [st.actionBtn, fogged && !S.slotUsed && st.actionBtnHot], onPress: () => setTab("actions"), children: jsx(Text, { style: st.actionBtnTxt, children: "⚡ Actions" }) }),
             jsx(Touchable, {
               style: st.actionBtn,
-              onPress: () => setTab("Relationships"),
+              onPress: () => setTab("circle"),
               children: jsx(Text, { style: st.actionBtnTxt, children: "🤝 Circle" + (weakTie ? " · !" : "") }),
             }),
           ],
@@ -654,7 +658,7 @@ function (g, r, i, a, m, _e, d) {
           style: st.rowBetween,
           children: [
             jsx(Text, { style: st.kicker, children: "LATELY" }),
-            jsx(Touchable, { onPress: () => setTab("Journal"), children: jsx(Text, { style: st.link, children: "Full journal ▸" }) }),
+            jsx(Touchable, { onPress: () => setTab("journal"), children: jsx(Text, { style: st.link, children: "Full journal ▸" }) }),
           ],
         }),
         S.journalLog.slice(0, 3).map((x, idx) =>
@@ -677,7 +681,7 @@ function (g, r, i, a, m, _e, d) {
             idx,
           ),
         ),
-        jsx(Touchable, { onPress: () => setTab("Assets"), style: st.companyLink, children: jsx(Text, { style: st.link, children: "Company, KPIs & assets ▸" }) }),
+        jsx(Touchable, { onPress: () => setTab("assets"), style: st.companyLink, children: jsx(Text, { style: st.link, children: "Company, KPIs & assets ▸" }) }),
       ],
     });
 
@@ -692,7 +696,7 @@ function (g, r, i, a, m, _e, d) {
             Touchable,
             {
               style: st.fogBanner,
-              onPress: () => setTab("Activities"),
+              onPress: () => setTab("actions"),
               children: [jsx(Text, { style: st.fogBannerTxt, children: Fog.fogNotice(S.mentalClarity) }), jsx(Text, { style: st.fogBannerCta, children: "Rest ▸" })],
             },
             "fogb",
@@ -710,7 +714,7 @@ function (g, r, i, a, m, _e, d) {
                 jsxs(View, {
                   style: { flex: 1 },
                   children: [
-                    jsx(Text, { style: [st.kicker, { color: "#c9b48f" }], children: S.inbox.length + " MESSAGE" + (S.inbox.length > 1 ? "S" : "") + " · ANSWER BEFORE WEEK ENDS" }),
+                    jsx(Text, { style: [st.kicker, { color: "#c9b48f" }], children: (S.inbox.length === 1 ? "1 MESSAGE" : S.inbox.length + " MESSAGES") + " · ANSWER BEFORE WEEK ENDS" }),
                     jsx(Text, { style: st.inboxTitle, numberOfLines: 1, children: (cardById(S.inbox[0].id) || {}).title }),
                   ],
                 }),
@@ -727,12 +731,12 @@ function (g, r, i, a, m, _e, d) {
     });
 
     let content;
-    if (tab === "HQ") content = hq;
-    else if (tab === "Journal") content = jsx(Journal.JournalScreen, { journalLog: S.journalLog, gameState: S });
-    else if (tab === "Assets") content = jsx(Assets.AssetsScreen, { gameState: S });
-    else if (tab === "Relationships")
+    if (tab === "hq") content = hq;
+    else if (tab === "journal") content = jsx(Journal.JournalScreen, { journalLog: S.journalLog, gameState: S });
+    else if (tab === "assets") content = jsx(Assets.AssetsScreen, { gameState: S });
+    else if (tab === "circle")
       content = jsx(Circle.RelationshipsScreen, { gameState: S, onContact: (id) => act(engine.contactRelationship(id), "Reached out. Relationship +11.") });
-    else if (tab === "Departments")
+    else if (tab === "team")
       content = jsx(Team.DepartmentsScreen, {
         gameState: S,
         onHire: (id) => act(engine.hireCandidate(id), "Welcome to the team."),
@@ -740,11 +744,11 @@ function (g, r, i, a, m, _e, d) {
         onRefreshCandidates: () => act(engine.refreshCandidatePool(), "3 new candidates sourced."),
         onRunDeptAction: (id) => act(engine.executeDepartmentAction("dept", id), "Done. Logged in your journal."),
       });
-    else if (tab === "Activities")
+    else if (tab === "actions")
       content = jsx(Actions.ActivitiesScreen, {
         gameState: S,
         onSelectActivity: (activity) => {
-          if (act(engine.executeActivity(activity), (activity.name_en || activity.name) + " ✓")) setTab("HQ");
+          if (act(engine.executeActivity(activity), (activity.name_en || activity.name) + " ✓")) setTab("hq");
         },
       });
 
@@ -983,7 +987,7 @@ function (g, r, i, a, m, _e, d) {
             jsx(View, { style: st.expPill, children: jsx(Text, { style: st.expPillTxt, children: "Lv " + S.level }) }),
           ],
         }),
-        tab !== "HQ" && hud,
+        tab !== "hq" && hud,
         jsx(View, { style: st.content, children: content }),
         jsxs(View, {
           style: st.endBar,
@@ -1005,8 +1009,8 @@ function (g, r, i, a, m, _e, d) {
         jsx(View, {
           style: st.nav,
           children: TABS.map((t) => {
-            const on = tab === t.key || (t.key === "HQ" && tab === "Assets");
-            const dot = (t.key === "Activities" && !S.slotUsed) || (t.key === "Relationships" && weakTie) || (t.key === "HQ" && S.inbox && S.inbox.length > 0 && tab !== "HQ");
+            const on = tab === t.key || (t.key === "hq" && tab === "assets");
+            const dot = (t.key === "actions" && !S.slotUsed) || (t.key === "circle" && weakTie) || (t.key === "hq" && S.inbox && S.inbox.length > 0 && tab !== "hq");
             return jsxs(
               Touchable,
               {
