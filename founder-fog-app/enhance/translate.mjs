@@ -26,7 +26,7 @@ const CODE = /^(#[0-9a-f]{3,8}|rgba?\(.*\)|[A-Za-z]+_[0-9]{3}[A-Za-z]+|use stric
 // Lowercase single words are normally code; these few are on-screen labels in our own screens.
 const LABEL_WORDS = new Set(["users", "used", "margin", "runway", "mo",
   "MRR", "RUNWAY", "MORALE", "LATELY", "INTEREST", "HQ", "FOUNDER", "EXP", "CONTINUE", "COMPANY", "CLARITY", "CASH", "CAC", "ARPU",
-  "BANK", "CONSEQUENCE", "MENTOR", "WK", "FRACTURED", "SOUND", "ACTIVE", "CANDIDATES", "ROSTER", "UNPAID"]);
+  "BANK", "CONSEQUENCE", "MENTOR", "WK", "FRACTURED", "SOUND", "ACTIVE", "CANDIDATES", "ROSTER", "UNPAID", "DIFFICULTY", "VALUATION"]);
 
 // Right-to-left text reorders "+$3,500" into "3,500$+". Wrapping each run of
 // signs/currency/digits/placeholders in a left-to-right isolate keeps it intact.

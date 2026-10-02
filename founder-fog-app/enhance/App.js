@@ -219,6 +219,7 @@ function (g, r, i, a, m, _e, d) {
   }
 
 // @include features.js
+// @include economy.js
 
   function buildReport(before, after) {
     const rows = [
@@ -259,7 +260,8 @@ function (g, r, i, a, m, _e, d) {
       [toast, setToast] = React.useState(null),
       [report, setReport] = React.useState(null),
       [inboxOpen, setInboxOpen] = React.useState(false),
-      [pitchOpen, setPitchOpen] = React.useState(false);
+      [pitchOpen, setPitchOpen] = React.useState(false),
+      [moneyOpen, setMoneyOpen] = React.useState(false);
     const toastTimer = React.useRef(null);
     const feedRef = React.useRef(null);
     // keep the life log scrolled to the latest week, BitLife style
@@ -324,10 +326,11 @@ function (g, r, i, a, m, _e, d) {
         children: jsx(StatusBar, { barStyle: "dark-content" }),
       });
 
-    const start = ({ founderName, companyName, sectorId, avatar }) => {
+    const start = ({ founderName, companyName, sectorId, avatar, mode }) => {
       const eng = new Engine.StartupEngine(founderName, companyName, sectorId);
       eng.state.avatar = avatar || "avatar_m1";
       ensureFeatureState(eng.state);
+      applyMode(eng, mode);
       dealInbox(eng.state, 1);
       clearSave();
       setSaved(null);
@@ -385,8 +388,9 @@ function (g, r, i, a, m, _e, d) {
       fogOp = Fog.fogOpacity(S.mentalClarity),
       ft = (text, key) => Fog.fogText(text, S.mentalClarity, key, S.week),
       runway = parseFloat(S.runwayMonths),
-      runwayLabel = runway >= 999 ? "∞" : runway.toFixed(1),
-      runwayColor = runway < 3 ? COLOR.crit : runway < 6 ? COLOR.fog : COLOR.vital,
+      runwayLabel = S.defaultAlive ? "Alive" : runway >= 999 ? "—" : runway.toFixed(1) + " mo",
+      runwayPct = S.defaultAlive ? 100 : (Math.min(runway, 12) / 12) * 100,
+      runwayColor = S.defaultAlive ? COLOR.vital : runway < 3 ? COLOR.crit : runway < 6 ? COLOR.fog : COLOR.vital,
       clarityColor = S.mentalClarity < 25 ? COLOR.crit : fogged ? COLOR.fog : COLOR.act,
       moraleColor = S.teamMorale < 40 ? COLOR.crit : S.teamMorale < 60 ? COLOR.fog : COLOR.vital,
       nextStage = (Engine.STAGES || []).find((x) => x.stage > S.stage),
@@ -425,6 +429,7 @@ function (g, r, i, a, m, _e, d) {
       const rep = buildReport(before, next);
       if (ignored) addNote(rep, ["📭", (ignored === 1 ? "1 message went unanswered." : ignored + " messages went unanswered.") + (has(next, "delegator") ? " Delegator: no harm done." : ""), -1]);
       if (streakNote) addNote(rep, streakNote);
+      ((next.econ && next.econ.notes) || []).forEach((n) => addNote(rep, n));
       setReport(rep);
       setTab("hq");
     };
@@ -486,7 +491,7 @@ function (g, r, i, a, m, _e, d) {
       style: st.hud,
       children: [
         meter("CASH", ft(compact(S.cash), "cash"), (S.cash / Math.max(1, S.sector.initial_cash)) * 100, S.cash < 4 * S.weeklyBurn ? COLOR.crit : COLOR.vital, true),
-        meter("RUNWAY", ft(runwayLabel + "mo", "runway"), (Math.min(runway, 12) / 12) * 100, runwayColor, true),
+        meter("RUNWAY", ft(runwayLabel, "runway"), runwayPct, runwayColor, true),
         meter("CLARITY", Math.round(S.mentalClarity) + "%", S.mentalClarity, clarityColor, false),
         meter("MORALE", Math.round(S.teamMorale) + "%", S.teamMorale, moraleColor, false),
         fogged && jsx(View, { pointerEvents: "none", dataSet: { ff: "fog" }, style: [st.fogLayer, { opacity: 0.35 + 0.6 * fogAmt }] }),
@@ -542,8 +547,10 @@ function (g, r, i, a, m, _e, d) {
             }),
           ],
         }),
-        jsxs(View, {
+        jsxs(Touchable, {
           style: st.bank,
+          activeOpacity: 0.8,
+          onPress: () => setMoneyOpen(true),
           children: [
             jsx(Text, { style: st.bankLabel, children: "BANK" }),
             jsx(Text, { style: [st.bankValue, { color: S.cash < 4 * S.weeklyBurn ? "#FF453A" : "#1F9D55", opacity: fogOp }], numberOfLines: 1, children: ft(compact(S.cash), "cash") }),
@@ -579,8 +586,9 @@ function (g, r, i, a, m, _e, d) {
       children: [
         guide && tile("t", targetDone ? "✅" : "🎯", targetDone ? "Target done" : "Weekly target", targetDone ? "+" + (S.streak || 0) + " streak" : "+" + (target.reward_exp || 50) + " XP", "#FFE8E1", () => setGuideOpen(true), S.streak ? "🔥" + S.streak : null, targetDone),
         tile("i", "📨", "Inbox", inboxN ? inboxN + " new" : "All clear", "#FFF4D6", () => inboxN && setInboxOpen(true), inboxN || null, !inboxN),
+        tile("m", "💵", "Money", S.defaultAlive ? "Default alive" : runwayLabel + " runway", "#E2F6EA", () => setMoneyOpen(true), null, false),
         tile("a", fogged && !S.slotUsed ? "🧘" : "⚡", fogged && !S.slotUsed ? "Rest now" : "Your action", S.slotUsed ? "used" : "1 left", "#E3F7EA", () => setTab("actions"), null, S.slotUsed),
-        tile("p", "💼", "Fundraise", raisedThisStage(S) ? "Raised ✓" : canPitch(S) ? roundName : S.week < 3 ? "Week 3+" : "Not now", "#E5EEFF", () => (canPitch(S) ? setPitchOpen(true) : notify(raisedThisStage(S) ? "Next round opens at the next milestone." : S.slotUsed ? "Pitching needs this week's action." : S.week < 3 ? "Investors take meetings from week 3." : "Investors will take a meeting in " + pitchCooldown(S) + " wk.", "info")), null, !canPitch(S)),
+        tile("p", "💼", "Fundraise", raisedThisStage(S) ? "Raised ✓" : canPitch(S) ? roundName : S.week < pitchFrom(S) ? `Week ${pitchFrom(S)}+` : "Not now", "#E5EEFF", () => (canPitch(S) ? setPitchOpen(true) : notify(raisedThisStage(S) ? "Next round opens at the next milestone." : S.slotUsed ? "Pitching needs this week's action." : S.week < pitchFrom(S) ? `Investors take meetings from week ${pitchFrom(S)}.` : "Investors will take a meeting in " + pitchCooldown(S) + " wk.", "info")), null, !canPitch(S)),
         tile("c", "🤝", "Circle", weakTie ? "Needs you" : "All good", "#F1E8FF", () => setTab("circle"), weakTie ? "!" : null, false),
       ],
     });
@@ -659,7 +667,7 @@ function (g, r, i, a, m, _e, d) {
       children: [
         statBar("🧠", "Clarity", S.mentalClarity, Math.round(S.mentalClarity) + "%"),
         statBar("🤝", "Morale", S.teamMorale, Math.round(S.teamMorale) + "%"),
-        statBar("⏳", "Runway", (Math.min(runway, 12) / 12) * 100, ft(runwayLabel + " mo", "runway"), true),
+        statBar("⏳", "Runway", runwayPct, ft(S.defaultAlive ? "Default alive" : runwayLabel, "runway"), true),
         statBar("💼", "Trust", S.investorTrust == null ? 80 : S.investorTrust, Math.round(S.investorTrust == null ? 80 : S.investorTrust) + "%"),
         fogged && jsx(View, { pointerEvents: "none", dataSet: { ff: "fog" }, style: [st.fogLayer, { opacity: 0.2 + 0.4 * fogAmt }] }),
       ],
@@ -684,7 +692,7 @@ function (g, r, i, a, m, _e, d) {
                     }),
                     jsx(Text, { style: st.cardTitle, children: "Reach " + money(nextStage.mrr) + " MRR" }),
                     jsx(View, { style: st.goalTrack, children: jsx(View, { style: [st.goalFill, { width: Math.max(2, Math.min(100, (S.monthlyRevenue / nextStage.mrr) * 100)) + "%" }] }) }),
-                    jsx(Text, { style: st.cardSub, children: ft(money(S.monthlyRevenue), "mrr2") + " of " + money(nextStage.mrr) + " · valuation re-rates to " + compact(nextStage.valuation) }),
+                    jsx(Text, { style: st.cardSub, children: ft(money(S.monthlyRevenue), "mrr2") + " of " + money(nextStage.mrr) + " · costs re-price +20% when you get there" }),
                   ],
                 })
               : null,
@@ -1015,6 +1023,7 @@ function (g, r, i, a, m, _e, d) {
         guideModal,
         S.perkChoice && !report && !S.pendingEvent && jsx(PerkModal, { S: S, onPick: pickPerk }),
         inboxOpen && !report && !S.pendingEvent && !S.perkChoice && jsx(InboxModal, { S: S, onChoose: chooseMail, onClose: () => setInboxOpen(false) }),
+        moneyOpen && !report && !S.pendingEvent && jsx(MoneyModal, { S: S, ft: ft, onClose: () => setMoneyOpen(false) }),
         pitchOpen &&
           jsx(PitchModal, {
             S: S,

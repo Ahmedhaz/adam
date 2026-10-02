@@ -390,8 +390,9 @@
   const pitchCooldown = (s) => Math.max(0, s.lastPitchWeek + 4 - s.week);
   // One round per company stage: the next round unlocks at the next MRR milestone.
   const raisedThisStage = (s) => (s.rounds || []).some((r) => r.stage === s.stage);
-  const canPitch = (s) => s.week >= 3 && !s.slotUsed && pitchCooldown(s) === 0 && !raisedThisStage(s);
-  const baseInterest = (s) => Math.round(((s.investorTrust == null ? 80 : s.investorTrust) - 60) / 10);
+  const canPitch = (s) => s.week >= pitchFrom(s) && !s.slotUsed && pitchCooldown(s) === 0 && !raisedThisStage(s);
+  // the market mood moves every investor: hot markets add interest, winters take it away
+  const baseInterest = (s) => Math.round(((s.investorTrust == null ? 80 : s.investorTrust) - 60) / 10) + ((MOODS[s.econ && s.econ.mood] || {}).interest || 0);
 
   function termSheet(s, inv, interest) {
     const over = Math.max(0, interest - inv.bar);

@@ -64,9 +64,49 @@ ENGINE_PATCHES = [
         "this.applyMoraleAttrition(),",
     ),
     (
-        "show an infinite runway as \u221e in the weekly log instead of 999",
+        "no infinite runway: a profitable company is 'default alive' (economy.js)",
         "(${this.state.runwayMonths} Mo Runway)",
-        '(${this.state.runwayMonths>=999?"\u221e":this.state.runwayMonths} Mo Runway)',
+        '(${this.state.runwayText||this.state.runwayMonths})',
+    ),
+    (
+        "stages no longer jump the valuation; economy.js values the company on ARR x multiple",
+        "this.state.valuation=Math.max(this.state.valuation,e.valuation),",
+        "",
+    ),
+    (
+        "stage logs: no more automatic valuation upgrades (seed)",
+        'logText:"MRR surpassed $5,000! Company valuation upgraded to $1.5M!"',
+        'logText:"MRR surpassed $5,000! You\'re a seed-stage company now. Investors will judge you on growth from here."',
+    ),
+    (
+        "stage logs: no more automatic valuation upgrades (series A)",
+        'logText:"MRR reached $40,000! Company valuation upgraded to $10M!"',
+        'logText:"MRR reached $40,000! You\'re a Series A company now. The valuation follows your growth and retention."',
+    ),
+    (
+        "stage logs: no more automatic valuation upgrades (unicorn)",
+        'logText:"MRR reached $250,000! Valuation upgraded to $100M. You have built a unicorn."',
+        'logText:"MRR reached $250,000! Unicorn territory. Keep growth high and churn low and the market will price you at $100M."',
+    ),
+    (
+        "ad channels saturate faster and recover slower (CAC +18% per campaign, -1.5%/week); a weekly target adds at most 3% MRR, not 6%",
+        "const u=14,m=1.12,p=.99,f=.06",
+        "const u=14,m=1.18,p=.985,f=.03",
+    ),
+    (
+        "a happy team still compounds growth, but 0.8%/week instead of 1.5%",
+        "this.state.monthlyRevenue*=1.015,this.state.activeUsers*=1.015",
+        "this.state.monthlyRevenue*=1.008,this.state.activeUsers*=1.008",
+    ),
+    (
+        "target strategies land 50%-120% of their revenue promise, and at least $700 (not $1,200) early on",
+        "const e=r.monthlyRevenue>0?Math.min(r.monthlyRevenue,Math.max(1200,this.state.monthlyRevenue*f)):r.monthlyRevenue;",
+        "const e=r.monthlyRevenue>0?Math.round(Math.min(r.monthlyRevenue,Math.max(700,this.state.monthlyRevenue*f))*(.5+.7*Math.random())):r.monthlyRevenue;",
+    ),
+    (
+        "campaigns: results vary (60%-130%), pricier products cost more to sell, and only 30% of new users pay",
+        "const e=3e3,t=Math.max(1,Math.round(e/Math.max(1,this.state.cac))),s=t*this.state.arpu;",
+        "const e=3e3,t=Math.max(1,Math.round(e/Math.max(1,this.state.cac*Math.sqrt(Math.max(1,this.state.arpu/25)))*(.6+.7*Math.random()))),s=Math.round(t*this.state.arpu*.3);",
     ),
     (
         "Magnetic perk: relationships decay half as fast",

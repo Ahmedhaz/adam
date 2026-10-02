@@ -43,6 +43,10 @@ any repo. Enhancements are applied on top of it:
 - `enhance/Onboarding.js` replaces the title screen and new-company setup (module 265)
 - `enhance/features.js` holds the added gameplay systems; App.js pulls it in
   with `// @include features.js`
+- `enhance/economy.js` is the money model: costs that grow with the company,
+  "default alive" instead of infinite runway, valuation as ARR × multiple,
+  market cycles, shocks and difficulty modes. It wraps the engine's
+  `recalculate` and `advanceWeek`, and is included the same way
 - `enhance/build.py` applies small patches to the game engine and wraps the
   page for mobile (PWA head, safe areas)
 

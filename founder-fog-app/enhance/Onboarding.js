@@ -48,9 +48,17 @@ function (g, r, i, a, m, _e, d) {
     } catch (err) {}
     window.location.replace(IS_AR ? "index.html" : "ar.html");
   }
-  function sectorNumbers(s) {
-    const monthlyBurn = 2e3 * (s.burn_multiplier || 1) + 1500;
-    return { burnWeek: monthlyBurn / 4, runway: s.initial_cash / monthlyBurn };
+  // difficulty modes; the rules live in App's economy.js under the same ids
+  const MODES = [
+    { id: "venture", icon: "🚀", name: "Venture-backed", desc: "The classic story. Normal cash, normal market.", cash: 1 },
+    { id: "bootstrapped", icon: "🧾", name: "Bootstrapped", desc: "40% less cash, and investors won't meet you before week 26.", cash: 0.6 },
+    { id: "winter", icon: "🧊", name: "Funding winter", desc: "You start in a downturn: valuations are low and winters come back more often.", cash: 1 },
+    { id: "hard", icon: "🌫️", name: "Founder Fog", desc: "40% less cash and almost three times the shocks. For bragging rights.", cash: 0.6 },
+  ];
+  function sectorNumbers(s, cashMult) {
+    const monthlyBurn = 2e3 * (s.burn_multiplier || 1) + 1500,
+      cash = Math.round(s.initial_cash * (cashMult || 1));
+    return { cash: cash, burnWeek: monthlyBurn / 4, runway: cash / monthlyBurn };
   }
 
   function Title({ saved, onNew, onResume, onDiscard }) {
@@ -160,13 +168,15 @@ function (g, r, i, a, m, _e, d) {
       [sectorId, setSectorId] = React.useState(Engine.SECTORS[0].id),
       [founder, setFounder] = React.useState("Ahmed"),
       [company, setCompany] = React.useState("Adamos AI"),
-      [avatar, setAvatar] = React.useState("avatar_m1");
+      [avatar, setAvatar] = React.useState("avatar_m1"),
+      [mode, setMode] = React.useState("venture");
 
     if (step === 0)
       return jsx(Title, { saved: saved, onResume: onResume, onDiscard: onDiscard, onNew: () => setStep(1) });
 
     const sector = Engine.SECTORS.find((s) => s.id === sectorId) || Engine.SECTORS[0];
-    const nums = sectorNumbers(sector);
+    const modeInfo = MODES.find((m) => m.id === mode) || MODES[0];
+    const nums = sectorNumbers(sector, modeInfo.cash);
 
     if (step === 1)
       return jsxs(View, {
@@ -261,6 +271,23 @@ function (g, r, i, a, m, _e, d) {
             jsx(TextInput, { style: st.input, value: founder, onChangeText: setFounder, placeholder: "Your name", placeholderTextColor: COLOR.text3, maxLength: 24 }),
             jsx(Text, { style: st.inputLabel, children: "COMPANY" }),
             jsx(TextInput, { style: st.input, value: company, onChangeText: setCompany, placeholder: "Company name", placeholderTextColor: COLOR.text3, maxLength: 28 }),
+            jsx(Text, { style: st.inputLabel, children: "DIFFICULTY" }),
+            jsx(View, {
+              style: st.modes,
+              children: MODES.map((m) =>
+                jsxs(
+                  Touchable,
+                  {
+                    style: [st.modeOpt, m.id === mode && st.modeOn],
+                    onPress: () => setMode(m.id),
+                    activeOpacity: 0.85,
+                    children: [jsx(Pic, { e: m.icon, size: 30 }), jsx(Text, { style: [st.modeName, m.id === mode && { color: "#2D7FF9" }], numberOfLines: 2, children: m.name })],
+                  },
+                  m.id,
+                ),
+              ),
+            }),
+            jsx(Text, { style: st.modeDesc, children: modeInfo.desc }),
             jsxs(View, {
               style: st.brief,
               dataSet: { ff: "rise1" },
@@ -269,7 +296,7 @@ function (g, r, i, a, m, _e, d) {
                 jsxs(View, {
                   style: st.statsRow,
                   children: [
-                    [money(sector.initial_cash), "in the bank", COLOR.vital],
+                    [money(nums.cash), "in the bank", COLOR.vital],
                     [money(nums.burnWeek), "burn / week", COLOR.crit],
                     [nums.runway.toFixed(1) + " mo", "runway", COLOR.fog],
                   ].map(([v, l, c]) =>
@@ -287,6 +314,7 @@ function (g, r, i, a, m, _e, d) {
                   ["🎯", "Hit the weekly target by picking one strategy."],
                   ["⚡", "You get one personal action a week: rest, network, or reach out."],
                   ["⚖️", "Every few weeks a dilemma lands. There is no right option."],
+                  ["💵", "Costs grow as you grow. You're safe only when revenue after margin pays for everything."],
                   ["🌫️", "Stress drains clarity. Below 40% the fog hides your numbers. At 5% it's over."],
                 ].map(([icon, text]) =>
                   jsxs(View, { style: st.rule, children: [jsx(Text, { style: st.ruleIcon, children: icon }), jsx(Text, { style: st.ruleTxt, children: text })] }, icon),
@@ -301,7 +329,7 @@ function (g, r, i, a, m, _e, d) {
           children: jsx(Touchable, {
             style: [st.primaryBtn, !ready && { opacity: 0.4 }],
             disabled: !ready,
-            onPress: () => onStartGame({ founderName: founder.trim(), companyName: company.trim(), sectorId: sector.id, avatar: avatar }),
+            onPress: () => onStartGame({ founderName: founder.trim(), companyName: company.trim(), sectorId: sector.id, avatar: avatar, mode: mode }),
             activeOpacity: 0.85,
             children: jsx(Text, { style: st.primaryTxt, children: "Found " + (company.trim() || "the company") + " ▸" }),
           }),
@@ -315,6 +343,11 @@ function (g, r, i, a, m, _e, d) {
     heroArt: { width: 260, height: 210, alignItems: "center", justifyContent: "center" },
     orbit: { position: "absolute" },
     heroFog: { position: "absolute", left: -40, right: -40, bottom: 20, height: 70 },
+    modes: { flexDirection: "row", gap: 8, marginTop: 4 },
+    modeOpt: { flex: 1, alignItems: "center", gap: 4, paddingVertical: 10, paddingHorizontal: 4, borderRadius: 14, backgroundColor: "#FFFFFF", borderWidth: 2, borderColor: "transparent" },
+    modeOn: { borderColor: "#2D7FF9", backgroundColor: "#E9F0FF" },
+    modeName: { fontFamily: "Archivo_600SemiBold", fontSize: 10.5, lineHeight: 13, color: COLOR.text2, textAlign: "center" },
+    modeDesc: { ...TYPE.body, fontSize: 13, lineHeight: 18, color: COLOR.text2, marginTop: 8 },
     avatars: { flexDirection: "row", gap: 10, marginBottom: 6 },
     avatarOpt: { flex: 1, aspectRatio: 1, maxWidth: 86, borderRadius: 20, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center", borderWidth: 3, borderColor: "transparent" },
     avatarOn: { borderColor: "#2D7FF9", backgroundColor: "#E9F0FF" },
