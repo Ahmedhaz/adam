@@ -1,6 +1,6 @@
 {
   "config": {
-    "base": "https://adam.ahmedhaz.com/fog/",
+    "base": "https://ahmedhaz.github.io/adam/fog/",
     "play_en": "../founder-fog/index.html",
     "play_ar": "../founder-fog/ar.html",
     "testflight_url": ""

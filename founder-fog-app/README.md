@@ -4,7 +4,7 @@ Founder Fog (the startup survival game) packaged as a mobile app, two ways.
 
 ## 1. Install from the web (PWA), no store needed
 The game lives in [`/founder-fog`](../founder-fog) and is served at
-`https://adam.ahmedhaz.com/founder-fog/` once this branch is on `main`.
+`https://ahmedhaz.github.io/adam/founder-fog/` once this branch is on `main`.
 
 - **iPhone:** open it in Safari → Share → *Add to Home Screen*
 - **Android:** open it in Chrome → ⋮ → *Install app*
