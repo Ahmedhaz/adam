@@ -2,7 +2,7 @@
     sector: "fintech",
     roles: { c1: "Top merchant", c2: "Merchant · founder" },
     insights: [
-      { area: "onboarding", text: "It took me 11 days and 6 documents to go live with you. The other gateway took 2 days." },
+      { area: "onboarding", text: "It took me 11 days and 6 documents to go live with you. The other gateway took two days." },
       { area: "pricing", text: "I don't really care about 2.2% or 1.9%. I care what day the money lands in my account." },
       { area: "feature", text: "Your dashboard shows payments. My accountant needs each payout matched to the orders inside it." },
       { area: "support", text: "When payments fail at 11pm on payday, I need a person on the phone, not a ticket number." },
