@@ -263,18 +263,22 @@ function (g, r, i, a, m, _e, d) {
           jsx(ScrollView, {
             style: { flex: 1 },
             contentContainerStyle: st.list,
-            children: CHALLENGES.map((c, idx) =>
+            // general challenges, then one per industry (those fix the market too)
+            children: CHALLENGES.concat((meta && meta.challenges) || []).map((c, idx) =>
               jsxs(
                 Touchable,
                 {
                   style: st.sector,
                   activeOpacity: 0.85,
                   dataSet: { ff: "rise" + Math.min(idx + 1, 4) },
-                  onPress: () => (setChallenge(c.id), setMode(c.mode), setStep(1)),
+                  onPress: () => (setChallenge(c.id), setMode(c.mode), c.sector ? (setSectorId(c.sector), setStep(2)) : setStep(1)),
                   children: [
                     jsxs(View, {
                       style: st.sectorTop,
-                      children: [jsx(View, { style: st.sectorIcon, children: jsx(Pic, { e: c.icon, size: 36 }) }), jsx(Text, { style: [st.sectorName, { flex: 1 }], children: c.name })],
+                      children: [
+                        jsx(View, { style: st.sectorIcon, children: jsx(Pic, { e: c.icon, size: 36 }) }),
+                        jsxs(View, { style: { flex: 1 }, children: [jsx(Text, { style: st.sectorName, children: c.name }), c.sector && jsx(Text, { style: st.desc, children: ICONS[c.sector] + "  " + sectorName(Engine.SECTORS.find((x) => x.id === c.sector) || {}) })] }),
+                      ],
                     }),
                     jsx(Text, { style: st.desc, children: c.goal }),
                   ],
@@ -363,7 +367,7 @@ function (g, r, i, a, m, _e, d) {
     return jsxs(View, {
       style: st.container,
       children: [
-        jsx(StepHeader, { step: 2, title: "Name your company", sub: ICONS[sector.id] + "  " + sectorName(sector), onBack: () => setStep(challenge === "daily" ? "daily" : 1) }),
+        jsx(StepHeader, { step: 2, title: "Name your company", sub: ICONS[sector.id] + "  " + sectorName(sector), onBack: () => setStep(challenge === "daily" ? "daily" : challenge && challenge.indexOf("sc_") === 0 ? "ch" : 1) }),
         jsxs(ScrollView, {
           style: { flex: 1 },
           contentContainerStyle: st.list,
@@ -385,7 +389,7 @@ function (g, r, i, a, m, _e, d) {
             jsx(Text, { style: st.inputLabel, children: "COMPANY" }),
             jsx(TextInput, { style: st.input, value: company, onChangeText: setCompany, placeholder: "Company name", placeholderTextColor: COLOR.text3, maxLength: 28 }),
             challenge && jsx(Text, { style: st.inputLabel, children: "CHALLENGE" }),
-            challenge && jsx(Text, { style: st.modeDesc, children: "🎯 " + (challenge === "daily" ? "Still running at week 26, with the highest valuation you can build. Your first try today goes on the leaderboard." : (CHALLENGES.find((c) => c.id === challenge) || {}).goal) }),
+            challenge && jsx(Text, { style: st.modeDesc, children: "🎯 " + (challenge === "daily" ? "Still running at week 26, with the highest valuation you can build. Your first try today goes on the leaderboard." : (CHALLENGES.concat((meta && meta.challenges) || []).find((c) => c.id === challenge) || {}).goal) }),
             !challenge && jsx(Text, { style: st.inputLabel, children: "DIFFICULTY" }),
             !challenge && jsx(View, {
               style: st.modes,
