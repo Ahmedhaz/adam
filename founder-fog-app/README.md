@@ -69,6 +69,19 @@ any repo. Enhancements are applied on top of it:
 - `enhance/tour.js` is the hands-on tutorial for week 1 of a guided game:
   three slides, then a spotlight that has the player hit the weekly target,
   use their action and press +1 Week themselves (`s.guide.tour`)
+- `enhance/targets.js` adds milestone weekly targets (first ten customers,
+  first hire, seed-ready, Series A story, default alive...) to the engine's
+  target generator (module 264), spliced in by `build.py`
+- `enhance/meta.js` is everything that outlives a run: trophies, founder
+  backgrounds unlocked across runs, the daily challenge (seeded by date,
+  26 weeks, one try a day), sound effects, and anonymous analytics.
+  Analytics and daily scores go to two Supabase tables in the a-wider-life
+  project: `ff_events` (insert-only for the public key) and
+  `ff_daily_scores` (insert + read, one row per device per day). Nothing is
+  sent when the page is served with a port (local dev), and players can turn
+  play statistics off under Trophies. Read the data in the Supabase SQL
+  editor, for example:
+  `select name, count(*) from ff_events group by 1 order by 2 desc;`
 - `enhance/build.py` applies small patches to the game engine and wraps the
   page for mobile (PWA head, safe areas)
 

@@ -235,6 +235,7 @@ function (g, r, i, a, m, _e, d) {
 // @include teach.js
 // @include guide.js
 // @include tour.js
+// @include meta.js
 
   function buildReport(before, after) {
     const rows = [
@@ -318,6 +319,8 @@ function (g, r, i, a, m, _e, d) {
     }, [S]);
 
     const notify = (text, kind) => {
+      if (kind === "ok") sfx("coin");
+      else if (kind === "bad") sfx("bad");
       toastTimer.current && clearTimeout(toastTimer.current);
       setToast({ text: text, kind: kind || "info", id: Date.now() });
       toastTimer.current = setTimeout(() => setToast(null), kind === "bad" ? 3200 : 2400);
@@ -344,14 +347,25 @@ function (g, r, i, a, m, _e, d) {
         children: jsx(StatusBar, { barStyle: "dark-content" }),
       });
 
-    const start = ({ founderName, companyName, sectorId, avatar, mode, challenge, guided }) => {
-      const eng = new Engine.StartupEngine(founderName, companyName, sectorId);
+    const start = ({ founderName, companyName, sectorId, avatar, mode, challenge, guided, background }) => {
+      // the daily challenge: same market, difficulty and luck for everyone today
+      const daily = challenge === "daily" ? dailyInfo() : null;
+      if (daily) (sectorId = daily.sectorId), (CHALLENGES.daily.mode = daily.mode);
+      const eng = withSeed(daily ? daily.n * 1009 : null, () => new Engine.StartupEngine(founderName, companyName, sectorId));
       eng.state.avatar = avatar || "avatar_m1";
+      if (daily) eng.state.daily = { day: daily.day, n: daily.n };
       ensureFeatureState(eng.state);
       if (challenge && CHALLENGES[challenge]) eng.state.challenge = challenge;
       applyMode(eng, challenge && CHALLENGES[challenge] ? CHALLENGES[challenge].mode : mode);
+      applyBackground(eng.state, daily ? "first" : background);
+      eng.recalculate();
+      // the welcome line was written before the mode and background changed the cash
+      const hello = (eng.state.journalLog || []).find((j) => j.week === 1);
+      if (hello && hello.text) hello.text = hello.text.replace(/\$[\d,]+/, "$" + Math.round(eng.state.cash).toLocaleString());
       setEndingOpen(false);
       startGuide(eng.state, !challenge && guided !== false);
+      const got = metaRunStart(eng.state);
+      if (got.length) setTimeout(() => notify(trophyToast(got), "ok"), 600);
       if (unlocked(eng.state, "inbox")) dealInbox(eng.state, 1);
       clearSave();
       setSaved(null);
@@ -377,7 +391,7 @@ function (g, r, i, a, m, _e, d) {
       setReport(null);
     };
 
-    if (!engine || !S) tourHide();
+    if (!engine || !S) tourHide(), trackOpen();
     if (!engine || !S)
       return jsxs(Screen, {
         style: st.container,
@@ -385,6 +399,13 @@ function (g, r, i, a, m, _e, d) {
           jsx(StatusBar, { barStyle: "dark-content" }),
           jsx(Onboarding.OnboardingScreen, {
             onStartGame: start,
+            meta: {
+              trophies: trophyCount() + "/" + TROPHIES.length,
+              daily: dailyInfo(),
+              backgrounds: BACKGROUNDS.map((b) => ({ id: b.id, icon: b.icon, name: b.name, desc: b.desc, how: b.how, unlocked: b.unlocked() })),
+              DailyPanel: DailyPanel,
+              TrophyPanel: TrophyPanel,
+            },
             saved: saved,
             onResume: resume,
             onDiscard: () => {
@@ -396,7 +417,7 @@ function (g, r, i, a, m, _e, d) {
       });
 
     // the report card first, then the original ending screen
-    if (S.gameOver || S.victory) tourHide();
+    if (S.gameOver || S.victory) tourHide(), metaRunEnd(engine.state), (S.metaTrophies = engine.state.metaTrophies);
     if ((S.gameOver || S.victory) && !endingOpen)
       return jsxs(View, { style: { flex: 1 }, children: [jsx(StatusBar, { barStyle: "dark-content" }), jsx(ReportCard, { S: S, onEnding: () => setEndingOpen(true), onRestart: () => (setEndingOpen(false), restart()) })] });
     if (S.gameOver || S.victory)
@@ -451,8 +472,12 @@ function (g, r, i, a, m, _e, d) {
       if (unlocked(next, "inbox")) dealInbox(next, next.pendingEvent ? 1 : 2);
       queueIntros(next);
       engine.recalculate();
+      const got = checkTrophies(next);
       setS({ ...next });
       buzz(12);
+      sfx(next.pendingEvent ? "alert" : "tick");
+      track("week", next, { mrr: Math.round(next.monthlyRevenue), cash: Math.round(next.cash), clarity: Math.round(next.mentalClarity), stage: next.stage, target: hitTarget });
+      if (got.length) setTimeout(() => notify(trophyToast(got), "ok"), 900);
       if (next.gameOver || next.victory) return;
       const rep = buildReport(before, next);
       if (ignored) addNote(rep, ["📭", (ignored === 1 ? "1 message went unanswered." : ignored + " messages went unanswered.") + (has(next, "delegator") ? " Delegator: no harm done." : ""), -1]);
@@ -588,6 +613,7 @@ function (g, r, i, a, m, _e, d) {
                 jsx(View, { style: st.stagePill, children: jsx(Text, { style: st.stagePillTxt, children: stageName }) }),
                 jsx(View, { style: st.expPill, children: jsx(Text, { style: st.expPillTxt, children: "Lv " + S.level }) }),
                 jsx(Touchable, { style: st.langBtn, onPress: switchLanguage, children: jsx(Text, { style: st.langBtnTxt, children: IS_AR ? "EN" : "عربي" }) }),
+                jsx(Touchable, { style: st.langBtn, onPress: () => (toggleSound(), setS({ ...engine.state })), accessibilityLabel: "Sound", children: jsx(Text, { style: st.langBtnTxt, children: META.sound ? "🔊" : "🔇" }) }),
               ],
             }),
           ],
@@ -1020,6 +1046,13 @@ function (g, r, i, a, m, _e, d) {
       busy: !!(report || S.pendingEvent || S.perkChoice || (S.teach && S.teach.note && mentorOn()) || inboxOpen || custOpen || moneyOpen || bookOpen),
       go: (step) => {
         if (!engine.state.guide) return;
+        const was = engine.state.guide.tour;
+        if (step) track("tutorial_step", engine.state, { step: step });
+        else track(was === "done" ? "tutorial_done" : "tutorial_skip", engine.state, { from: was });
+        if (!step && was === "done") {
+          const got = checkTrophies(engine.state, "tutorial");
+          if (got.length) setTimeout(() => notify(trophyToast(got), "ok"), 400);
+        }
         engine.state.guide.tour = step;
         if (!step) queueIntros(engine.state);
         setS({ ...engine.state });
