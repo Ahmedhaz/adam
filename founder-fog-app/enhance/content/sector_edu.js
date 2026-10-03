@@ -1,0 +1,80 @@
+  const SECTOR_EDU = {
+    sector: "edtech",
+    roles: { c1: "Hiring partner", c2: "Alumnus · hiring manager" },
+    insights: [
+      { area: "onboarding", text: "Week 2 decides everything. Students who miss two live sessions in a row almost never finish." },
+      { area: "pricing", text: "My father pays, so my father decides. Show him the salary table, not the syllabus." },
+      { area: "pricing", text: "I'd rather owe 12% of a salary I don't have yet than pay $2,400 I don't have now." },
+      { area: "feature", text: "Employers never read the certificate. They open the GitHub link and watch the capstone demo." },
+      { area: "channel", text: "Every student who enrolled this month heard about us from a graduate, not from an ad." },
+      { area: "support", text: "The scary part is after week 12. Career coaching then matters more than one more lecture now." },
+    ],
+    experiments: [
+      { id: "xs_edu_01", area: "pricing", title: "A $400 deposit plus income share, no full fee", win: { arpu: 5, users: 80, pmf: 4 }, winText: "Enrolments rose, and the deposit filtered out students who weren't serious. Completion held at last cohort's level.", lose: { churn: 0.5, pmf: 1 }, loseText: "More students signed up and fewer finished. The collections bill for this test arrives in a year." },
+      { id: "xs_edu_02", area: "onboarding", title: "A free two-week pre-course before anyone pays", win: { churn: -0.8, pmf: 5 }, winText: "Half the pre-course students dropped before paying. The half who paid finished at the best rate you've seen.", lose: { clarity: -3, pmf: 1 }, loseText: "Most pre-course students treated it as a free sample and never came back. Instructors taught two cohorts for one." },
+    ],
+    targets: [
+      {
+        id: "st_edu_01", urgency: 58, once: true,
+        when: (s) => s.sector.id === "edtech" && s.week >= 3 && s.week <= 12,
+        title: "📅 This Week: Fill the Cohort Before Its Start Date",
+        tasks: "• 8 of 20 seats are paid | • The start date is printed on every contract",
+        why: "A bootcamp's costs land on the start date: instructors, space, mentors. An empty seat on day one is revenue you never get back, and moving the date costs the trust of the students who already paid.",
+        strategies: [
+          { path: "bootstrap", title: "1. Call every applicant who stalled", desc: "You and Tariq phone the 60 applicants who started an application and stopped. Slow, personal and free.", cost: 0, tab: "Relationships", fx: { mentalClarity: -8, monthlyRevenue: 900, activeUsers: 40 }, log: "Sixty calls over four evenings. Most were waiting for a parent's yes. Seven paid by Thursday." },
+          { path: "capital", title: "2. Run an early-bird discount with paid ads", desc: "A $300 discount for anyone who pays this week, pushed with ads to last year's applicant list.", cost: 2500, tab: "Assets", fx: { monthlyRevenue: 1400, activeUsers: 90, arpu: -2 }, log: "The seats filled by Saturday. Two students who paid full price last week asked for the difference back." },
+          { path: "defensive", title: "3. Start with eight, merge with the next intake", desc: "Run the eight on time and fold them into the next cohort in week 4. Saves a full instructor's salary.", cost: 0, tab: "Departments", fx: { cash: 1500, teamMorale: -4, churnRate: 0.5 }, log: "The eight started on time. The merge in week 4 left them repeating two lessons, and one of them said so on LinkedIn." },
+        ],
+      },
+      {
+        id: "st_edu_02", urgency: 62, once: false,
+        when: (s) => s.sector.id === "edtech" && s.week >= 5 && s.week % 9 === 5,
+        title: "💸 This Week: Three Students Want Their Money Back",
+        tasks: "• Two are in week 3, one never logged in | • One parent threatens a public review",
+        why: "Bootcamp refund requests cluster in the first four weeks, when the work gets hard. A clear, fair policy protects both cash and reputation; arguing case by case burns both, and the parents all talk to each other.",
+        strategies: [
+          { path: "bootstrap", title: "1. Coach them through week 4 first", desc: "Each gets a one-to-one with an instructor and a 7-day pause before any refund. Most quitters are just stuck.", cost: 0, tab: "Journal", fx: { mentalClarity: -6, teamMorale: -2, churnRate: -0.5 }, log: "Two of the three stayed after the one-to-ones. The third had already started a job and only wanted the money." },
+          { path: "capital", title: "2. Refund all three in full today", desc: "No questions, no forms, money back by tonight. Expensive, and the story you want parents to tell.", cost: 2400, tab: "Assets", fx: { mentalClarity: 5, teamMorale: 2, activeUsers: -3 }, log: "All three refunds went out before 6pm. The parent who threatened a review posted a thank-you instead." },
+          { path: "defensive", title: "3. Write a pro-rata refund policy", desc: "Refund only the unused weeks, written into every contract from now on. Firm and fair, and not everyone will like it.", cost: 0, tab: "Departments", fx: { cash: 800, mentalClarity: -3, churnRate: 0.3 }, log: "The policy went into the contract template. The parent posted the review anyway, and quoted the new clause." },
+        ],
+      },
+      {
+        id: "st_edu_03", urgency: 50, once: false,
+        when: (s) => s.sector.id === "edtech" && s.week % 52 === 29,
+        title: "📈 This Week: The Back-to-School Rush Starts",
+        tasks: "• Applications doubled overnight | • Admissions can interview 40 people a week",
+        why: "In education a few weeks a year bring most of the demand: families decide around the school calendar and graduates job-hunt in autumn. If admissions can't keep up now, the quiet season starts with empty cohorts.",
+        strategies: [
+          { path: "bootstrap", title: "1. Everyone interviews, Tariq included", desc: "Instructors, engineers and you run admission interviews every evening for two weeks. The product waits.", cost: 0, tab: "Journal", fx: { monthlyRevenue: 1200, teamMorale: -5, techDebt: 4 }, log: "Ninety interviews in two weeks. Tariq turned out to be a strict examiner. The bug list grew by a third." },
+          { path: "capital", title: "2. Hire two temporary admissions advisors", desc: "Two experienced advisors on a three-month contract, trained on your admissions test in two days.", cost: 3000, tab: "Departments", fx: { monthlyRevenue: 2000, activeUsers: 150, mentalClarity: -2 }, log: "The advisors cleared the backlog in nine days. One of them admitted a student your test would have stopped." },
+          { path: "bold", title: "3. Open a second start date in October", desc: "Turn the overflow into a new cohort six weeks later. More revenue, if you can staff it.", cost: 1500, tab: "Assets", fx: { monthlyRevenue: 2200, churnRate: 0.6, teamMorale: -4 }, log: "The October cohort filled in a week. You still don't have its lead instructor." },
+        ],
+      },
+      {
+        id: "st_edu_04", urgency: 55, once: true,
+        when: (s) => s.sector.id === "edtech" && s.week >= 16 && s.monthlyRevenue >= 4000,
+        title: "🛠 This Week: Your AI Module Is Already Out of Date",
+        tasks: "• Employers ask about tools you don't teach | • The next cohort starts in 3 weeks",
+        why: "Tech curricula go stale in six to nine months. Employers test on what's used today, and graduates who learned last year's stack fail the take-home task. Your placement rate drops a full cohort before anyone sees why.",
+        strategies: [
+          { path: "bootstrap", title: "1. Instructors rewrite it on weekends", desc: "The teaching team rebuilds the module themselves over three weekends. Free, current, and tiring.", cost: 0, tab: "Journal", fx: { teamMorale: -8, mentalClarity: -3, churnRate: -0.4 }, log: "The new module shipped two days before the cohort started. One instructor asked if every quarter will be like this." },
+          { path: "capital", title: "2. Pay two working engineers to co-teach", desc: "Two engineers from hiring partners teach the new tools one evening a week and bring their own case studies.", cost: 3500, tab: "Relationships", fx: { churnRate: -0.8, arpu: 3, teamMorale: 2 }, log: "The guest engineers brought real code from production. One of them hired two students before the module ended." },
+          { path: "defensive", title: "3. Patch it now, rebuild after this cohort", desc: "Add two new lessons on top of the old module and plan the full rewrite for the quiet weeks.", cost: 0, tab: "Departments", fx: { mentalClarity: 2, techDebt: 6, churnRate: -0.2 }, log: "Two lessons were bolted on. Students noticed the module now contradicts itself in week 9." },
+        ],
+      },
+      {
+        id: "st_edu_05", urgency: 45, once: true,
+        when: (s) => s.sector.id === "edtech" && (s.stage >= 2 || s.week >= 30),
+        title: "🏛 This Week: The Accreditation Inspectors Visit",
+        tasks: "• Three inspectors, two days, 140 checklist items | • Accreditation unlocks funded students",
+        why: "Accreditation is slow, paper-heavy and changes little in the classroom. It also decides whether government programmes, HR departments and parents' bank loans will pay for your seats. Here, the stamp often matters as much as the skill.",
+        strategies: [
+          { path: "bootstrap", title: "1. Prepare the files yourself", desc: "You spend the week assembling attendance logs, instructor CVs and curriculum maps for 140 checklist items.", cost: 0, tab: "Journal", fx: { mentalClarity: -10, investorTrust: 3, monthlyRevenue: 800 }, log: "You passed with eleven conditions. Each one needs a document you didn't know existed." },
+          { path: "capital", title: "2. Hire a quality consultant who knows them", desc: "A consultant who has prepared twenty institutes for this exact inspection runs the visit with you.", cost: 4500, tab: "Relationships", fx: { investorTrust: 6, monthlyRevenue: 1800, mentalClarity: -2 }, log: "The consultant knew which inspector cares about fire exits. You passed with two minor notes." },
+          { path: "defensive", title: "3. Ask to postpone by one semester", desc: "Request a later visit and keep running as a licensed training centre for now.", cost: 0, tab: "Departments", fx: { mentalClarity: 4, investorTrust: -3, activeUsers: -50 }, log: "The visit moved to next semester. A government programme gave this year's seats to an accredited rival." },
+        ],
+      },
+    ],
+    challenge: { id: "sc_edu", icon: "🎓", name: "Keep the Placement Promise", goal: "Reach $12,000 monthly revenue with churn at or below 5.5% within 36 weeks, with cash still above zero.", mode: "venture", deadline: 36, done: (s) => s.monthlyRevenue >= 12000 && s.churnRate <= 5.5 && s.cash > 0 },
+    page: { id: "sector_edu", icon: "🎓", title: "Outcomes are the product", body: "A bootcamp doesn't sell lessons, it sells the job after them. Students, and the parents who pay, judge you on one number: how many graduates got hired, at what salary, how fast. Completion, instructors and employer partners all feed that number, and a placement guarantee turns it into a debt. This week, list every graduate of your last cohort with their job, salary and start date, and count honestly.", source: "Competing Against Luck, Clayton M. Christensen et al. (2016)" },
+  };

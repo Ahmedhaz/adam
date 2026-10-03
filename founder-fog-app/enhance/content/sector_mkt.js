@@ -18,7 +18,7 @@
         id: "st_mkt_01", urgency: 55, once: true,
         when: (s) => s.sector.id === "ecommerce_marketplace" && s.week >= 3 && s.week <= 12 && s.monthlyRevenue < 5000,
         title: "🧲 This Week: Get 30 Brands Live Before the Ads Run",
-        tasks: "• 11 brands are live and searches come back thin | • Paid social starts in 2 weeks",
+        tasks: "• 11 brands are live and searches come back thin | • Paid social starts in two weeks",
         why: "Thin supply wastes every ad dollar: buyers land, find three abayas and never return. Below $5k MRR, being complete in one category beats being thin everywhere. Fill one shelf before you buy traffic.",
         strategies: [
           { path: "bootstrap", title: "1. Visit 20 brands in person this week", desc: "Go to their home studios with a phone and a tripod. Sign them on the spot and shoot their products yourself.", cost: 0, tab: "Relationships", fx: { mentalClarity: -10, activeUsers: 150, monthlyRevenue: 400 }, log: "You signed 14 brands over cardamom coffee and shot 300 photos on your phone. Search finally returns real results." },
