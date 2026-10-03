@@ -21,7 +21,7 @@ for (const n of names) {
     for (const id of ids) {
       const x = v[id], w = n + "." + id;
       str(x.lesson, w + ".lesson", 160); str(x.example, w + ".example", 180); str(x.read, w + ".read", 80, false);
-      if (!PAGES.includes(x.page)) errors.push(w + ": unknown page " + x.page);
+      if (!PAGES.includes(x.page) && !/^sector_(saas|fin|mkt|health|edu)$/.test(x.page)) errors.push(w + ": unknown page " + x.page);
       for (const k of ["A", "B"]) {
         const sk = (x.skills || {})[k];
         if (!sk || typeof sk !== "object") { errors.push(w + ": skills." + k + " missing"); continue; }
