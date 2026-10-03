@@ -75,7 +75,7 @@ function (g, r, i, a, m, _e, d) {
     return { cash: cash, burnWeek: monthlyBurn / 4, runway: cash / monthlyBurn };
   }
 
-  function Title({ saved, onNew, onResume, onDiscard, onChallenges }) {
+  function Title({ saved, onNew, onResume, onDiscard, onChallenges, onDaily, onTrophies, meta }) {
     return jsxs(View, {
       style: st.titleWrap,
       dataSet: { ff: "sky" },
@@ -151,6 +151,25 @@ function (g, r, i, a, m, _e, d) {
               dataSet: { ff: "rise3" },
               children: jsx(Text, { style: [st.primaryTxt, st.secondaryTxt], children: "🎯 Challenges" }),
             }),
+            meta &&
+              jsxs(View, {
+                style: st.metaRow,
+                dataSet: { ff: "rise4" },
+                children: [
+                  jsxs(Touchable, {
+                    style: st.metaBtn,
+                    onPress: onDaily,
+                    activeOpacity: 0.85,
+                    children: [jsx(Pic, { e: "📅", size: 28 }), jsx(Text, { style: st.metaTxt, children: "Daily" }), jsx(Text, { style: st.metaSub, children: meta.daily.played ? "Played ✓" : "New today" })],
+                  }),
+                  jsxs(Touchable, {
+                    style: st.metaBtn,
+                    onPress: onTrophies,
+                    activeOpacity: 0.85,
+                    children: [jsx(Pic, { e: "🏆", size: 28 }), jsx(Text, { style: st.metaTxt, children: "Trophies" }), jsx(Text, { style: st.metaSub, children: meta.trophies })],
+                  }),
+                ],
+              }),
             saved &&
               jsx(Touchable, {
                 onPress: onDiscard,
@@ -184,7 +203,7 @@ function (g, r, i, a, m, _e, d) {
     });
   }
 
-  _e.OnboardingScreen = function ({ onStartGame, saved, onResume, onDiscard }) {
+  _e.OnboardingScreen = function ({ onStartGame, saved, onResume, onDiscard, meta }) {
     const [step, setStep] = React.useState(0),
       [sectorId, setSectorId] = React.useState(Engine.SECTORS[0].id),
       [founder, setFounder] = React.useState("Ahmed"),
@@ -192,6 +211,7 @@ function (g, r, i, a, m, _e, d) {
       [avatar, setAvatar] = React.useState("avatar_m1"),
       [mode, setMode] = React.useState("venture"),
       [challenge, setChallenge] = React.useState(null),
+      [background, setBackground] = React.useState("first"),
       [guided, setGuided] = React.useState(() => {
         try {
           return window.localStorage.getItem("founderFog.guided") !== "off";
@@ -207,7 +227,32 @@ function (g, r, i, a, m, _e, d) {
     };
 
     if (step === 0)
-      return jsx(Title, { saved: saved, onResume: onResume, onDiscard: onDiscard, onNew: () => (setChallenge(null), setStep(1)), onChallenges: () => setStep("ch") });
+      return jsx(Title, { saved: saved, meta: meta, onResume: onResume, onDiscard: onDiscard, onNew: () => (setChallenge(null), setStep(1)), onChallenges: () => setStep("ch"), onDaily: () => setStep("daily"), onTrophies: () => setStep("trophies") });
+
+    // the daily challenge and the trophy room; their panels come from App (meta.js)
+    if ((step === "daily" || step === "trophies") && meta) {
+      const daily = meta.daily;
+      return jsxs(View, {
+        style: st.container,
+        children: [
+          step === "daily"
+            ? jsx(StepHeader, { step: 1, title: "Daily challenge", sub: "Same market, same difficulty, same luck for everyone today. One try a day.", onBack: () => setStep(0) })
+            : jsx(StepHeader, { step: 1, title: "Trophies", sub: "Earned across every company you found. Some unlock new founder backgrounds.", onBack: () => setStep(0) }),
+          jsx(ScrollView, { style: { flex: 1 }, contentContainerStyle: st.list, children: jsx(step === "daily" ? meta.DailyPanel : meta.TrophyPanel, {}) }),
+          step === "daily" &&
+            jsx(View, {
+              style: st.footer,
+              children: jsx(Touchable, {
+                style: [st.primaryBtn, daily.played && { opacity: 0.4 }],
+                disabled: !!daily.played,
+                onPress: () => (setChallenge("daily"), setSectorId(daily.sectorId), setMode(daily.mode), setStep(2)),
+                activeOpacity: 0.85,
+                children: jsx(Text, { style: st.primaryTxt, children: daily.played ? "Come back tomorrow" : "Play today's challenge ▸" }),
+              }),
+            }),
+        ],
+      });
+    }
 
     // scenario challenges: one goal, a deadline, a fixed difficulty (rules in App's teach.js)
     if (step === "ch")
@@ -318,7 +363,7 @@ function (g, r, i, a, m, _e, d) {
     return jsxs(View, {
       style: st.container,
       children: [
-        jsx(StepHeader, { step: 2, title: "Name your company", sub: ICONS[sector.id] + "  " + sectorName(sector), onBack: () => setStep(1) }),
+        jsx(StepHeader, { step: 2, title: "Name your company", sub: ICONS[sector.id] + "  " + sectorName(sector), onBack: () => setStep(challenge === "daily" ? "daily" : 1) }),
         jsxs(ScrollView, {
           style: { flex: 1 },
           contentContainerStyle: st.list,
@@ -340,7 +385,7 @@ function (g, r, i, a, m, _e, d) {
             jsx(Text, { style: st.inputLabel, children: "COMPANY" }),
             jsx(TextInput, { style: st.input, value: company, onChangeText: setCompany, placeholder: "Company name", placeholderTextColor: COLOR.text3, maxLength: 28 }),
             challenge && jsx(Text, { style: st.inputLabel, children: "CHALLENGE" }),
-            challenge && jsx(Text, { style: st.modeDesc, children: "🎯 " + (CHALLENGES.find((c) => c.id === challenge) || {}).goal }),
+            challenge && jsx(Text, { style: st.modeDesc, children: "🎯 " + (challenge === "daily" ? "Still running at week 26, with the highest valuation you can build. Your first try today goes on the leaderboard." : (CHALLENGES.find((c) => c.id === challenge) || {}).goal) }),
             !challenge && jsx(Text, { style: st.inputLabel, children: "DIFFICULTY" }),
             !challenge && jsx(View, {
               style: st.modes,
@@ -358,6 +403,26 @@ function (g, r, i, a, m, _e, d) {
               ),
             }),
             !challenge && jsx(Text, { style: st.modeDesc, children: modeInfo.desc }),
+            // founder backgrounds, earned across runs (meta.js)
+            !challenge && meta && jsx(Text, { style: st.inputLabel, children: "BACKGROUND" }),
+            !challenge &&
+              meta &&
+              jsx(View, {
+                style: st.modes,
+                children: meta.backgrounds.map((b) =>
+                  jsxs(
+                    Touchable,
+                    {
+                      style: [st.modeOpt, b.id === background && st.modeOn, !b.unlocked && { opacity: 0.4 }],
+                      onPress: () => b.unlocked && setBackground(b.id),
+                      activeOpacity: 0.85,
+                      children: [jsx(Pic, { e: b.unlocked ? b.icon : "🔒", size: 30 }), jsx(Text, { style: [st.modeName, b.id === background && { color: "#2D7FF9" }], numberOfLines: 2, children: b.name })],
+                    },
+                    b.id,
+                  ),
+                ),
+              }),
+            !challenge && meta && jsx(Text, { style: st.modeDesc, children: (() => { const b = meta.backgrounds.find((x) => x.id === background) || meta.backgrounds[0]; return b.desc; })() }),
             !challenge &&
               jsxs(Touchable, {
                 style: st.guideRow,
@@ -419,7 +484,7 @@ function (g, r, i, a, m, _e, d) {
           children: jsx(Touchable, {
             style: [st.primaryBtn, !ready && { opacity: 0.4 }],
             disabled: !ready,
-            onPress: () => onStartGame({ founderName: founder.trim(), companyName: company.trim(), sectorId: sector.id, avatar: avatar, mode: mode, challenge: challenge, guided: guided }),
+            onPress: () => onStartGame({ founderName: founder.trim(), companyName: company.trim(), sectorId: sector.id, avatar: avatar, mode: mode, challenge: challenge, guided: guided, background: background }),
             activeOpacity: 0.85,
             children: jsx(Text, { style: st.primaryTxt, children: "Found " + (company.trim() || "the company") + " ▸" }),
           }),
@@ -430,6 +495,10 @@ function (g, r, i, a, m, _e, d) {
 
   const st = StyleSheet.create({
     container: { flex: 1, backgroundColor: COLOR.ink },
+    metaRow: { flexDirection: "row", gap: 10, marginTop: 10 },
+    metaBtn: { flex: 1, alignItems: "center", backgroundColor: "#FFFFFF", borderRadius: 16, paddingVertical: 10, borderWidth: 1, borderColor: COLOR.line },
+    metaTxt: { fontFamily: "Archivo_600SemiBold", fontSize: 14.5, color: COLOR.text, marginTop: 4 },
+    metaSub: { fontFamily: "Archivo_500Medium", fontSize: 12, color: COLOR.text3, marginTop: 1 },
     heroArt: { width: 260, height: 210, alignItems: "center", justifyContent: "center" },
     orbit: { position: "absolute" },
     heroFog: { position: "absolute", left: -40, right: -40, bottom: 20, height: 70 },

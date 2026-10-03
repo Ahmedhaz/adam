@@ -298,6 +298,7 @@ def main():
         n = bundle.count(old)
         assert n == 1, f"patch '{why}' matched {n} times"
         bundle = bundle.replace(old, new)
+    bundle = splice_targets(bundle)
 
     global HEAD
     HEAD = HEAD.replace("</style>", "  /* 3D pictures */\n" + pics_css() + "\n</style>", 1)
@@ -307,6 +308,16 @@ def main():
     # 3. Arabic build: same bundle with visible strings swapped (translate.mjs), right-to-left
     if DICT_AR.exists():
         build_arabic(bundle)
+
+
+def splice_targets(bundle):
+    """Add the milestone targets (targets.js) to the engine's weekly target generator (module 264)."""
+    body = "\n".join(l for l in (HERE / "targets.js").read_text(encoding="utf-8").splitlines() if not l.startswith("//"))
+    helpers = 'function once(e,i){return!(e.msDone||[]).includes(i)}function done(e,i){(e.msDone=e.msDone||[]).includes(i)||e.msDone.push(i)}'
+    for anchor, new in (('const l=[{id:"runway_crisis"', helpers + 'const l=[{id:"runway_crisis"'), ('{id:"growth_push",', body + '\n{id:"growth_push",')):
+        assert bundle.count(anchor) == 1, f"target splice anchor: {anchor}"
+        bundle = bundle.replace(anchor, new)
+    return bundle
 
 
 def arabic_head():

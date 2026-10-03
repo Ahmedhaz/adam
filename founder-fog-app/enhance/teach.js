@@ -211,6 +211,7 @@
             },
             "end",
           ),
+          jsx(MetaReport, { S: S }, "meta"),
           tp &&
             jsxs(
               View,
