@@ -51,7 +51,7 @@
       title: "Northwind wants 1.4% or it moves to PayNest",
       desc: "Northwind Retail is 38% of the volume you process. You charge 2.1% plus $0.30; PayNest quoted them 1.4% plus $0.20 a payment. Interchange and scheme fees already cost you about 1.1%.",
       when: (s) => s.sector.id === "fintech" && s.mkt.licensed === true && s.monthlyRevenue >= 4000,
-      A: { title: "Match 1.4% on a 2-year contract", fx: { mrrPct: -0.1, arpu: -2, churn: -0.4, clarity: 2 }, log: "Northwind signed for 2 years. Your margin on their volume is now 0.3 points.",
+      A: { title: "Match 1.4% on a two-year contract", fx: { mrrPct: -0.1, arpu: -2, churn: -0.4, clarity: 2 }, log: "Northwind signed for two years. Your margin on their volume is now 0.3 points.",
            echo: { after: [8, 18], icon: "📨", title: "Three merchants ask for the Northwind price", text: "A Northwind supplier asked Omar what you charge them. Now three merchants want 1.4%, and one has the figure in writing.", fx: { arpu: -2, mrrPct: -0.04, clarity: -3 } } },
       B: { title: "Hold 1.9% and offer next-day settlement", fx: { cash: -3000, arpu: 1, clarity: -3, pmf: 1 }, log: "Northwind's finance team liked being paid the next morning. They asked for a week to think.",
            echo: { after: [6, 14], icon: "📉", title: "Northwind splits its volume", text: "Northwind moved its online store to PayNest and kept its branches with you. It is now 21% of your volume, not 38%.", fx: { mrrPct: -0.09, pmf: 2, clarity: 3 } } },

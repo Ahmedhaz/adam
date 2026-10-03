@@ -1,0 +1,58 @@
+  const NOTES_SAAS = {
+    dl_saas_01: {
+      lesson: "A free pilot with no success metric, no end date and no agreed price is a science project. Agree all three before you switch anything on.",
+      example: "Enterprise AI buyers often run several vendor pilots at once. The ones that convert usually had a finance sponsor and a conversion price agreed on day one.",
+      read: "Mastering the Complex Sale, Jeff Thull",
+      page: "pricing",
+      skills: { A: { discovery: 1, frugality: -1 }, B: { frugality: 1, discovery: -1 } },
+    },
+    dl_saas_02: {
+      lesson: "In enterprise AI, the question about training on their data is a sales question. Have a short, written, true answer before the first meeting.",
+      example: "In 2023 Samsung restricted staff use of public chatbots after engineers pasted source code into one. Enterprise legal teams still bring that story to every AI vendor call.",
+      read: "Competing in the Age of AI, Marco Iansiti and Karim Lakhani",
+      page: "security",
+      skills: { A: { integrity: 1, frugality: -1 }, B: { frugality: 1, discovery: 1 } },
+    },
+    dl_saas_03: {
+      lesson: "An agent that can't say it doesn't know will eventually invent something in front of the wrong person. Build evaluations before you add features.",
+      example: "In 2024 a Canadian tribunal held Air Canada liable for a refund policy its website chatbot made up, rejecting the argument that the bot was responsible for itself.",
+      read: "Designing Machine Learning Systems, Chip Huyen",
+      page: "sector_saas",
+      skills: { A: { integrity: 1, discovery: 1 }, B: { frugality: 1 } },
+    },
+    dl_saas_04: {
+      lesson: "In AI software, your costs move with usage. If your price doesn't move with usage too, your best customers become your least profitable ones.",
+      example: "Many AI startups found that their heaviest users on flat plans were losing them money. Usage tiers and per-task pricing spread fast across the industry after 2023.",
+      read: "The New Business of AI, Martin Casado and Matt Bornstein",
+      page: "sector_saas",
+      skills: { A: { frugality: 1, discovery: -1 }, B: { discovery: 1, selfcare: -1 } },
+    },
+    dl_saas_05: {
+      lesson: "One model provider is one supplier: fine until the price, the version or the uptime changes. Keep an exit you have actually tested, not one on a slide.",
+      example: "In January 2024 OpenAI retired its older GPT-3 completion models. Teams that had tuned prompts to them had to re-test and migrate their products.",
+      read: "7 Powers, Hamilton Helmer",
+      page: "sector_saas",
+      skills: { A: { frugality: 1 }, B: { discovery: 1, frugality: -1 } },
+    },
+    dl_saas_06: {
+      lesson: "A contract held up by one champion is one resignation away from a tender. Know at least three people in every account who would miss you.",
+      example: "Enterprise sales teams treat a champion changing jobs as a top churn signal. The good ones follow the champion to the new company and rebuild the old account.",
+      read: "The Challenger Sale, Matthew Dixon and Brent Adamson",
+      page: "churn",
+      skills: { A: { discovery: 1, selfcare: -1 }, B: { fundraising: 1, discovery: -1 } },
+    },
+    dl_saas_07: {
+      lesson: "An on-prem deal buys a second product you must maintain forever. Price it for the second team you'll need, or offer the closest cloud option first.",
+      example: "Many enterprise software companies built an on-prem edition for one large client and watched every release slow down for everyone else afterwards.",
+      read: "Crossing the Chasm, Geoffrey Moore",
+      page: "custom_work",
+      skills: { A: { frugality: 1, discovery: -1 }, B: { discovery: 1, fundraising: -1 } },
+    },
+    dl_saas_08: {
+      lesson: "Services revenue pays the bills and lowers your valuation multiple. Report software and services margins separately so you see which company you're becoming.",
+      example: "Investors usually value services revenue at a fraction of recurring software revenue, so two companies with the same revenue can be worth very different amounts.",
+      read: "SaaS Metrics 2.0, David Skok",
+      page: "sector_saas",
+      skills: { A: { fundraising: 1, frugality: -1 }, B: { frugality: 1, fundraising: -1 } },
+    },
+  };

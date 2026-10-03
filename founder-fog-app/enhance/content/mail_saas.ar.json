@@ -1,0 +1,35 @@
+{
+  "📧 Yasmin · PromptOps Cloud": "📧 ياسمين · PromptOps Cloud",
+  "Your AI agents aren't enterprise-ready without us": "وكلاؤك الأذكياء ليسوا جاهزين للشركات من دوننا",
+  "Observability, evals, guardrails and red-teaming in one platform, $1,400 a month. Most AI startups fail InfoSec without it. 20 minutes on Thursday?": "مراقبة واختبارات وضوابط أمان واختبار اختراق في منصة واحدة، $1,400 شهريًا. معظم شركات الذكاء الاصطناعي تفشل في مراجعة أمن المعلومات بدونها. 20 دقيقة يوم الخميس؟",
+  "Book the demo": "احجز العرض",
+  "Twenty minutes became fifty. The dashboard looked great and needed 3 months of integration you don't have.": "العشرون دقيقة صارت خمسين. لوحة المتابعة جميلة، وتحتاج 3 أشهر من الربط لا تملكها.",
+  "Archive": "أرشفة",
+  "Archived. Your evals are 400 questions in a spreadsheet, and they work.": "تمت الأرشفة. اختباراتك 400 سؤال في جدول بيانات، وهي تعمل.",
+
+  "🏛 National Data Office · Compliance": "🏛 المكتب الوطني للبيانات · الامتثال",
+  "AI processors of personal data must register": "على من يعالج البيانات الشخصية بالذكاء الاصطناعي أن يسجّل",
+  "Companies using AI to process personal data must register, name a data protection officer and file an impact assessment within 30 days.": "على الشركات التي تعالج البيانات الشخصية بالذكاء الاصطناعي أن تسجّل، وتعيّن مسؤولًا لحماية البيانات، وتقدّم تقييم أثر خلال 30 يومًا.",
+  "Register and file it properly": "سجّل وقدّم الملف كما يجب",
+  "A lawyer, two weeks and a 31-page assessment. Your registration number now opens every security questionnaire you answer.": "محامٍ وأسبوعان وتقييم من 31 صفحة. رقم تسجيلك صار الآن أول سطر في كل استبيان أمني تجيب عنه.",
+  "Wait until a client asks": "انتظر حتى يطلبه عميل",
+  "You parked it. Two weeks later a bank's procurement asked for the registration number, and onboarding paused.": "أجّلته. بعد أسبوعين طلبت مشتريات أحد البنوك رقم التسجيل، فتوقف إعداد الحساب.",
+  "A bank's procurement asked for your registration number. You didn't have one, and their onboarding stopped there.": "طلبت مشتريات أحد البنوك رقم تسجيلك. لم يكن لديك رقم، فتوقف إعداد الحساب عند هذه النقطة.",
+
+  "☁ Rami · Regional cloud, partnerships": "☁ رامي · سحابة إقليمية، الشراكات",
+  "$20,000 in credits if you host your agents with us": "رصيد بقيمة $20,000 إن استضفت وكلاءك عندنا",
+  "Credits for 12 months, GPUs in-country, and co-selling to our banking clients. One condition: we are your exclusive cloud for 2 years.": "رصيد لمدة 12 شهرًا، ومعالجات رسومية داخل الدولة، وبيع مشترك لعملائنا من البنوك. شرط واحد: نكون سحابتك الحصرية لمدة 2 سنة.",
+  "Take the credits and the deal": "خذ الرصيد والصفقة",
+  "Migration took Tariq 5 weeks. Their sales team introduced you to 2 banks. You're on their cloud for the next 2 years.": "استغرق النقل من طارق 5 أسابيع. فريق مبيعاتهم عرّفك على 2 من البنوك. وأنت على سحابتهم طوال الـ 2 سنة القادمة.",
+  "Decline the exclusivity": "ارفض الحصرية",
+  "Rami came back with $8,000 in credits and no exclusivity. No co-selling either.": "عاد رامي بعرض رصيد $8,000 دون حصرية. ودون بيع مشترك أيضًا.",
+
+  "🤝 Omar Sabry · Design partner": "🤝 عمر صبري · شريك التصميم",
+  "Your agent answered a Saudi customer in Egyptian again": "وكيلك ردّ على عميل سعودي باللهجة المصرية مرة أخرى",
+  "Third time this week. Our Riyadh customers write in Khaleeji and Arabizi, and the agent replies like a Cairo call centre. My team is screenshotting it.": "ثالث مرة هذا الأسبوع. عملاؤنا في الرياض يكتبون بالخليجي وبالفرانكو، والوكيل يرد كأنه مركز اتصال في القاهرة. فريقي يلتقط صورًا للشاشة.",
+  "Build a dialect test set with him": "ابنِ معه مجموعة اختبار للهجات",
+  "Omar's team sent 1,200 real tickets. Tariq built a dialect test set. Accuracy in Khaleeji went from 71% to 88%.": "أرسل فريق عمر 1,200 تذكرة حقيقية. بنى طارق مجموعة اختبار للهجات. الدقة بالخليجي ارتفعت من 71% إلى 88%.",
+  "Force all replies to formal Arabic": "اجعل كل الردود بالفصحى",
+  "Every reply now comes in formal Arabic. No more Egyptian. Omar says it sounds like a government letter.": "كل رد الآن بالفصحى. لا مصري بعد اليوم. عمر يقول إنها تشبه خطابًا حكوميًا.",
+  "Omar's team switched the agent to English only. Usage in Riyadh dropped by a third.": "حوّل فريق عمر الوكيل إلى الإنجليزية فقط. الاستخدام في الرياض انخفض بمقدار الثلث."
+}

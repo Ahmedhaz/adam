@@ -1,0 +1,58 @@
+  const NOTES_EDU = {
+    dl_edu_01: {
+      lesson: "Your first cohort is research you get paid for. Nine graduates who succeed will sell the next fifteen seats better than any ad.",
+      example: "Many bootcamps that now run cohorts of hundreds started with a handful of students in a borrowed room, and grew on their graduates' word of mouth.",
+      read: "Do Things That Don't Scale, Paul Graham",
+      page: "do_things",
+      skills: { A: { discovery: 1, frugality: -1 }, B: { frugality: 1, discovery: -1 } },
+    },
+    dl_edu_02: {
+      lesson: "In education the payer and the learner are often different people. Admit the student, not the wallet, and put the parent's expectations in writing.",
+      example: "Across the Gulf and Egypt, parents fund much of private education and judge it by certificates and jobs, so a weak admit often becomes a loud refund request.",
+      read: "The Case Against Education, Bryan Caplan",
+      page: "sector_edu",
+      skills: { A: { frugality: 1, integrity: -1 }, B: { integrity: 1, discovery: 1 } },
+    },
+    dl_edu_03: {
+      lesson: "Students experience your instructors, not your brand. Pay the best ones well, and build a bench so no one person can walk out with a cohort.",
+      example: "Bootcamps regularly lose top instructors to the employers they train for. The ones that cope have assistants teaching a module from their first month.",
+      read: "Teach Like a Champion, Doug Lemov",
+      page: "delegation",
+      skills: { A: { hiring: 1, frugality: -1 }, B: { frugality: 1, hiring: -1 } },
+    },
+    dl_edu_04: {
+      lesson: "A placement rate is only as good as its definition. Publish the method with the number, because sooner or later a graduate will count for you.",
+      example: "In the late 2010s a group of US coding bootcamps created CIRR, a shared standard for reporting outcomes, after years of placement claims nobody could compare.",
+      read: "How to Lie with Statistics, Darrell Huff",
+      page: "sector_edu",
+      skills: { A: { integrity: -1 }, B: { integrity: 1, discovery: 1 } },
+    },
+    dl_edu_05: {
+      lesson: "A placement guarantee is a liability that rests on other companies' hiring plans. Spread it across many employers before the economy tests it.",
+      example: "When tech hiring slowed in 2022 and 2023, bootcamps that leaned on a few big hiring partners saw placement rates fall within a single cohort.",
+      read: "Antifragile, Nassim Nicholas Taleb",
+      page: "sector_edu",
+      skills: { A: { discovery: 1, frugality: -1 }, B: { frugality: 1, integrity: -1 } },
+    },
+    dl_edu_06: {
+      lesson: "An income-share agreement is a loan with a friendlier name. Collections are part of your product, and how you collect is part of your brand.",
+      example: "In 2024 a US regulator barred BloomTech, formerly Lambda School, from consumer lending after finding it had misled students about its income-share financing.",
+      read: "Never Split the Difference, Chris Voss",
+      page: "unit_economics",
+      skills: { A: { frugality: 1 }, B: { integrity: 1, discovery: 1 } },
+    },
+    dl_edu_07: {
+      lesson: "Government money is real, slow and paper-heavy. Price in the payment delay and the reporting staff before you count the seats.",
+      example: "Upskilling programmes across the Gulf fund thousands of seats a year; providers that win them usually need months of working capital to wait for payment.",
+      read: "Seeing Like a State, James C. Scott",
+      page: "mena_regulation",
+      skills: { A: { fundraising: 1, frugality: -1 }, B: { frugality: 1, fundraising: -1 } },
+    },
+    dl_edu_08: {
+      lesson: "Corporate training pays faster and steadier than students do, but it borrows your best teachers. Decide which business you are before it decides for you.",
+      example: "Many bootcamps added corporate training to survive slow intake years. For several it became the main business while the public bootcamp quietly shrank.",
+      read: "Good Strategy Bad Strategy, Richard Rumelt",
+      page: "pivot",
+      skills: { A: { frugality: 1, discovery: -1 }, B: { discovery: 1 } },
+    },
+  };
