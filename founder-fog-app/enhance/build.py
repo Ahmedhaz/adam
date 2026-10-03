@@ -314,7 +314,9 @@ def splice_targets(bundle):
     """Add the milestone targets (targets.js) to the engine's weekly target generator (module 264)."""
     body = "\n".join(l for l in (HERE / "targets.js").read_text(encoding="utf-8").splitlines() if not l.startswith("//"))
     helpers = 'function once(e,i){return!(e.msDone||[]).includes(i)}function done(e,i){(e.msDone=e.msDone||[]).includes(i)||e.msDone.push(i)}'
-    for anchor, new in (('const l=[{id:"runway_crisis"', helpers + 'const l=[{id:"runway_crisis"'), ('{id:"growth_push",', body + '\n{id:"growth_push",')):
+    # App adds each industry's targets at load time through __addTemplates (sectors.js)
+    hook = ';_e.__addTemplates=function(a){l.splice(l.length-1,0,...a)};_e.__helpers={o:o,t:t,n:n,u:u}},264,[]);'
+    for anchor, new in (('const l=[{id:"runway_crisis"', helpers + 'const l=[{id:"runway_crisis"'), ('{id:"growth_push",', body + '\n{id:"growth_push",'), ('const h=l.map(e=>e.id)},264,[]);', 'const h=l.map(e=>e.id)' + hook)):
         assert bundle.count(anchor) == 1, f"target splice anchor: {anchor}"
         bundle = bundle.replace(anchor, new)
     return bundle

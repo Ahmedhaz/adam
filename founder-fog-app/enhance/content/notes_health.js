@@ -1,0 +1,58 @@
+  const NOTES_HEALTH = {
+    dl_health_01: {
+      lesson: "In telehealth your supply is doctor-hours, and demand peaks when clinics are closed. Staff the hours your patients worry, not the hours doctors like.",
+      example: "Most virtual clinics that grew started with moonlighting hospital doctors, then learned the evening and weekend shifts needed their own paid, dedicated roster.",
+      read: "The Innovator's Prescription, Clayton Christensen et al.",
+      page: "sector_health",
+      skills: { A: { discovery: 1, frugality: -1 }, B: { frugality: 1, discovery: -1 } },
+    },
+    dl_health_02: {
+      lesson: "When patient ratings drive bookings, doctors learn to prescribe for the review. Measure clinical quality separately, or ratings will quietly set your medicine.",
+      example: "A study of US direct-to-consumer telemedicine found children with respiratory infections were prescribed antibiotics more often than at their paediatrician's office.",
+      read: "How Doctors Think, Jerome Groopman",
+      page: "ethics",
+      skills: { A: { integrity: 1, hiring: -1 }, B: { hiring: 1, integrity: -1 } },
+    },
+    dl_health_03: {
+      lesson: "An insurer contract trades price and cash timing for volume. Model the 90-day wait and the rejection rate before you celebrate the member count.",
+      example: "Health startups across the region have run out of cash while profitable on paper, waiting for insurers to settle claims coded the wrong way.",
+      read: "Redefining Health Care, Michael Porter and Elizabeth Teisberg",
+      page: "sector_health",
+      skills: { A: { fundraising: 1, frugality: -1 }, B: { frugality: 1, discovery: -1 } },
+    },
+    dl_health_04: {
+      lesson: "A medical device that measures wrong is worse than no device: doctors act on it. Validate every batch before it ships, not after a patient feels it.",
+      example: "Many home blood pressure monitors sold online have never passed a formal validation protocol, which is why clinical groups publish lists of validated devices.",
+      read: "The Checklist Manifesto, Atul Gawande",
+      page: "crisis",
+      skills: { A: { integrity: 1, frugality: -1 }, B: { frugality: 1, integrity: -1 } },
+    },
+    dl_health_05: {
+      lesson: "Employers pay for wellness, but employees only engage if they trust their health data stays away from their boss. Guard that line, it is your engagement.",
+      example: "Corporate wellness programmes often show low engagement; surveys of employees repeatedly name fear of the employer seeing their data as a reason to stay away.",
+      read: "The Digital Doctor, Robert Wachter",
+      page: "security",
+      skills: { A: { integrity: 1, discovery: -1 }, B: { discovery: 1, integrity: -1 } },
+    },
+    dl_health_06: {
+      lesson: "A medical director is not just a hire: your licence, your insurer and your hospital partners lean on that name. Price keeping them against replacing them.",
+      example: "Hospitals in the Gulf compete hard for experienced consultants, and digital health startups often lose their first clinical leads to a department-head offer.",
+      read: "Slicing Pie, Mike Moyer",
+      page: "vesting",
+      skills: { A: { hiring: 1, fundraising: -1 }, B: { frugality: 1, hiring: -1 } },
+    },
+    dl_health_07: {
+      lesson: "In medicine, the words on your marketing define your regulatory class. Software that diagnoses is a device; software that helps a doctor decide is a tool.",
+      example: "Babylon Health's claims for its AI symptom checker drew public criticism from doctors, and the company collapsed in 2023 after years of promising more than it proved.",
+      read: "Deep Medicine, Eric Topol",
+      page: "sector_health",
+      skills: { A: { fundraising: 1, integrity: -1 }, B: { integrity: 1, fundraising: -1 } },
+    },
+    dl_health_08: {
+      lesson: "Every clinical service will have a bad outcome. What buyers and regulators judge is whether you found it, learned from it and wrote it down.",
+      example: "Since the report To Err Is Human, hospitals have been pushed to report and review errors openly, because hidden mistakes tend to repeat.",
+      read: "To Err Is Human, Institute of Medicine",
+      page: "crisis",
+      skills: { A: { integrity: 1, frugality: -1 }, B: { frugality: 1, integrity: -1 } },
+    },
+  };

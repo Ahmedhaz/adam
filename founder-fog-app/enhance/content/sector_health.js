@@ -1,0 +1,80 @@
+  const SECTOR_HEALTH = {
+    sector: "healthtech",
+    roles: { c1: "Corporate wellness client", c2: "Care-plan patient" },
+    insights: [
+      { area: "onboarding", text: "\"I unboxed the cuff, then waited three days for someone to tell me if my first reading was bad.\"" },
+      { area: "pricing", text: "\"My company pays for the app. I'd pay myself for one thing: a doctor who already knows my numbers.\"" },
+      { area: "feature", text: "\"I stopped measuring when nobody reacted. If my sugar is high, I want a human to notice that week.\"" },
+      { area: "channel", text: "Our best patients came from their own GP. Not one of the ads brought a patient who stayed past month two." },
+      { area: "support", text: "\"My father can't pair Bluetooth. Half the calls to support are from his children, not from him.\"" },
+      { area: "pricing", text: "\"HR asked if they could pay only for staff who actually use it. They can see the engagement report too.\"" },
+    ],
+    experiments: [
+      { id: "xs_health_01", area: "support", title: "A nurse calls after three missed readings", win: { churn: -0.6, pmf: 5, arpu: 2 }, winText: "Patients who got the call measured again within days. Several said it was the first time a service checked on them.", lose: { clarity: -3, pmf: 1 }, loseText: "Most calls went to voicemail. The patients who answered were the ones still measuring anyway." },
+      { id: "xs_health_02", area: "pricing", title: "Bill employers per active patient, not per head", win: { arpu: 4, pmf: 4, trust: 2 }, winText: "Two HR heads signed faster because they only pay for staff who measure. Your team started caring about engagement.", lose: { arpu: -3, churn: 0.3, pmf: 0 }, loseText: "Engagement stayed at 12%. Revenue per company fell by half and nobody's behaviour changed." },
+    ],
+    targets: [
+      {
+        id: "st_health_01", urgency: 64, once: true,
+        when: (s) => s.sector.id === "healthtech" && s.week >= 3 && s.week <= 12,
+        title: "🛡 This Week: Get Malpractice Cover in Place",
+        tasks: "• A partner clinic asked for your policy number | • Two doctors won't take calls without cover",
+        why: "In telehealth every call is a clinical act. No hospital, insurer or serious doctor will work with you until each consultation is covered by malpractice insurance, and the policy must match the specialties and countries you serve.",
+        strategies: [
+          { path: "bootstrap", title: "1. Ride on each doctor's personal policy", desc: "Ask doctors to extend their own hospital cover to your calls. Free, but patchy, and some policies exclude telehealth.", cost: 0, tab: "Relationships", fx: { mentalClarity: -6, monthlyRevenue: 300, teamMorale: -3 }, log: "Four doctors sent their certificates. Two policies excluded remote consultations, so those doctors now only do follow-ups." },
+          { path: "capital", title: "2. Buy a group telehealth policy", desc: "One company policy that covers every doctor on the platform. Expensive, but every call is covered from Monday.", cost: 3500, tab: "Assets", fx: { monthlyRevenue: 900, investorTrust: 4, mentalClarity: 4 }, log: "The broker placed a group policy on Thursday. The partner clinic received the certificate the same afternoon and booked a launch date." },
+          { path: "defensive", title: "3. Limit calls to follow-ups until cover lands", desc: "No new diagnoses on video for now: only follow-ups of existing patients. Safer, but growth pauses.", cost: 0, tab: "Departments", fx: { churnRate: -0.5, activeUsers: -60, mentalClarity: 3 }, log: "First consultations went back to the clinics. Follow-ups continued, and the doctors stopped asking about cover." },
+        ],
+      },
+      {
+        id: "st_health_02", urgency: 52, once: false,
+        when: (s) => s.sector.id === "healthtech" && s.week >= 6 && s.week % 7 == 3 && s.activeUsers >= 100,
+        title: "📉 This Week: Patients Stopped Measuring",
+        tasks: "• 41% of patients sent no reading in 14 days | • Employers will see it in the next report",
+        why: "Remote monitoring only works if patients measure. Adherence falls fast after the first month, and a patient who stops measuring stops seeing the value, then stops paying. Silence in the data is your earliest churn signal.",
+        strategies: [
+          { path: "bootstrap", title: "1. Founders call the silent patients", desc: "You and Tariq phone the quiet ones yourselves. Cheap, and you will hear why they stopped.", cost: 0, tab: "Journal", fx: { mentalClarity: -8, churnRate: -0.6, arpu: 1 }, log: "Two evenings of calls. The top reason was a confusing reminder at 6am. The second was 'nobody looks at my numbers anyway'." },
+          { path: "capital", title: "2. Hire a care coordinator nurse", desc: "A nurse owns adherence: calls, WhatsApp check-ins, escalation to doctors. Costly, but it compounds.", cost: 2800, tab: "Departments", fx: { churnRate: -1.2, monthlyRevenue: 600, teamMorale: 3 }, log: "Nurse Huda started on Sunday with a list of 140 names. By the end of the month two in three were measuring again." },
+          { path: "bold", title: "3. Doctors reply to every abnormal reading", desc: "Promise a doctor's note within 24 hours of any high reading. Patients feel watched; doctors feel stretched.", cost: 1200, tab: "Relationships", fx: { churnRate: -0.9, teamMorale: -5, activeUsers: 80 }, log: "Patients started measuring to get the reply. The doctors' queue doubled, and Dr. Mona asked who covers weekends." },
+        ],
+      },
+      {
+        id: "st_health_03", urgency: 60, once: false,
+        when: (s) => s.sector.id === "healthtech" && s.monthlyRevenue > 3000 && s.week % 8 == 5,
+        title: "💸 This Week: Chase the Insurer's Unpaid Claims",
+        tasks: "• $11,000 in claims older than 90 days | • 18% came back with coding errors",
+        why: "Insurer revenue is real only when it lands. Claims rejected for a wrong code or missing note sit unpaid for months, and a healthtech company can be growing on paper while running out of cash in the bank.",
+        strategies: [
+          { path: "bootstrap", title: "1. Recode and resubmit them yourself", desc: "A weekend with the rejection letters and the coding manual. Free, slow, and you learn exactly what the insurer wants.", cost: 0, tab: "Journal", fx: { mentalClarity: -9, cash: 4000 }, log: "You resubmitted 63 claims. Most rejections were the same missing field. The insurer paid part of them within three weeks." },
+          { path: "capital", title: "2. Hire a revenue cycle agency", desc: "Specialists who recode, appeal and chase, for a share of what they recover. Faster cash, smaller margin.", cost: 2000, tab: "Assets", fx: { cash: 7000, arpu: -1, mentalClarity: 4 }, log: "The agency recovered most of the backlog in a month and fixed your claim template. Their fee came out of every payment." },
+          { path: "defensive", title: "3. Make doctors code claims at the call", desc: "No consult note closes without a diagnosis code. Fewer rejections later, more clicks for doctors now.", cost: 500, tab: "Departments", fx: { churnRate: 0.3, teamMorale: -4, cash: 2500 }, log: "Tariq made the code field mandatory. Rejections dropped sharply. Two doctors complained the note now takes longer than the call." },
+        ],
+      },
+      {
+        id: "st_health_04", urgency: 48, once: true,
+        when: (s) => s.sector.id === "healthtech" && s.monthlyRevenue > 5000 && s.week >= 14,
+        title: "🧪 This Week: Build the Evidence a Hospital Will Buy",
+        tasks: "• A hospital group wants outcome data | • 'Show us blood pressure falling, not app downloads'",
+        why: "Hospitals and insurers don't buy features; they buy outcomes they can defend to their own boards. Six months of clean, before-and-after data on blood pressure or HbA1c is worth more than any sales deck in this industry.",
+        strategies: [
+          { path: "bootstrap", title: "1. Publish your own six-month cohort", desc: "Pull your existing patients' readings and write it up honestly. Free, but buyers trust self-reported data less.", cost: 0, tab: "Journal", fx: { mentalClarity: -6, investorTrust: 3, monthlyRevenue: 500 }, log: "Rania wrote up 212 patients over six months. The hospital asked good questions and requested the raw data." },
+          { path: "capital", title: "2. Fund a study with a university", desc: "An independent researcher designs and runs it with ethics approval. Slow and costly, but it opens doors for years.", cost: 4500, tab: "Relationships", fx: { investorTrust: 8, monthlyRevenue: 1500, mentalClarity: -3 }, log: "A university department agreed to run the study. Ethics approval took seven weeks. The hospital group put the pilot on hold until results." },
+          { path: "bold", title: "3. Offer the hospital a risk-sharing pilot", desc: "They pay only if their patients' readings improve. You win the deal now and carry the risk.", cost: 1500, tab: "Relationships", fx: { monthlyRevenue: 2000, cash: -2000, mentalClarity: -5 }, log: "The hospital signed within a week. Their patients started on Monday. Payment depends on the numbers in six months." },
+        ],
+      },
+      {
+        id: "st_health_05", urgency: 68, once: true,
+        when: (s) => s.sector.id === "healthtech" && (s.stage >= 2 || s.week >= 24),
+        title: "🏛 This Week: The Ministry Inspection Is Here",
+        tasks: "• Inspectors arrive Tuesday at 9am | • They want consent records, doctor licences and incident logs",
+        why: "A telehealth licence is not a one-time stamp. Health regulators inspect clinical governance: are all doctors licensed and current, is consent recorded, are incidents logged and reviewed. A bad inspection can suspend new consultations overnight.",
+        strategies: [
+          { path: "bootstrap", title: "1. Pull an all-nighter on the paperwork", desc: "You and Rania assemble every file by hand before Tuesday. Free, exhausting, and gaps may still show.", cost: 0, tab: "Journal", fx: { mentalClarity: -12, teamMorale: -4, investorTrust: 2 }, log: "The inspectors found two expired doctor licences and a missing consent form. You got a written warning and 30 days to fix them." },
+          { path: "capital", title: "2. Bring in a healthcare compliance consultant", desc: "A former inspector runs a mock audit on Sunday and fixes the gaps. Expensive, but the real one goes smoothly.", cost: 4000, tab: "Assets", fx: { investorTrust: 6, mentalClarity: 4, churnRate: -0.3 }, log: "The mock audit caught everything the real one would have. The inspectors left at noon with one minor note." },
+          { path: "defensive", title: "3. Pause new consults until files are clean", desc: "Freeze new patients this week, audit every doctor and form. Revenue dips, but nothing surprises the inspector.", cost: 0, tab: "Departments", fx: { monthlyRevenue: -800, investorTrust: 4, churnRate: -0.2, mentalClarity: 3 }, log: "New bookings paused for five days. Two doctors were taken off the roster until their licences were renewed. The inspection passed clean." },
+        ],
+      },
+    ],
+    challenge: { id: "sc_health", icon: "🩺", name: "Care That Patients Keep", goal: "Reach $8,000 in monthly revenue with monthly churn at or below 3% within 32 weeks.", mode: "venture", deadline: 32, done: (s) => s.monthlyRevenue >= 8000 && s.churnRate <= 3 },
+    page: { id: "sector_health", icon: "🩺", title: "In healthtech, trust is the product", body: "Patients, doctors, employers and insurers all buy the same thing from you: confidence that the medicine is safe. Trust builds slowly, through licensed doctors, validated devices, recorded consent and honest incident reviews, and one hidden mistake can undo a year of it. Growth that outruns clinical governance is borrowed. This week, ask who reviews your last 20 consultations, and where that review is written down.", source: "The Innovator's Prescription, Christensen, Grossman and Hwang (2009)" },
+  };

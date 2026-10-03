@@ -220,8 +220,11 @@
       m.talkWeek = s.week;
       m.seen = { week: s.week, value: m.pmf };
       s.mentalClarity = Math.max(0, s.mentalClarity - 4);
-      const pool = INSIGHTS.filter((x) => !m.used.includes(x.text) && !m.insights.some((y) => y.text === x.text));
-      const card = first || Math.random() < 0.6 ? pool[Math.floor(Math.random() * pool.length)] : null;
+      const fresh = (x) => !m.used.includes(x.text) && !m.insights.some((y) => y.text === x.text);
+      // what this industry's customers say comes up more than the general insights
+      const own = sectorInsights(s).filter(fresh),
+        pool = own.length && Math.random() < 0.6 ? own : INSIGHTS.filter(fresh).concat(own);
+      const card = pool.length && (first || Math.random() < 0.6) ? pool[Math.floor(Math.random() * pool.length)] : null;
       if (card) m.insights = m.insights.concat([card]).slice(-4);
       const heard = card ? "One thing stood out: “" + card.text + "”" : "Nothing new this time. Mostly polite feedback.";
       this.addLog("🔍 Talked to 5 customers", `About ${Math.round(m.pmf / 5) * 5}% would be very disappointed without you. ${heard}`, "mentor");
@@ -252,7 +255,7 @@
     P.runExperiment = function (id) {
       const s = this.state,
         m = ensureMarket(s),
-        x = EXPERIMENTS.find((e) => e.id === id);
+        x = experimentsFor(s).find((e) => e.id === id);
       if (!x) return no("Experiment not found.");
       if (m.expWeek === s.week) return no("One experiment a week. Let this one run.");
       if (s.cash < EXPERIMENT_COST) return no("Experiments cost $1,500.");
@@ -292,7 +295,9 @@
       known = !!m.seen,
       talked = m.talkWeek === S.week,
       tested = m.expWeek === S.week,
-      exps = [0, 1, 2].map((i) => EXPERIMENTS[(S.week + i * 2) % EXPERIMENTS.length]),
+      xs = experimentsFor(S),
+      // one industry experiment always on offer, two general ones rotating
+      exps = [xs[S.week % 2], EXPERIMENTS[S.week % EXPERIMENTS.length], EXPERIMENTS[(S.week + 2) % EXPERIMENTS.length]].filter(Boolean),
       mine = share(S);
     const btn = (label, sub, onPress, disabled, key, tone) =>
       jsxs(

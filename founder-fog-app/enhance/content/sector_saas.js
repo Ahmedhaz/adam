@@ -1,0 +1,80 @@
+  const SECTOR_SAAS = {
+    sector: "saas_ai",
+    roles: { c1: "Enterprise client", c2: "Design partner" },
+    insights: [
+      { area: "onboarding", text: "Your agent was ready on day two. Our IT took three weeks just to approve the API keys." },
+      { area: "pricing", text: "Finance won't buy seats for a bot. They'll pay per ticket it actually closes." },
+      { area: "feature", text: "Show me which policy page the answer came from. If the agent can't cite it, legal won't sign." },
+      { area: "feature", text: "Your formal Arabic is fine. Our customers write in Khaleeji, Egyptian and Arabizi." },
+      { area: "channel", text: "We found you because one of our developers used your open-source connector on a weekend." },
+      { area: "support", text: "When the agent gets it wrong at 11pm, we need a human on your side, not a ticket form." },
+    ],
+    experiments: [
+      { id: "xs_saas_01", area: "pricing", title: "Charge per resolved ticket instead of per seat", win: { arpu: 6, pmf: 4 }, winText: "Finance signed off in one meeting: they pay for outcomes, and your price now grows with their usage.", lose: { churn: 0.4, pmf: 1 }, loseText: "Clients couldn't forecast the bill. Two asked to go back to seats, and one capped usage at half." },
+      { id: "xs_saas_02", area: "feature", title: "Tune the agent on 5,000 real Gulf-dialect tickets", win: { pmf: 5, churn: -0.5, trust: 2 }, winText: "Escalations from the Riyadh queue fell by half. Omar's team stopped sending screenshots.", lose: { techDebt: 4, clarity: -3, pmf: 1 }, loseText: "The tuned model got better at Khaleeji and worse at English. Two weeks went into rolling it back." },
+    ],
+    targets: [
+      {
+        id: "st_saas_01", urgency: 60, once: true,
+        when: (s) => s.sector.id === "saas_ai" && s.week >= 4 && s.week <= 12,
+        title: "🔒 This Week: Pass the Security Review",
+        tasks: "• Northwind's InfoSec team sent 214 questions | • The contract waits on your answers",
+        why: "Enterprise AI deals in the Gulf rarely die in the demo; they die in InfoSec. A security questionnaire answered late or vaguely tells the buyer you're a risk, and nobody gets fired for choosing the bigger vendor.",
+        strategies: [
+          { path: "bootstrap", title: "1. Answer all 214 yourself over the weekend", desc: "You and Tariq write every answer honestly, including the No next to penetration testing.", cost: 0, tab: "Journal", fx: { mentalClarity: -8, monthlyRevenue: 650 }, log: "Sunday night, question 214 done. InfoSec came back with 11 follow-ups, and the deal moved." },
+          { path: "capital", title: "2. Hire a consultant and buy a penetration test", desc: "A security firm runs the test and helps write the policies you don't have yet.", cost: 4000, tab: "Assets", fx: { monthlyRevenue: 1050, investorTrust: 4, techDebt: -5 }, log: "The test found 2 medium issues. You fixed them and attached the report. Their CISO signed off in 9 days." },
+          { path: "defensive", title: "3. Ask for a review scoped to the pilot only", desc: "Only what the pilot touches gets reviewed now. The full questionnaire waits for the bigger contract.", cost: 0, tab: "Relationships", fx: { monthlyRevenue: 300, mentalClarity: -2 }, log: "They agreed to review only the pilot. The full questionnaire comes back next year, with the bigger contract." },
+        ],
+      },
+      {
+        id: "st_saas_02", urgency: 55, once: true,
+        when: (s) => s.sector.id === "saas_ai" && s.week >= 7 && s.week <= 14,
+        title: "🧪 This Week: Convert the Pilot Before It Expires",
+        tasks: "• The 60-day pilot ends on Friday | • Nobody has talked about price yet",
+        why: "Most enterprise AI pilots end in polite silence. A pilot without a sponsor in finance, an agreed success metric and a price on paper isn't a sale in progress; it's free consulting. The last week is your strongest leverage.",
+        strategies: [
+          { path: "bootstrap", title: "1. Write the ROI memo from their own data", desc: "Tickets resolved, hours saved, cost per ticket before and after, on one page their CFO can forward.", cost: 0, tab: "Journal", fx: { mentalClarity: -6, monthlyRevenue: 850 }, log: "The memo showed 1,900 agent-hours saved. The CFO forwarded it with one line: why are we not paying for this?" },
+          { path: "bold", title: "2. Switch it off on Friday, as agreed", desc: "Let them feel the queue without the agent. They may call you, or they may call Flowly.", cost: 0, tab: "Relationships", fx: { monthlyRevenue: 1250, churnRate: 1, teamMorale: -4 }, log: "By Tuesday their queue was back to 6-hour waits. The contract arrived on Thursday, with a 10% discount they insisted on." },
+          { path: "defensive", title: "3. Extend the pilot 30 days for a token fee", desc: "A small fee buys time and proves they'll pay something. It also delays the real decision.", cost: 800, tab: "Relationships", fx: { monthlyRevenue: 200, mentalClarity: 3 }, log: "They agreed to $500 for 30 more days. It's revenue. It's also another month without a decision." },
+        ],
+      },
+      {
+        id: "st_saas_03", urgency: 62, once: false,
+        when: (s) => s.sector.id === "saas_ai" && s.monthlyRevenue >= 4000 && s.week % 7 == 3,
+        title: "💸 This Week: The Inference Bill Doubled",
+        tasks: "• Model spend jumped from $1,800 to $3,700 | • One client's agent is looping on old tickets",
+        why: "In AI software every extra unit of usage costs you money. One client on a flat seat price who triples usage can drag an 85% gross margin toward 50% before anyone looks. Watch cost per task the way a restaurant watches food cost.",
+        strategies: [
+          { path: "bootstrap", title: "1. Find the loop and cache repeated answers", desc: "Tariq digs through the logs for a week. Nothing else ships.", cost: 0, tab: "Departments", fx: { teamMorale: -3, techDebt: -4, cash: 1500 }, log: "A retry loop was sending each ticket to the model 4 times. Fixed by Wednesday. Next month's bill should be half." },
+          { path: "capital", title: "2. Hire an ML engineer on contract to cut costs", desc: "Smaller models for simple tasks, shorter prompts, batching. Expensive for a month.", cost: 2500, tab: "Departments", fx: { techDebt: -6, arpu: 3, mentalClarity: 3 }, log: "The contractor moved summaries to a smaller model and trimmed prompts by 40%. Cost per ticket fell from $0.11 to $0.05." },
+          { path: "bold", title: "3. Put usage tiers into every contract", desc: "Seats stay, but every 10,000 tasks above the plan is billed. Some clients will push back.", cost: 0, tab: "Relationships", fx: { arpu: 6, monthlyRevenue: 550, churnRate: 0.8 }, log: "Four clients accepted the tiers. One asked for 3 months of grace. One asked Flowly for a quote." },
+        ],
+      },
+      {
+        id: "st_saas_04", urgency: 50, once: true,
+        when: (s) => s.sector.id === "saas_ai" && s.monthlyRevenue >= 3000 && s.week >= 14,
+        title: "🏛 This Week: Get Registered as a Vendor",
+        tasks: "• Procurement needs 23 documents and a bank guarantee | • Payment terms are 90 days",
+        why: "Winning the business user is half the sale. Gulf enterprises and government buyers want a commercial registration, audited accounts, sometimes a local entity and a bank guarantee, and then they pay in 90 days. Plan cash for the gap.",
+        strategies: [
+          { path: "bootstrap", title: "1. Assemble the file yourself, stamp by stamp", desc: "Chamber of commerce stamps, attested certificates and three trips to the bank.", cost: 0, tab: "Journal", fx: { mentalClarity: -7, monthlyRevenue: 500 }, log: "Eleven days, four stamps, one translated certificate. You're vendor number 40217. The first invoice is payable in 90 days." },
+          { path: "capital", title: "2. Pay a local reseller to hold the contract", desc: "A registered reseller signs as the vendor for 12% of the deal and handles the paperwork.", cost: 2000, tab: "Relationships", fx: { monthlyRevenue: 1000, arpu: -3, mentalClarity: 3 }, log: "The reseller already had a vendor number. The contract was signed in a week, at 12% below your price." },
+          { path: "defensive", title: "3. Ask for a small purchase under the tender limit", desc: "Below the threshold, a department head can buy without the full process. Smaller, but now.", cost: 0, tab: "Relationships", fx: { monthlyRevenue: 350, mentalClarity: 2 }, log: "They bought 20 seats on a corporate card. Small, fast, and procurement hasn't noticed yet." },
+        ],
+      },
+      {
+        id: "st_saas_05", urgency: 45, once: true,
+        when: (s) => s.sector.id === "saas_ai" && (s.stage >= 2 || s.week >= 26) && s.monthlyRevenue >= 6000,
+        title: "📈 This Week: Land the Second Department",
+        tasks: "• Northwind's finance team saw the call-centre results | • They want an agent for invoice matching",
+        why: "In B2B AI, a second department is cheaper to win than a new customer. Expansion is what pushes net revenue retention above 100%, the number Series A investors check first. But every new use case is a new chance of a bad answer.",
+        strategies: [
+          { path: "bootstrap", title: "1. Reuse the call-centre agent with new prompts", desc: "Fast and cheap. Invoice data is much messier than support tickets.", cost: 0, tab: "Departments", fx: { monthlyRevenue: 850, techDebt: 6 }, log: "Live in two weeks. Matching accuracy started at 81%. Finance now checks every fifth invoice by hand." },
+          { path: "capital", title: "2. Hire a finance-ops specialist and build it right", desc: "Someone who knows their ERP's quirks builds a proper finance agent with their team.", cost: 4500, tab: "Departments", fx: { monthlyRevenue: 1750, churnRate: -1, mentalClarity: -3 }, log: "The specialist knew every quirk of their ERP. Accuracy hit 96% in week 6, and finance signed a 3-year expansion." },
+          { path: "defensive", title: "3. Sell it as a paid pilot first", desc: "60 days, fixed fee, written success criteria. Slower, with no promises you can't keep.", cost: 0, tab: "Relationships", fx: { monthlyRevenue: 550, investorTrust: 2 }, log: "Finance agreed to a $4,000 paid pilot. The full contract waits on the results." },
+        ],
+      },
+    ],
+    challenge: { id: "sc_saas", icon: "🏢", name: "The Enterprise Ladder", goal: "Reach $15,000 MRR by week 32 with monthly churn at or below 3% and tech debt under 50.", mode: "venture", deadline: 32, done: (s) => s.monthlyRevenue >= 15000 && s.churnRate <= 3 && s.techDebt < 50 },
+    page: { id: "sector_saas", icon: "🤖", title: "Gross margin is a product decision", body: "Classic SaaS costs almost nothing to serve one more user. AI SaaS doesn't: every answer burns inference, every big client wants custom connectors, and both quietly pull gross margin from 85% toward 50%. Investors value you on that margin, not on revenue. This week, calculate cost per task for your three biggest clients, and check that your price grows when their usage does.", source: "The New Business of AI, Martin Casado and Matt Bornstein (a16z, 2020)" },
+  };

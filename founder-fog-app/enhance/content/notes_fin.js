@@ -1,0 +1,58 @@
+  const NOTES_FIN = {
+    dl_fin_01: {
+      lesson: "In payments, compliance is part of the product the regulator and the bank are buying. Hire the person before the licence, not after the first finding.",
+      example: "Licensing teams usually interview the named compliance officer. Files signed by a part-time consultant shared across applicants often come back with long comment lists.",
+      read: "Who: The A Method for Hiring, Geoff Smart and Randy Street",
+      page: "sector_fin",
+      skills: { A: { hiring: 1, frugality: -1 }, B: { frugality: 1, hiring: -1 } },
+    },
+    dl_fin_02: {
+      lesson: "KYC friction is a risk control, not just a funnel leak. Cut steps by risk tier: low limits until papers arrive, full checks before real volume.",
+      example: "Tiered onboarding, with small limits until documents are verified, is how many wallets and gateways grow quickly without letting the riskiest accounts in unchecked.",
+      read: "Lean Analytics, Alistair Croll and Benjamin Yoskovitz",
+      page: "sector_fin",
+      skills: { A: { discovery: 1, integrity: -1 }, B: { integrity: 1, frugality: -1 } },
+    },
+    dl_fin_03: {
+      lesson: "High-risk merchants pay more because they lend you their risk. Price in the chargebacks, the scheme fines and the bank's patience, not just the rate.",
+      example: "Card schemes run dispute monitoring programmes: once a merchant or acquirer stays above the thresholds, fines rise each month until the ratio comes down.",
+      read: "The Pay Off, Gottfried Leibbrandt and Natasha de Terán",
+      page: "unit_economics",
+      skills: { A: { frugality: 1, integrity: -1 }, B: { integrity: 1, hiring: -1 } },
+    },
+    dl_fin_04: {
+      lesson: "Fraud you block tonight costs a merchant; fraud you let through comes back as chargebacks weeks later. Decide which bill you can pay, then write the rule.",
+      example: "Card-testing attacks push thousands of tiny payments through a weak checkout to check stolen cards. Velocity limits and checks at checkout are the usual first fix.",
+      read: "Payments Systems in the U.S., Carol Coye Benson and Scott Loftesness",
+      page: "crisis",
+      skills: { A: { integrity: 1, discovery: -1 }, B: { discovery: 1, selfcare: -1 } },
+    },
+    dl_fin_05: {
+      lesson: "When one merchant is a third of your volume, they set your price. Spread concentration before the renewal, because at the renewal it is too late.",
+      example: "Large merchants negotiate cost-plus pricing on card fees. Processors that grew on one anchor client often saw their margin on it shrink to a few basis points.",
+      read: "Monetizing Innovation, Madhavan Ramanujam and Georg Tacke",
+      page: "pricing",
+      skills: { A: { fundraising: 1, discovery: -1 }, B: { discovery: 1, frugality: -1 } },
+    },
+    dl_fin_06: {
+      lesson: "Reconcile every day against the bank, your ledger and the scheme. A payments company that can't say where every dirham sits will eventually be told.",
+      example: "In 2024 the middleware firm Synapse collapsed, and end users of fintechs built on it waited months for their money while records failed to reconcile.",
+      read: "Bits about Money, Patrick McKenzie",
+      page: "sector_fin",
+      skills: { A: { frugality: 1, discovery: -1 }, B: { integrity: 1, frugality: -1 } },
+    },
+    dl_fin_07: {
+      lesson: "Your sponsor bank's risk appetite is your real licence. Open a second banking relationship while the first one still likes you.",
+      example: "In 2023 and 2024 several US partner banks under regulatory orders cut fintech programmes at short notice. Fintechs with a single bank had nowhere to move.",
+      read: "Antifragile, Nassim Nicholas Taleb",
+      page: "mena_regulation",
+      skills: { A: { integrity: 1, fundraising: -1 }, B: { fundraising: 1, selfcare: -1 } },
+    },
+    dl_fin_08: {
+      lesson: "In payments your worst day is your busiest day. Load-test to the peak your merchants are planning, not the one you hope for.",
+      example: "Gulf and Egyptian retailers pack sales into White Friday, Ramadan nights and payday weekends. A gateway that fails then can lose merchants for the year.",
+      read: "Site Reliability Engineering, Betsy Beyer et al.",
+      page: "mena_seasons",
+      skills: { A: { integrity: 1, frugality: -1 }, B: { frugality: 1, discovery: -1 } },
+    },
+  };

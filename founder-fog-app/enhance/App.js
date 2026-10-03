@@ -226,16 +226,37 @@ function (g, r, i, a, m, _e, d) {
 // @include content/dl_people.js
 // @include content/dl_life.js
 // @include content/dl_mena.js
+// @include content/dl_saas.js
+// @include content/dl_fin.js
+// @include content/dl_mkt.js
+// @include content/dl_health.js
+// @include content/dl_edu.js
 // @include content/mail.js
+// @include content/mail_saas.js
+// @include content/mail_fin.js
+// @include content/mail_mkt.js
+// @include content/mail_health.js
+// @include content/mail_edu.js
 // @include stories.js
 // @include content/notes_a.js
 // @include content/notes_b.js
 // @include content/notes_c.js
+// @include content/notes_saas.js
+// @include content/notes_fin.js
+// @include content/notes_mkt.js
+// @include content/notes_health.js
+// @include content/notes_edu.js
 // @include content/playbook.js
 // @include teach.js
 // @include guide.js
 // @include tour.js
 // @include meta.js
+// @include content/sector_saas.js
+// @include content/sector_fin.js
+// @include content/sector_mkt.js
+// @include content/sector_health.js
+// @include content/sector_edu.js
+// @include sectors.js
 
   function buildReport(before, after) {
     const rows = [
@@ -355,6 +376,7 @@ function (g, r, i, a, m, _e, d) {
       eng.state.avatar = avatar || "avatar_m1";
       if (daily) eng.state.daily = { day: daily.day, n: daily.n };
       ensureFeatureState(eng.state);
+      applySectorRoles(eng.state);
       if (challenge && CHALLENGES[challenge]) eng.state.challenge = challenge;
       applyMode(eng, challenge && CHALLENGES[challenge] ? CHALLENGES[challenge].mode : mode);
       applyBackground(eng.state, daily ? "first" : background);
@@ -404,6 +426,7 @@ function (g, r, i, a, m, _e, d) {
               daily: dailyInfo(),
               backgrounds: BACKGROUNDS.map((b) => ({ id: b.id, icon: b.icon, name: b.name, desc: b.desc, how: b.how, unlocked: b.unlocked() })),
               DailyPanel: DailyPanel,
+              challenges: sectorChallenges(),
               TrophyPanel: TrophyPanel,
             },
             saved: saved,

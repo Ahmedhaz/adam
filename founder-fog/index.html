@@ -1942,8 +1942,11 @@ __d(function (g, r, i, a, m, _e, d) {
       m.talkWeek = s.week;
       m.seen = { week: s.week, value: m.pmf };
       s.mentalClarity = Math.max(0, s.mentalClarity - 4);
-      const pool = INSIGHTS.filter((x) => !m.used.includes(x.text) && !m.insights.some((y) => y.text === x.text));
-      const card = first || Math.random() < 0.6 ? pool[Math.floor(Math.random() * pool.length)] : null;
+      const fresh = (x) => !m.used.includes(x.text) && !m.insights.some((y) => y.text === x.text);
+      // what this industry's customers say comes up more than the general insights
+      const own = sectorInsights(s).filter(fresh),
+        pool = own.length && Math.random() < 0.6 ? own : INSIGHTS.filter(fresh).concat(own);
+      const card = pool.length && (first || Math.random() < 0.6) ? pool[Math.floor(Math.random() * pool.length)] : null;
       if (card) m.insights = m.insights.concat([card]).slice(-4);
       const heard = card ? "One thing stood out: “" + card.text + "”" : "Nothing new this time. Mostly polite feedback.";
       this.addLog("🔍 Talked to 5 customers", `About ${Math.round(m.pmf / 5) * 5}% would be very disappointed without you. ${heard}`, "mentor");
@@ -1974,7 +1977,7 @@ __d(function (g, r, i, a, m, _e, d) {
     P.runExperiment = function (id) {
       const s = this.state,
         m = ensureMarket(s),
-        x = EXPERIMENTS.find((e) => e.id === id);
+        x = experimentsFor(s).find((e) => e.id === id);
       if (!x) return no("Experiment not found.");
       if (m.expWeek === s.week) return no("One experiment a week. Let this one run.");
       if (s.cash < EXPERIMENT_COST) return no("Experiments cost $1,500.");
@@ -2014,7 +2017,9 @@ __d(function (g, r, i, a, m, _e, d) {
       known = !!m.seen,
       talked = m.talkWeek === S.week,
       tested = m.expWeek === S.week,
-      exps = [0, 1, 2].map((i) => EXPERIMENTS[(S.week + i * 2) % EXPERIMENTS.length]),
+      xs = experimentsFor(S),
+      // one industry experiment always on offer, two general ones rotating
+      exps = [xs[S.week % 2], EXPERIMENTS[S.week % EXPERIMENTS.length], EXPERIMENTS[(S.week + 2) % EXPERIMENTS.length]].filter(Boolean),
       mine = share(S);
     const btn = (label, sub, onPress, disabled, key, tone) =>
       jsxs(
@@ -3560,6 +3565,477 @@ __d(function (g, r, i, a, m, _e, d) {
     },
   ];
 
+  const DL_SAAS = [
+    {
+      id: "dl_saas_01",
+      cat: "Enterprise sales",
+      icon: "🧪",
+      title: "Northwind wants a free 90-day pilot",
+      desc: "Northwind Retail's head of digital wants your agent on 3 call-centre queues for 90 days, free. No success criteria, no price agreed, and their IT team needs 4 weeks before you even get API access.",
+      when: (s) => s.sector.id === "saas_ai" && s.week >= 3 && s.week <= 12,
+      A: { title: "Start the free pilot now", fx: { users: 150, pmf: 2, clarity: -4, cash: -1200 }, log: "Tariq set up the sandbox on a Sunday. The kickoff call had 14 people on it and nobody from finance.",
+           echo: { after: [10, 16], icon: "⏳", title: "The pilot ended in next year's budget", text: "Northwind's team loved the dashboards. Their CFO had never heard of the pilot. The deal is now pencilled in for the next fiscal year.", fx: { clarity: -6, morale: -5, trust: -3 } } },
+      B: { title: "Ask for $6,000 and written success criteria", fx: { cash: 6000, pmf: -2, trust: -2, morale: -2 }, log: "Procurement took 5 weeks to raise a $6,000 purchase order. Meanwhile Flowly started a free pilot in the queue next door.",
+           echo: { after: [10, 18], icon: "✅", title: "The pilot converted on day 61", text: "The criteria said 30% of tickets resolved without a human. You hit 34%. The contract discussion took one meeting.", fx: { mrrPct: 0.05, trust: 3 } } },
+    },
+    {
+      id: "dl_saas_02",
+      cat: "Data & trust",
+      icon: "🔒",
+      title: "Their lawyer asks if their data trains your model",
+      desc: "A Gulf bank's legal team sent a clause: zero retention, no training, data stays in-country. Your model provider keeps prompts for 30 days by default. The zero-retention tier costs $1,100 a month more.",
+      when: (s) => s.sector.id === "saas_ai" && s.week >= 4 && s.week <= 14,
+      A: { title: "Pay for zero retention and sign", fx: { baseBurn: 1100, trust: 3, mrrPct: 0.06 }, log: "You signed the clause on a Thursday night. The provider's enterprise contract arrived the next morning, with a 12-month minimum.",
+           echo: { after: [8, 16], icon: "🛡", title: "Your data clause becomes a sales asset", text: "Two other banks asked for your data processing agreement before the first call. Their legal teams approved it in a week instead of a quarter.", fx: { mrrPct: 0.06, clarity: 3 } } },
+      B: { title: "Keep the default and strip personal data", fx: { cash: -800, pmf: 2, mrrPct: -0.02, clarity: -3 }, log: "Tariq built a filter that removes names and IBANs before any prompt leaves your servers. The bank's lawyers will review it next quarter." },
+    },
+    {
+      id: "dl_saas_03",
+      cat: "AI quality",
+      icon: "💥",
+      title: "The agent invented a refund policy in the demo",
+      desc: "In front of Northwind's COO, your agent told a test customer that orders can be refunded within 60 days. Their policy says 14. The room went quiet. Go-live is scheduled for Sunday.",
+      when: (s) => s.sector.id === "saas_ai" && s.week >= 8 && s.monthlyRevenue >= 2500,
+      A: { title: "Delay go-live and build an evaluation suite", fx: { mrrPct: -0.05, techDebt: -6, pmf: 3, clarity: -4 }, log: "You told the COO it needs 3 more weeks. Tariq's team wrote 400 test questions from Northwind's real policy documents.",
+           echo: { after: [8, 14], icon: "✅", title: "The agent learned to say it doesn't know", text: "Every answer now cites the policy page it came from. Northwind's quality team approved the third queue without a meeting.", fx: { churn: -0.4, trust: 2, mrrPct: 0.04 } } },
+      B: { title: "Go live Sunday with human approval on refunds", fx: { mrrPct: 0.03, techDebt: 5, cofounder: -3, morale: -2 }, log: "Go-live happened on schedule. Every refund answer now waits for one of Northwind's agents to click approve.",
+           echo: { after: [6, 12], icon: "🚨", title: "A refund nobody approved", text: "The approval queue hit 900 items on a busy Friday, so someone switched it off. The agent promised a full refund on a 4-month-old order. It was on social media by Saturday.", fx: { churn: 0.8, trust: -4, morale: -5 } } },
+    },
+    {
+      id: "dl_saas_04",
+      cat: "Unit economics",
+      icon: "💸",
+      title: "The model bill ate a third of your margin",
+      desc: "Northwind's agent now handles 38,000 tickets a month on a flat per-seat plan. Your inference bill went from $900 to $4,600 a month. Gross margin fell from 85% to 61%, and Layla noticed first.",
+      when: (s) => s.sector.id === "saas_ai" && s.monthlyRevenue >= 4000 && s.week >= 10,
+      A: { title: "Route simple tickets to a smaller model", fx: { baseBurn: -700, techDebt: 4, pmf: -2, churn: 0.3 }, log: "70% of tickets now go to the small model and the bill halved. The first complaint about a mangled Arabic reply came on day 3.",
+           echo: { after: [8, 14], icon: "📉", title: "The small model doesn't speak Khaleeji", text: "Northwind's Riyadh queue now escalates 3 times more tickets than the Cairo one. Their ops manager sent you a spreadsheet of 60 bad replies.", fx: { churn: 0.6, pmf: -2 } } },
+      B: { title: "Add usage pricing at renewal", fx: { arpu: 4, mrrPct: 0.05, churn: 0.4, clarity: -5 }, log: "Northwind's procurement took 6 weeks to model the new price. They signed seats plus usage, with a cap you'll reach by spring." },
+    },
+    {
+      id: "dl_saas_05",
+      cat: "Model risk",
+      icon: "⚠",
+      title: "Your model provider is retiring your model",
+      desc: "An email at 1am: the model version your agents run on retires in 60 days. The new version formats answers differently and 23% of your test cases fail. A local cloud offers to host an open-weight model in-region.",
+      when: (s) => s.sector.id === "saas_ai" && s.week >= 12,
+      A: { title: "Migrate to the new version and move on", fx: { cash: -1000, techDebt: 3, pmf: 2, morale: -2 }, log: "Three weeks of rewriting prompts. The new model is better in English and slightly worse with Arabic numbers.",
+           echo: { after: [10, 20], icon: "🌫", title: "The provider was down for 7 hours", text: "A regional outage on a Monday morning. Every one of your clients' agents went silent at once, and you had nowhere to switch them.", fx: { churn: 0.7, trust: -4, clarity: -6 } } },
+      B: { title: "Build a switch layer and add an in-region model", fx: { cash: -4000, techDebt: 6, cofounder: 4, pmf: 1 }, log: "Tariq's team spent 6 weeks on the abstraction layer. Two clients asked why nothing new shipped this month.",
+           echo: { after: [10, 20], icon: "🛡", title: "The day the big provider went down", text: "A 7-hour outage hit every company on the main provider. Your agents switched to the in-region model in 4 minutes. Two banks asked for a meeting.", fx: { mrrPct: 0.04, trust: 4, churn: -0.3 } } },
+    },
+    {
+      id: "dl_saas_06",
+      cat: "Accounts",
+      icon: "🚪",
+      title: "Your champion at Northwind just resigned",
+      desc: "Hana Al-Qahtani, who brought you into Northwind and defended your budget twice, is joining a bank. Her replacement starts in 3 weeks with a vendor consolidation plan. Your renewal is in 10 weeks.",
+      when: (s) => s.sector.id === "saas_ai" && s.monthlyRevenue >= 5000,
+      A: { title: "Spend two weeks multi-threading Northwind", fx: { cash: -2500, clarity: -6, churn: -0.3, mrrPct: 0.02 }, log: "You met their IT lead, the call-centre director and finance. Finance had never seen your ROI numbers. Now they have them on one page." },
+      B: { title: "Follow Hana to the bank", fx: { mrrPct: 0.06, trust: 2, clarity: -3 }, log: "Hana introduced you to the bank's CIO on her second day. The pilot paperwork started that week.",
+           echo: { after: [8, 14], icon: "📉", title: "Northwind's renewal went to tender", text: "The new head of digital put your contract into an RFP with Flowly and Nimbus AI. You kept the account, at 40% less.", fx: { mrrPct: -0.1, morale: -4 } } },
+    },
+    {
+      id: "dl_saas_07",
+      cat: "Deployment",
+      icon: "🏛",
+      title: "A ministry wants it on their own servers",
+      desc: "A government entity will sign $180,000 a year if the agent runs fully on-prem: their data centre, no internet, an open-weight model on GPUs they'll buy next year. Your product has only ever run in the cloud.",
+      when: (s) => s.sector.id === "saas_ai" && (s.stage >= 2 || s.week >= 20),
+      A: { title: "Sign and build the on-prem edition", fx: { cash: 12000, baseBurn: 400, techDebt: 10, pmf: -3, morale: -4 }, log: "The signing had a photographer. Tariq spent the evening drawing two architectures on the whiteboard instead of one.",
+           echo: { after: [12, 24], icon: "🕳", title: "Two products, one team", text: "Every cloud release now needs a separate on-prem build, a USB drive and a security escort. Three engineers do nothing else, and the cloud roadmap slowed to a crawl.", fx: { techDebt: 8, morale: -6, pmf: -2 } } },
+      B: { title: "Offer a private tenant in a local cloud region", fx: { pmf: 2, trust: -3, cash: -1500 }, log: "Their IT director took your architecture diagram to the committee. The committee meets once a quarter." },
+    },
+    {
+      id: "dl_saas_08",
+      cat: "Business model",
+      icon: "🧾",
+      title: "Services are now 45% of your revenue",
+      desc: "Your implementation team builds custom connectors for every new client at $150 an hour, and it pays salaries. A Series A analyst read your numbers: blended gross margin 54%. Her note says consultancy.",
+      when: (s) => s.sector.id === "saas_ai" && (s.stage >= 2 || s.week >= 22) && s.monthlyRevenue >= 6000,
+      A: { title: "Hand implementations to a partner firm", fx: { mrrPct: -0.08, trust: 5, pmf: 3, morale: -3 }, log: "A Cairo integrator took over implementations for a 15% referral fee. Two of your engineers moved with the work.",
+           echo: { after: [10, 20], icon: "📈", title: "Margin is back above 75%", text: "With the top connectors packaged as product, new clients go live in 3 weeks instead of 11. The fund's analyst asked for an updated deck.", fx: { trust: 4, mrrPct: 0.05 } } },
+      B: { title: "Keep services and the cash they bring", fx: { cash: 4000, trust: -4, techDebt: 4, pmf: -2 }, log: "The services team billed 600 hours this month. The product team shipped one feature." },
+    },
+  ];
+
+  const DL_FIN = [
+    {
+      id: "dl_fin_01",
+      cat: "Compliance",
+      icon: "👔",
+      title: "The licence needs a named compliance officer",
+      desc: "The central bank's form has a box for your money-laundering reporting officer. Hana Al-Rashid spent 9 years in bank compliance and wants $5,500 a month, more than Tariq earns. A consultant offers to sign for $1,200 a month.",
+      when: (s) => s.sector.id === "fintech" && s.week >= 3 && !s.mkt.licensed,
+      A: { title: "Hire Hana full time", fx: { baseBurn: 1400, cash: -2000, trust: 4, cofounder: -4, clarity: 3 }, log: "Hana's first week produced a 40-row risk register and a question about who can approve refunds. Tariq asked, quietly, why she earns more than him.",
+           echo: { after: [8, 16], icon: "🏛", title: "The inspector asks for Hana by name", text: "The central bank booked a full day for its on-site visit. Hana walked them through the risk register and the alert log, and they left before lunch.", fx: { trust: 6, clarity: 5, pmf: 2 } } },
+      B: { title: "Use the consultant for now", fx: { baseBurn: 400, cofounder: 3, trust: -2 }, log: "The consultant signed the form on a Sunday. He also signs for four other applicants.",
+           echo: { after: [6, 14], icon: "🧾", title: "Your AML policy names another company", text: "The central bank returned your file with 23 comments. Comment 7: page 31 of your anti-money-laundering policy mentions a firm that isn't yours.", fx: { trust: -6, clarity: -6, cash: -2500 } } },
+    },
+    {
+      id: "dl_fin_02",
+      cat: "Onboarding",
+      icon: "🧩",
+      title: "Six in ten merchants quit at the KYB step",
+      desc: "Merchants sign up, then stop when you ask for the commercial registration, a bank letter and the owners' IDs. Sara in growth wants to let them go live on a phone number and collect the papers within 30 days.",
+      when: (s) => s.sector.id === "fintech" && s.week >= 4,
+      A: { title: "Go live first, papers later", fx: { users: 300, mrrPct: 0.06, pmf: 2, trust: -2 }, log: "Completed signups doubled in a week. Someone in ops started a spreadsheet tab called 'papers missing'.",
+           echo: { after: [8, 18], icon: "🕵", title: "Forty merchants never sent their papers", text: "The sponsor bank's sample review found one of them: a 'gift shop' whose card traffic all came from a betting site. The bank wants a remediation plan in 14 days.", fx: { trust: -5, cash: -3000, clarity: -6, users: -150 } } },
+      B: { title: "Keep full KYB and fix the form", fx: { cash: -1500, users: -80, pmf: 2, clarity: -2 }, log: "Tariq rebuilt the form so merchants can send documents as photos from their phones. Drop-off fell from 60% to 45%." },
+    },
+    {
+      id: "dl_fin_03",
+      cat: "Risk",
+      icon: "🎲",
+      title: "A gaming top-up site offers 4.5% on $180,000 a month",
+      desc: "They sell in-game credits and will pay 4.5% instead of your usual 2.2%. Their last processor dropped them at a 1.6% chargeback rate. The card schemes start watching an acquirer's portfolio near 1%.",
+      when: (s) => s.sector.id === "fintech" && s.mkt.licensed === true && s.monthlyRevenue >= 3000,
+      A: { title: "Sign them with a 10% rolling reserve", fx: { mrrPct: 0.15, arpu: 3, trust: -3, clarity: -3 }, log: "They signed in a day. Their volume arrived the same week, mostly between midnight and 4am.",
+           echo: { after: [6, 14], icon: "🚨", title: "A card scheme puts you on its watch list", text: "Disputes across your whole portfolio crossed 1.1%. The scheme's letter lists fines that rise every month until you are back under the line.", fx: { cash: -6000, trust: -6, churn: 0.4, clarity: -5 } } },
+      B: { title: "Decline and tell them why", fx: { morale: -3, pmf: 2, trust: 2, clarity: 2 }, log: "Your sales lead lost the biggest commission of the year. The gaming site was live with Sahm Pay by Friday." },
+    },
+    {
+      id: "dl_fin_04",
+      cat: "Fraud",
+      icon: "💳",
+      title: "1,400 card tests at 2:40am",
+      desc: "A fraud ring is pushing stolen cards through a florist's checkout in tiny payments to see which ones work. Mother's Day is on Saturday, and the florist is one of your best merchants.",
+      when: (s) => s.sector.id === "fintech" && s.mkt.licensed === true && s.week >= 10,
+      A: { title: "Freeze the florist's checkout now", fx: { churn: 0.3, mrrPct: -0.03, clarity: 3, trust: 1 }, log: "The attack stopped at 2:52am. The florist found out from a customer at 8am and called you 11 times." },
+      B: { title: "Add velocity rules and stay live", fx: { techDebt: 4, clarity: -6, morale: -2, pmf: 2 }, log: "Tariq wrote rules until dawn: 3 tries per card, then a block. Most tests were stopped by 4am. The Mother's Day orders went through.",
+           echo: { after: [5, 10], icon: "🧾", title: "The chargebacks from that night arrive", text: "The issuing banks caught up: 212 disputes from the cards that got through, each with a $15 fee. The florist's balance can't cover them, so yours does.", fx: { cash: -3500, trust: -2, clarity: -3 } } },
+    },
+    {
+      id: "dl_fin_05",
+      cat: "Pricing",
+      icon: "🏷",
+      title: "Northwind wants 1.4% or it moves to PayNest",
+      desc: "Northwind Retail is 38% of the volume you process. You charge 2.1% plus $0.30; PayNest quoted them 1.4% plus $0.20 a payment. Interchange and scheme fees already cost you about 1.1%.",
+      when: (s) => s.sector.id === "fintech" && s.mkt.licensed === true && s.monthlyRevenue >= 4000,
+      A: { title: "Match 1.4% on a two-year contract", fx: { mrrPct: -0.1, arpu: -2, churn: -0.4, clarity: 2 }, log: "Northwind signed for two years. Your margin on their volume is now 0.3 points.",
+           echo: { after: [8, 18], icon: "📨", title: "Three merchants ask for the Northwind price", text: "A Northwind supplier asked Omar what you charge them. Now three merchants want 1.4%, and one has the figure in writing.", fx: { arpu: -2, mrrPct: -0.04, clarity: -3 } } },
+      B: { title: "Hold 1.9% and offer next-day settlement", fx: { cash: -3000, arpu: 1, clarity: -3, pmf: 1 }, log: "Northwind's finance team liked being paid the next morning. They asked for a week to think.",
+           echo: { after: [6, 14], icon: "📉", title: "Northwind splits its volume", text: "Northwind moved its online store to PayNest and kept its branches with you. It is now 21% of your volume, not 38%.", fx: { mrrPct: -0.09, pmf: 2, clarity: 3 } } },
+    },
+    {
+      id: "dl_fin_06",
+      cat: "Operations",
+      icon: "📊",
+      title: "Settlement is off by $27,400",
+      desc: "Ramy in finance found that three days of the bank's settlement files don't match your ledger. A timezone bug paid 61 merchants twice, and the money is already in their accounts.",
+      when: (s) => s.sector.id === "fintech" && s.mkt.licensed === true && s.monthlyRevenue >= 5000,
+      A: { title: "Recover it from their next payouts", fx: { cash: -2000, churn: 0.5, morale: -2, clarity: 3 }, log: "You sent 61 merchants a polite notice with a breakdown. 52 accepted the deduction. 9 called it theft on Instagram." },
+      B: { title: "Absorb it and build automated recon", fx: { cash: -9000, techDebt: -6, churn: -0.2, clarity: -2 }, log: "You wrote off all $27,400 and Ramy and Tariq spent 3 weeks building a daily three-way match: bank, ledger, card scheme.",
+           echo: { after: [10, 20], icon: "✅", title: "The recon engine catches the bank's mistake", text: "The 6am match flagged a $14,000 double debit by the sponsor bank. Ramy sent them the line items before their own team noticed.", fx: { cash: 8000, trust: 4, clarity: 4 } } },
+    },
+    {
+      id: "dl_fin_07",
+      cat: "Bank partner",
+      icon: "🏦",
+      title: "The sponsor bank wants your crypto merchants gone",
+      desc: "The bank's new chief risk officer gives you 30 days to offboard 22 merchants in crypto on-ramps and digital goods, or the bank ends your sponsorship. Those merchants are 19% of your revenue.",
+      when: (s) => s.sector.id === "fintech" && s.mkt.licensed === true && (s.stage >= 2 || s.week >= 20),
+      A: { title: "Offboard all 22 by the deadline", fx: { mrrPct: -0.15, trust: 3, clarity: 3, morale: -3 }, log: "Twenty-two goodbye emails, each with 30 days' notice. Two merchants threatened to sue. The bank's next email was friendly." },
+      B: { title: "Negotiate and open a second bank", fx: { cash: -6000, baseBurn: 600, clarity: -8, mrrPct: -0.04 }, log: "You kept 14 merchants under stricter monitoring and spent 3 weeks in a second bank's meeting rooms.",
+           echo: { after: [8, 18], icon: "🤝", title: "A second bank signs", text: "The second bank approved your programme after months of questions. For the first time, no single bank can switch you off with one email.", fx: { trust: 8, mrrPct: 0.06, clarity: 4 } } },
+    },
+    {
+      id: "dl_fin_08",
+      cat: "Reliability",
+      icon: "📅",
+      title: "White Friday is 6x volume and the test broke at 4x",
+      desc: "Your load test fell over at 4x normal traffic. This year White Friday lands on payday, your three largest merchants expect 6x, and it is 4 weeks away.",
+      when: (s) => s.sector.id === "fintech" && s.mkt.licensed === true && (s.stage >= 2 || s.week >= 22),
+      A: { title: "Freeze features and buy capacity", fx: { cash: -7000, baseBurn: 300, pmf: -2, morale: -2, techDebt: -4 }, log: "No releases for 4 weeks. Tariq ran the load test every night; on the last run it held at 7x." },
+      B: { title: "Ask big merchants to stagger their sales", fx: { pmf: 2, clarity: -3, techDebt: 3 }, log: "Two merchants agreed to start their sale at 6pm instead of midnight. The third said its campaign was already printed.",
+           echo: { after: [4, 6], icon: "💥", title: "Checkout times out at 9:02pm", text: "For 47 minutes on White Friday, 1 in 5 payments failed. Every failure showed your logo on someone else's checkout page.", fx: { mrrPct: -0.06, churn: 0.6, trust: -4, morale: -5 } } },
+    },
+  ];
+
+  const DL_MKT = [
+    {
+      id: "dl_mkt_01",
+      cat: "Sellers",
+      icon: "📱",
+      title: "Your best brand is slipping its WhatsApp into parcels",
+      desc: "Buyers forward you a card found in Hana's parcels: her WhatsApp number and 10% off if you order direct next time. Her abaya label brings 14% of your orders and pays you 15% commission on each one.",
+      when: (s) => s.sector.id === "ecommerce_marketplace" && s.week >= 4,
+      A: { title: "Pull the cards and enforce the rules", fx: { mrrPct: -0.03, pmf: 2, clarity: -3 }, log: "Hana called it a misunderstanding and stopped the cards. Her new arrivals now reach your site a week after Instagram.",
+           echo: { after: [8, 16], icon: "🛡", title: "Buyers stop vanishing after one order", text: "Two other brands quietly took their numbers out of their parcels. Buyers who used to disappear after a first order now reorder in the app, where returns are covered.", fx: { churn: -0.4, pmf: 2 } } },
+      B: { title: "Cut her fee to 8% on repeat buyers", fx: { arpu: -2, churn: -0.3, morale: -2 }, log: "Hana agreed within the hour. Two other brands asked for the same deal by Thursday.",
+           echo: { after: [10, 20], icon: "🧾", title: "Every brand wants the repeat-buyer rate", text: "Eleven sellers now pay 8% on repeat orders. Your take on returning buyers has almost halved, and they are the buyers you paid most to win.", fx: { arpu: -2, mrrPct: -0.03 } } },
+    },
+    {
+      id: "dl_mkt_02",
+      cat: "Curation",
+      icon: "🔍",
+      title: "Forty brands applied, and half sell the same phone cases",
+      desc: "Tariq's self-serve signup brought 40 seller applications this week. Salma, your curator, would reject 22 of them: blurry photos, copied designs, the same phone cases from one factory. Meanwhile buyers search and find half-empty shelves.",
+      when: (s) => s.sector.id === "ecommerce_marketplace" && s.week >= 3 && s.monthlyRevenue < 6000,
+      A: { title: "Open the gates and fill the shelves", fx: { users: 400, mrrPct: 0.04, pmf: -3, churn: 0.3 }, log: "Listings tripled in a week. So did the number of phone cases on the home page.",
+           echo: { after: [8, 18], icon: "🕳", title: "Your search page looks like every other souk", text: "Buyers now scroll past 60 identical phone cases to find the brands they came for. A review calls you a slower Souqly.", fx: { churn: 0.5, pmf: -3, arpu: -1 } } },
+      B: { title: "Keep Salma's bar and onboard by hand", fx: { clarity: -4, morale: -3, pmf: 3 }, log: "Salma approved 18 brands and rewrote half their product pages herself. Growth stayed slow.",
+           echo: { after: [10, 20], icon: "⭐", title: "Buyers start browsing for fun", text: "Time on site doubled and buyers started sharing your collections on WhatsApp. Two creators asked to feature your brands without being paid.", fx: { users: 300, churn: -0.4 } } },
+    },
+    {
+      id: "dl_mkt_03",
+      cat: "Unit economics",
+      icon: "🧾",
+      title: "Every order loses money after the courier",
+      desc: "Youssef in finance breaks down the average $31 basket: $6.10 in commission and margin, then $3.20 courier, $0.90 packaging, $0.80 payment fees and $2.60 in returns. Each order loses $1.40 and free delivery from $20 is why buyers come.",
+      when: (s) => s.sector.id === "ecommerce_marketplace" && s.monthlyRevenue >= 3000 && s.week >= 8,
+      A: { title: "Raise free delivery to $45", fx: { arpu: 4, mrrPct: -0.05, users: -200, clarity: 3 }, log: "Orders dropped 18% in the first week. The average basket rose from $31 to $43 and stayed there." },
+      B: { title: "Keep it and fix margin with volume", fx: { users: 250, mrrPct: 0.03, cash: -2500 }, log: "Orders kept climbing. So did the red line in Youssef's spreadsheet.",
+           echo: { after: [6, 14], icon: "💸", title: "Volume made the hole deeper", text: "The courier added $0.40 per parcel on the new rate card. At your volume, free delivery now costs more each month than your two engineers.", fx: { cash: -2500, clarity: -5, trust: -3 } } },
+    },
+    {
+      id: "dl_mkt_04",
+      cat: "Take rate",
+      icon: "🏷",
+      title: "Layla wants the commission at 20%",
+      desc: "At 15% your commission is the lowest in the market, and Layla's next-round model assumes 20%. Mazen, who manages sellers, says 9 of your top 30 brands told him a higher fee pushes them to their own online stores.",
+      when: (s) => s.sector.id === "ecommerce_marketplace" && s.monthlyRevenue >= 5000,
+      A: { title: "Raise it to 20% for everyone", fx: { mrrPct: 0.08, trust: 5, pmf: -2 }, log: "The email went out on a Sunday. Mazen spent the whole week on the phone.",
+           echo: { after: [8, 16], icon: "🚪", title: "Three top brands open their own stores", text: "Three of the brands Mazen warned you about launched their own sites with free delivery. Their Instagram bios no longer link to you.", fx: { mrrPct: -0.06, users: -250, pmf: -2 } } },
+      B: { title: "Keep 15% and sell paid placement", fx: { arpu: 2, techDebt: 4, pmf: -1, trust: -2 }, log: "Sellers can now pay for a home-page slot. The three biggest brands bought most of them." },
+    },
+    {
+      id: "dl_mkt_05",
+      cat: "Peak season",
+      icon: "📅",
+      title: "Eid orders tripled and the courier caps you at 400 a day",
+      desc: "Ten days before Eid you're taking 1,100 orders a day. SwiftLine will only carry 400 a day under the 24-hour promise. A second courier wants $2,500 up front, and nobody has tested their drivers with your parcels.",
+      when: (s) => s.sector.id === "ecommerce_marketplace" && s.monthlyRevenue >= 4000 && s.team.length >= 3,
+      A: { title: "Pay the second courier, keep the promise", fx: { cash: -2500, users: 300, churn: -0.3, clarity: -4 }, log: "The new courier's vans arrived at the warehouse at midnight. Most Eid gifts landed on time.",
+           echo: { after: [5, 10], icon: "📉", title: "The second courier's returns come back", text: "62 Eid parcels came back damaged or marked address not found. Buyers blamed you, not a courier they had never heard of.", fx: { churn: 0.5, cash: -1500, morale: -4 } } },
+      B: { title: "Cap orders and promise after Eid", fx: { mrrPct: -0.06, churn: -0.2, morale: 4 }, log: "The banner said order by Tuesday for Eid. Hundreds of buyers went elsewhere, and the team slept on Eid eve." },
+    },
+    {
+      id: "dl_mkt_06",
+      cat: "Inventory",
+      icon: "💰",
+      title: "Buy 1,500 bottles of the oud oil everyone wants",
+      desc: "A small perfumer's oud oil went viral and sold out on your site in 40 minutes. She offers you 1,500 bottles at $6 each, exclusive for 3 months, cash up front. Today you own no stock at all.",
+      when: (s) => s.sector.id === "ecommerce_marketplace" && s.monthlyRevenue >= 3000 && s.week >= 10,
+      A: { title: "Buy the whole batch", fx: { cash: -9000, mrrPct: 0.1, pmf: 2 }, log: "The pallet arrived on a Tuesday. You now own a warehouse shelf and a weekly stock count.",
+           echo: { after: [8, 16], icon: "⏳", title: "The oud oil trend moves on", text: "The first weeks sold 400 bottles a week. Then 30. You cleared the last 600 at half price in a Ramadan bundle, and the shelf is finally empty.", fx: { cash: 1800, mrrPct: -0.03, clarity: -4 } } },
+      B: { title: "Sell it on consignment at 15%", fx: { mrrPct: 0.03, trust: -2, arpu: -1 }, log: "She agreed, then sold her best batch to a rival who paid cash. You got the second batch." },
+    },
+    {
+      id: "dl_mkt_07",
+      cat: "Trust & safety",
+      icon: "⚠",
+      title: "Your bestselling sneaker seller is selling fakes",
+      desc: "A buyer sent a side-by-side video: the $140 sneakers from your top seller, Fadi, have the wrong stitching. Fadi is 9% of your orders, 340 pairs shipped this year, and a brand's lawyer is copied on the email.",
+      when: (s) => s.sector.id === "ecommerce_marketplace" && s.week >= 20,
+      A: { title: "Delist Fadi and refund all 340 buyers", fx: { cash: -5000, mrrPct: -0.07, churn: -0.4, pmf: 2 }, log: "Refunds went out before most buyers knew there was a problem. Most of it came out of Fadi's held payouts. His lawyer called before lunch.",
+           echo: { after: [6, 14], icon: "🛡", title: "Buyers trust the refund", text: "Buyers who got refunds without asking posted about it. Your authentic-or-your-money-back badge now converts better than any ad.", fx: { users: 400, churn: -0.4, trust: 3 } } },
+      B: { title: "Refund one buyer and audit quietly", fx: { cash: -140, clarity: -6, trust: -2 }, log: "The buyer got her money back. Fadi swore the batch was original and sent a supplier invoice nobody could verify.",
+           echo: { after: [8, 18], icon: "📰", title: "The video reaches 2 million views", text: "A sneaker account reposted the side-by-side video to 2 million views. The brand's lawyer sent a second letter, this one with a deadline.", fx: { churn: 0.8, users: -400, cash: -5000 } } },
+    },
+    {
+      id: "dl_mkt_08",
+      cat: "Competition",
+      icon: "⚔",
+      title: "Your top seller just launched a marketplace",
+      desc: "Rami's homeware brand grew from 20 orders a month to 900 on your site. Now he's launched his own marketplace at 8% commission and is messaging your sellers one by one. He still lists with you.",
+      when: (s) => s.sector.id === "ecommerce_marketplace" && (s.stage >= 2 || s.week >= 24),
+      A: { title: "Lock top brands into 12-month exclusives", fx: { arpu: -3, churn: -0.5, cash: -3000, pmf: 2 }, log: "Twenty-two brands signed for a 10% fee and a home-page slot. Four said no.",
+           echo: { after: [10, 20], icon: "🧊", title: "Rami's marketplace goes quiet", text: "Without the brands that mattered, Rami's site filled up with the phone cases you had rejected. He asked to talk about coming back.", fx: { mrrPct: 0.05, pmf: 2 } } },
+      B: { title: "Delist Rami and spend on buyers", fx: { mrrPct: -0.05, users: 300, cash: -2500, morale: 3 }, log: "Rami's products vanished from your site on Sunday. By Monday his WhatsApp group had 31 of your sellers in it." },
+    },
+  ];
+
+  const DL_HEALTH = [
+    {
+      id: "dl_health_01",
+      cat: "Doctors",
+      icon: "🩺",
+      title: "No doctor on call after 10pm",
+      desc: "Most of your doctors are hospital consultants who log in after their shifts end. Between 10pm and 1am patients wait 40 minutes for a call, and that is exactly when they measure and start to worry.",
+      when: (s) => s.sector.id === "healthtech" && s.week >= 3 && s.week <= 14,
+      A: { title: "Pay two doctors a night premium", fx: { baseBurn: 900, cash: -1000, churn: -0.5, pmf: 3 }, log: "Dr. Yousef and Dr. Mona took the late shift at 40% above the day rate. Average night wait fell to 6 minutes." },
+      B: { title: "Close bookings after 10pm", fx: { users: -150, clarity: 3, pmf: -2 }, log: "The app now says 'Doctors are back at 8am'. Three patients replied with the same angry emoji.",
+           echo: { after: [6, 14], icon: "🌫", title: "Dr. Now owns the night", text: "Dr. Now's new billboard on the ring road says 'A doctor at 2am, in 5 minutes'. Your night-time sign-ups dropped by a third the week it went up.", fx: { users: -200, churn: 0.3 } } },
+    },
+    {
+      id: "dl_health_02",
+      cat: "Clinical",
+      icon: "🧾",
+      title: "Antibiotics are buying five-star ratings",
+      desc: "Dr. Rania Haddad, your medical director, audited 300 calls: 38% of sore-throat consults ended with an antibiotic, mostly for viral infections. Doctors who refuse get one-star reviews and fewer bookings.",
+      when: (s) => s.sector.id === "healthtech" && s.week >= 5 && s.week <= 16,
+      A: { title: "Enforce the prescribing protocol", fx: { churn: 0.4, users: -100, pmf: 2, morale: -3 }, log: "Rania sent the protocol on Sunday. By Thursday the app rating dropped from 4.8 to 4.5 and two doctors asked to talk.",
+           echo: { after: [10, 20], icon: "🏦", title: "An insurer noticed your numbers", text: "An insurer's medical team compared prescribing rates across telehealth providers. Yours was the lowest. They asked for a meeting about a pilot.", fx: { mrrPct: 0.06, trust: 4, pmf: 2 } } },
+      B: { title: "Leave it to each doctor's judgement", fx: { churn: -0.2, clarity: 2, culture: -3 }, log: "Ratings stayed high. Rania filed her audit in a folder and stopped mentioning it in meetings.",
+           echo: { after: [10, 20], icon: "🔍", title: "The prescribing audit came back", text: "An insurer's audit put your antibiotic rate at twice the national clinic average. They paused new referrals until you send a stewardship plan.", fx: { mrrPct: -0.06, trust: -4 } } },
+    },
+    {
+      id: "dl_health_03",
+      cat: "Payers",
+      icon: "🏦",
+      title: "An insurer offers to put you in its network",
+      desc: "Gulf Mutual will cover video consults for its 40,000 members at $28 instead of your $45 cash price. Claims settle in 90 days, and their last telehealth partner saw 1 in 5 claims rejected.",
+      when: (s) => s.sector.id === "healthtech" && s.monthlyRevenue >= 2000 && s.week >= 8,
+      A: { title: "Join the network", fx: { users: 600, arpu: -4, cash: -2500, pmf: 2 }, log: "You hired a claims coder and signed. Bookings from insured patients started the following Monday.",
+           echo: { after: [8, 16], icon: "📭", title: "The claims queue", text: "Gulf Mutual paid 61% of the first quarter's claims. The rest came back for wrong diagnosis codes, plus one note: 'not medically necessary'.", fx: { cash: -4000, clarity: -5 } } },
+      B: { title: "Stay cash-pay for now", fx: { arpu: 2, users: -100, pmf: -2 }, log: "You thanked them and declined. Two corporate prospects asked the same week whether you take insurance." },
+    },
+    {
+      id: "dl_health_04",
+      cat: "Devices",
+      icon: "⚠",
+      title: "The cheaper cuffs read high",
+      desc: "Your new supplier's blood pressure cuffs cost $19 instead of $34 each. Nurse Huda checked 20 of them against a validated clinic device: most read 6 to 9 points high. 600 are already in patients' homes.",
+      when: (s) => s.sector.id === "healthtech" && s.activeUsers >= 300 && s.week >= 8,
+      A: { title: "Recall and replace all 600", fx: { cash: -7000, clarity: -4, churn: -0.3, trust: 2 }, log: "Couriers swapped the cuffs over two weeks. Huda wrote a calibration check into every new batch order." },
+      B: { title: "Keep them, recheck at clinic visits", fx: { clarity: 3, techDebt: 5, pmf: -2 }, log: "Tariq added a note to the doctors' dashboard: 'cuff batch 7 may read high'. Not every doctor opens the notes.",
+           echo: { after: [6, 14], icon: "🚨", title: "A GP raised a dose on your numbers", text: "A partner GP increased a patient's blood pressure medication after four weeks of high readings from batch 7 cuffs. The patient got dizzy at work. The GP rechecked by hand and called you.", fx: { churn: 0.6, trust: -4, users: -150 } } },
+    },
+    {
+      id: "dl_health_05",
+      cat: "Employers",
+      icon: "🔒",
+      title: "Northwind's HR wants names, not averages",
+      desc: "Northwind Retail pays $49 per employee per month for 300 staff on the plan. Their HR head now wants a list of who has high blood sugar, 'so we can support them'. The renewal is in 6 weeks.",
+      when: (s) => s.sector.id === "healthtech" && s.monthlyRevenue >= 3000,
+      A: { title: "Send anonymous group data only", fx: { mrrPct: -0.05, pmf: 2, culture: 2 }, log: "You sent a dashboard: 14% of enrolled staff in the pre-diabetes range, no names, no group smaller than 10 people. HR said they'd discuss internally." },
+      B: { title: "Build an opt-in sharing consent", fx: { mrrPct: 0.04, techDebt: 4, clarity: -2 }, log: "A new consent screen went live: 'Share my results with my employer'. 31 employees ticked it in the first week.",
+           echo: { after: [6, 12], icon: "📉", title: "Northwind's staff stopped measuring", text: "A message went round Northwind's staff WhatsApp group: 'HR can see your sugar readings'. Weekly measurements halved, even among people who never opted in.", fx: { churn: 0.6, users: -200, pmf: -3 } } },
+    },
+    {
+      id: "dl_health_06",
+      cat: "Doctors",
+      icon: "🚪",
+      title: "Your medical director has a hospital offer",
+      desc: "A private hospital offered Dr. Rania Haddad head of cardiology at twice what you pay her. She'll stay for 3% equity. Your licence names her as the responsible physician.",
+      when: (s) => s.sector.id === "healthtech" && s.team.length >= 3 && s.week >= 10,
+      A: { title: "Offer 2% with four-year vesting", fx: { equity: -2, morale: 4, cofounder: -3 }, log: "Rania took the 2% and asked for a seat in investor meetings. Tariq asked, quietly, how his own stake compares.",
+           echo: { after: [10, 20], icon: "🤝", title: "Rania's old ward starts referring", text: "Rania's former department now sends its discharged heart-failure patients to you for home monitoring. 40 came in the first month.", fx: { users: 300, mrrPct: 0.06, pmf: 3 } } },
+      B: { title: "Let her go, hire a part-time director", fx: { baseBurn: -400, morale: -6, pmf: -2 }, log: "Rania left with a warm farewell lunch. Dr. Adel covers medical governance on Tuesdays and Thursdays.",
+           echo: { after: [6, 12], icon: "🏛", title: "The ministry asks who is responsible", text: "The licence renewal form asks for a full-time responsible physician. Dr. Adel also works at three clinics. The inspector gave you 30 days to fix it.", fx: { clarity: -6, cash: -2500 } } },
+    },
+    {
+      id: "dl_health_07",
+      cat: "Clinical AI",
+      icon: "🤖",
+      title: "Investors want 'AI diagnosis' on the deck",
+      desc: "Tariq's model flags likely diabetes from 3 months of home glucose readings and agrees with your doctors 91% of the time. Layla says calling it 'AI diagnosis' would change your round.",
+      when: (s) => s.sector.id === "healthtech" && (s.stage >= 2 || s.week >= 20),
+      A: { title: "Launch it as AI diagnosis", fx: { trust: 8, users: 400, pmf: -2 }, log: "The launch post got 90,000 views. Your doctors found out about the feature from LinkedIn.",
+           echo: { after: [8, 18], icon: "🏛", title: "A letter about medical software", text: "The ministry wrote: software that diagnoses is a medical device and must be registered before use. The feature came down that week. Two investors asked where it went.", fx: { trust: -10, users: -300, techDebt: 6 } } },
+      B: { title: "Ship it as a flag for doctors to review", fx: { trust: -3, pmf: 3, techDebt: 3 }, log: "It shipped as 'Suggested for review'. Doctors confirm or dismiss each flag. Layla called it a missed headline." },
+    },
+    {
+      id: "dl_health_08",
+      cat: "Clinical",
+      icon: "🚨",
+      title: "A patient's 'heartburn' was a heart attack",
+      desc: "Last Thursday a 52-year-old told one of your doctors about burning in his chest after dinner and was advised antacids. Two days later he was admitted with a heart attack. He survived. His son posted the call summary.",
+      when: (s) => s.sector.id === "healthtech" && (s.stage >= 2 || s.week >= 22),
+      A: { title: "Open a full review and call the family", fx: { cash: -3000, clarity: -6, users: -100, pmf: 2 }, log: "You called the son yourself and told him a review had started. Your malpractice insurer was not happy that you called first.",
+           echo: { after: [10, 20], icon: "🛡", title: "The review became a protocol", text: "The chest-pain red-flag checklist your review produced was the reason a hospital group gave for choosing you to follow up their discharged cardiac patients.", fx: { mrrPct: 0.08, users: 250, trust: 4 } } },
+      B: { title: "Let the malpractice insurer lead", fx: { cash: -500, clarity: 2, users: -200 }, log: "The insurer's lawyer sent the family a formal letter. The post had 4,000 shares by Sunday.",
+           echo: { after: [6, 14], icon: "🏛", title: "The complaint reached the ministry", text: "The son filed a complaint with the health ministry. The inspector asked for your incident report and the doctor's chest-pain training record. Neither existed on paper.", fx: { trust: -6, clarity: -8, cash: -2500 } } },
+    },
+  ];
+
+  const DL_EDU = [
+    {
+      id: "dl_edu_01",
+      cat: "Cohorts",
+      icon: "📅",
+      title: "Nine students for a fifteen-seat cohort",
+      desc: "Cohort 1 starts on Sunday. Nine of 15 seats are paid at $1,800 each and you break even at 13. Tariq says run it anyway. Your ads freelancer says push the start by four weeks and fill it properly.",
+      when: (s) => s.sector.id === "edtech" && s.week >= 3 && s.week <= 10,
+      A: { title: "Start on Sunday with nine", fx: { cash: -2500, pmf: 3, morale: 4, clarity: -3 }, log: "Nine laptops, one whiteboard, Tariq on the back row. By Thursday the class had a WhatsApp group with its own memes.",
+           echo: { after: [10, 18], icon: "🤝", title: "The nine bring their friends", text: "Seven of the nine got job offers. Their posts did what your ads couldn't: 23 applications for the next cohort name one of them as the reason.", fx: { users: 200, mrrPct: 0.06, pmf: 2 } } },
+      B: { title: "Push the start by four weeks", fx: { mrrPct: 0.04, users: -60, churn: 0.3, clarity: 3 }, log: "Three students asked for their deposits back. Five stayed. One brought a cousin who paid in full." },
+    },
+    {
+      id: "dl_edu_02",
+      cat: "Admissions",
+      icon: "👔",
+      title: "A father wants to pay upfront, and to watch",
+      desc: "Yousef failed your admissions test by 6 points. His father offers $2,400 by transfer today if you admit him, and wants a weekly WhatsApp report on attendance and grades. Cohort 2 still has four empty seats.",
+      when: (s) => s.sector.id === "edtech" && s.week >= 4 && s.week <= 12,
+      A: { title: "Admit him and send the reports", fx: { cash: 2400, morale: -3, pmf: -2 }, log: "The money arrived before lunch. Your lead instructor now writes a report every Thursday night.",
+           echo: { after: [7, 12], icon: "🧾", title: "The father wants his money back", text: "Yousef stopped coming in week 6. His father sat in your reception for two hours and left with a $1,800 refund and a promise to tell every family he knows.", fx: { cash: -1800, clarity: -6, users: -40 } } },
+      B: { title: "Hold the bar, offer the prep course", fx: { clarity: -2, pmf: 2, mrrPct: -0.02 }, log: "The father called it bureaucracy. Yousef signed up for the free 3-week prep course, on his own.",
+           echo: { after: [8, 14], icon: "🎓", title: "Yousef passes on the second try", text: "Yousef passed the test by 11 points and finished in the top third of his cohort. His father now forwards your posts to the family group.", fx: { users: 80, pmf: 2 } } },
+    },
+    {
+      id: "dl_edu_03",
+      cat: "Instructors",
+      icon: "🏦",
+      title: "A bank offers your lead instructor double",
+      desc: "Hazem, rated 4.8 out of 5 by three cohorts, has an offer from a bank's AI team at $9,000 a month. Cohort 4 has six weeks left, and half of them enrolled after watching his YouTube videos.",
+      when: (s) => s.sector.id === "edtech" && s.week >= 10 && s.monthlyRevenue >= 3000,
+      A: { title: "Match it with salary and equity", fx: { baseBurn: 1300, equity: -1, morale: 4, pmf: 2 }, log: "Hazem stayed. The other instructors now know exactly what a counter-offer looks like.",
+           echo: { after: [12, 22], icon: "💼", title: "Two more instructors want a bank offer", text: "Two instructors came back from recruiter calls with numbers. Neither has an offer yet. Both mentioned Hazem's package in the same sentence.", fx: { baseBurn: 700, morale: -4 } } },
+      B: { title: "Let him go, promote his assistant", fx: { morale: -4, pmf: -3, churn: 0.5, xp: 30 }, log: "Hazem's farewell session ran an hour over. Dina, his teaching assistant, takes the cohort on Sunday.",
+           echo: { after: [10, 20], icon: "🌱", title: "Dina's cohort finishes the strongest yet", text: "Dina turned the hardest module into short daily exercises. Completion hit 91%, and applicants this month asked for her class by name.", fx: { pmf: 4, churn: -0.5, morale: 4 } } },
+    },
+    {
+      id: "dl_edu_04",
+      cat: "Outcomes",
+      icon: "📊",
+      title: "Your rival's billboards say 94% placement",
+      desc: "SkillUp Arabia counts internships, freelance gigs and graduates hired as its own teaching assistants. Your honest number is 61% in tech jobs within 180 days. Counted their way, yours would be 89%.",
+      when: (s) => s.sector.id === "edtech" && s.monthlyRevenue >= 4000,
+      A: { title: "Count it their way and say 89%", fx: { users: 350, mrrPct: 0.08, pmf: -2 }, log: "The new landing page went live on Tuesday. Applications rose 40% in two weeks.",
+           echo: { after: [12, 24], icon: "📉", title: "A graduate posts the real list", text: "A graduate counted her own cohort and posted it: 9 of 22 in tech jobs, 4 of them as your teaching assistants. Parents shared it faster than any ad.", fx: { users: -300, churn: 0.8, trust: -5 } } },
+      B: { title: "Publish 61% and the method", fx: { mrrPct: -0.03, trust: 3, pmf: 3, clarity: 2 }, log: "You published every graduate, every role, every salary band on one page. Sales says it's the hardest number in the market to sell.",
+           echo: { after: [10, 20], icon: "🏛", title: "Employers start quoting your report", text: "An HR director at a hiring partner forwarded your outcomes report to two other companies. One asked to interview your whole next cohort.", fx: { mrrPct: 0.07, users: 150, trust: 3 } } },
+    },
+    {
+      id: "dl_edu_05",
+      cat: "Placement",
+      icon: "🧊",
+      title: "Your biggest hiring partner freezes hiring",
+      desc: "Northwind Retail hired 11 of your last 30 graduates. This morning they froze junior hiring for two quarters. Cohort 5 graduates in three weeks, and every contract says: a tech job in 180 days or your money back.",
+      when: (s) => s.sector.id === "edtech" && s.week >= 14 && s.monthlyRevenue >= 5000,
+      A: { title: "Hire two people to find new employers", fx: { cash: -4000, baseBurn: 900, clarity: -4, pmf: 2 }, log: "Salma and Fady start Monday with a list of 140 companies and a cold-call script Tariq hates.",
+           echo: { after: [8, 16], icon: "🤝", title: "Fourteen new hiring partners", text: "Salma's sheet now lists 14 companies that have hired at least one graduate. None takes more than 3 a quarter, and that is the point.", fx: { churn: -0.6, pmf: 3, mrrPct: 0.05 } } },
+      B: { title: "Stretch the guarantee to 270 days for new students", fx: { clarity: 3, mrrPct: -0.02, trust: -2 }, log: "The new contract went out with the longer window. Cohort 5 still has the old one.",
+           echo: { after: [6, 12], icon: "💸", title: "Cohort 5 asks for its money back", text: "Day 181 arrived for Cohort 5. Six graduates without tech jobs sent the same lawyer's letter, word for word, asking for a full refund.", fx: { cash: -7000, clarity: -6, trust: -3 } } },
+    },
+    {
+      id: "dl_edu_06",
+      cat: "Income share",
+      icon: "💵",
+      title: "23 graduates owe you 12% and aren't paying",
+      desc: "58 graduates on income-share agreements are employed. 23 haven't sent a payslip in three months. A collections agency offers to chase them for 30% of whatever it recovers, starting with calls to their employers.",
+      when: (s) => s.sector.id === "edtech" && s.week >= 16 && s.monthlyRevenue >= 3000,
+      A: { title: "Hand the list to the agency", fx: { cash: 4500, morale: -3, pmf: -2 }, log: "The agency recovered $6,400 in five weeks and kept its cut. Two graduates blocked your number.",
+           echo: { after: [6, 14], icon: "📱", title: "A collections call goes viral", text: "A graduate filmed the agency calling his manager about what he owes you. Half a million views later, applicants ask whether you'll call their boss too.", fx: { users: -300, churn: 0.7, trust: -3 } } },
+      B: { title: "Chase them yourselves, with a grace plan", fx: { clarity: -6, cash: -1200, pmf: 2 }, log: "You called all 23 yourself. Eleven had lost their jobs or taken pay cuts. Nine agreed to a plan. Three stopped answering.",
+           echo: { after: [10, 20], icon: "💰", title: "The income-share payments come in", text: "Treated like people, the graduates on grace plans became your most reliable payers. Income share now covers 18% of monthly revenue.", fx: { mrrPct: 0.07, pmf: 2 } } },
+    },
+    {
+      id: "dl_edu_07",
+      cat: "Government",
+      icon: "🏛",
+      title: "The ministry wants 600 funded seats",
+      desc: "A national upskilling programme will fund 600 seats at $1,100 each, less than half your price. It pays 90 days after each student passes the ministry exam, and wants fingerprint attendance and a 40-page report per cohort.",
+      when: (s) => s.sector.id === "edtech" && (s.stage >= 2 || s.week >= 22),
+      A: { title: "Bid for all 600 seats", fx: { users: 1200, mrrPct: 0.12, baseBurn: 1200, clarity: -6, pmf: -2 }, log: "You won the tender. You also hired a full-time coordinator whose only job is the attendance portal.",
+           echo: { after: [12, 24], icon: "⏳", title: "Invoice three is waiting for a stamp", text: "The ministry approved the exam results, but the payment needs a signature from an official on leave. $66,000 is stuck, and payroll is due on the 25th.", fx: { cash: -6000, clarity: -8, trust: -3 } } },
+      B: { title: "Keep your price and skip the tender", fx: { pmf: 2, trust: -3, morale: 2 }, log: "Layla asked twice why you would turn down 600 students. SkillUp Arabia won the tender a week later." },
+    },
+    {
+      id: "dl_edu_08",
+      cat: "Corporate training",
+      icon: "🏢",
+      title: "A bank wants your AI course for 300 staff",
+      desc: "A regional bank offers $180,000 to train 300 employees in applied AI over five months, under its own brand. It wants your three best instructors full-time and custom case studies. No placements, no refunds.",
+      when: (s) => s.sector.id === "edtech" && (s.stage >= 2 || s.week >= 26) && s.monthlyRevenue >= 6000,
+      A: { title: "Sign it and lend them the instructors", fx: { cash: 15000, pmf: -4, churn: 0.6, morale: -3 }, log: "The deposit cleared on Thursday. Your three best instructors now teach risk analysts in a tower across town.",
+           echo: { after: [14, 26], icon: "📈", title: "The bank renews and tells its peers", text: "The bank renewed for 500 staff and introduced you to two insurers. Corporate training is now 30% of revenue, and it pays on time.", fx: { mrrPct: 0.1, cash: 3000, pmf: -2 } } },
+      B: { title: "Decline and protect the bootcamp", fx: { pmf: 3, trust: -3, clarity: 2 }, log: "The bank's head of learning said she would keep your deck on file. Your instructors stayed with the cohort." },
+    },
+  ];
+
   const MAIL_EXTRA = [
     {
       kind: "mail",
@@ -3754,6 +4230,231 @@ __d(function (g, r, i, a, m, _e, d) {
     },
   ];
 
+  const MAIL_SAAS = [
+    {
+      kind: "mail",
+      id: "mx_saas_01",
+      from: "📧 Yasmin · PromptOps Cloud",
+      title: "Your AI agents aren't enterprise-ready without us",
+      body: "Observability, evals, guardrails and red-teaming in one platform, $1,400 a month. Most AI startups fail InfoSec without it. 20 minutes on Thursday?",
+      when: (s) => s.sector.id === "saas_ai" && s.week >= 5,
+      left: { label: "Book the demo", fx: { clarity: -3 }, log: "Twenty minutes became fifty. The dashboard looked great and needed 3 months of integration you don't have." },
+      right: { label: "Archive", log: "Archived. Your evals are 400 questions in a spreadsheet, and they work." },
+    },
+    {
+      kind: "mail",
+      id: "mx_saas_02",
+      from: "🏛 National Data Office · Compliance",
+      title: "AI processors of personal data must register",
+      body: "Companies using AI to process personal data must register, name a data protection officer and file an impact assessment within 30 days.",
+      when: (s) => s.sector.id === "saas_ai" && s.week >= 9,
+      left: { label: "Register and file it properly", fx: { cash: -1500, clarity: -4, trust: 3 }, log: "A lawyer, two weeks and a 31-page assessment. Your registration number now opens every security questionnaire you answer." },
+      right: { label: "Wait until a client asks", fx: { clarity: 2, mrrPct: -0.03 }, log: "You parked it. Two weeks later a bank's procurement asked for the registration number, and onboarding paused." },
+      ignore: { fx: { mrrPct: -0.06, trust: -3 }, log: "A bank's procurement asked for your registration number. You didn't have one, and their onboarding stopped there." },
+    },
+    {
+      kind: "mail",
+      id: "mx_saas_03",
+      from: "☁ Rami · Regional cloud, partnerships",
+      title: "$20,000 in credits if you host your agents with us",
+      body: "Credits for 12 months, GPUs in-country, and co-selling to our banking clients. One condition: we are your exclusive cloud for 24 months.",
+      when: (s) => s.sector.id === "saas_ai" && s.week >= 12 && s.monthlyRevenue >= 3000,
+      left: { label: "Take the credits and the deal", fx: { baseBurn: -900, mrrPct: 0.04, techDebt: 5 }, log: "Migration took Tariq 5 weeks. Their sales team introduced you to two banks. You're on their cloud for the next 24 months." },
+      right: { label: "Decline the exclusivity", fx: { baseBurn: -300, clarity: 1 }, log: "Rami came back with $8,000 in credits and no exclusivity. No co-selling either." },
+    },
+    {
+      kind: "mail",
+      id: "mx_saas_04",
+      from: "🤝 Omar Sabry · Design partner",
+      title: "Your agent answered a Saudi customer in Egyptian again",
+      body: "Third time this week. Our Riyadh customers write in Khaleeji and Arabizi, and the agent replies like a Cairo call centre. My team is screenshotting it.",
+      when: (s) => s.sector.id === "saas_ai" && s.week >= 6,
+      left: { label: "Build a dialect test set with him", fx: { cash: -800, clarity: -3, pmf: 3 }, log: "Omar's team sent 1,200 real tickets. Tariq built a dialect test set. Accuracy in Khaleeji went from 71% to 88%." },
+      right: { label: "Force all replies to formal Arabic", fx: { techDebt: 2, churn: 0.3, pmf: -1 }, log: "Every reply now comes in formal Arabic. No more Egyptian. Omar says it sounds like a government letter." },
+      ignore: { fx: { churn: 0.5, mrrPct: -0.04 }, log: "Omar's team switched the agent to English only. Usage in Riyadh dropped by a third." },
+    },
+  ];
+
+  const MAIL_FIN = [
+    {
+      kind: "mail",
+      id: "mx_fin_01",
+      when: (s) => s.sector.id === "fintech" && s.week >= 5,
+      from: "🤖 Kareem · FraudShield AI",
+      title: "Regulators will require AI fraud screening by Q3",
+      body: "Our model blocks 99.7% of fraud with zero false positives. Central banks are moving fast. The pilot is $2,000 a month and we can start Monday.",
+      left: { label: "Start the $2,000 pilot", fx: { cash: -2000, clarity: -3 }, log: "The model flagged your own test payments as fraud. The 'requirement' turned out to be a conference panel." },
+      right: { label: "Archive", log: "Archived. No regulator has sent you that rule, and they would have." },
+    },
+    {
+      kind: "mail",
+      id: "mx_fin_02",
+      when: (s) => s.sector.id === "fintech" && !s.mkt.licensed && s.week >= 6,
+      from: "🏛 Central bank · Licensing department",
+      title: "Proof of minimum capital required",
+      body: "Your file is complete except proof of paid-up minimum capital held in a blocked account. Please submit the bank certificate within 10 working days.",
+      left: { label: "Lock the capital from runway", fx: { cash: -12000, trust: 4, clarity: -3 }, log: "$12,000 now sits in an account you can't touch. The certificate went in on day 4 of the deadline." },
+      right: { label: "Ask Layla to fund it", fx: { equity: -2, trust: -2, clarity: 2 }, log: "Layla wired the capital for 2 points of equity. Her email said this should have been in the plan." },
+      ignore: { fx: { trust: -4, clarity: -5 }, log: "The deadline passed without a certificate. Your file went back to the bottom of the queue." },
+    },
+    {
+      kind: "mail",
+      id: "mx_fin_03",
+      when: (s) => s.sector.id === "fintech" && s.mkt.licensed === true && s.week >= 12,
+      from: "🏦 Dalia · Sponsor bank, risk team",
+      title: "3 AML alerts closed with no notes",
+      body: "Our sample found 3 alerts closed without notes, and 1 that may need a suspicious transaction report. We need the case files by Thursday.",
+      left: { label: "Rebuild the files properly", fx: { clarity: -5, morale: -3, trust: 2 }, log: "Two late nights reopening alerts. You filed one report with the financial intelligence unit and sent Dalia every note." },
+      right: { label: "Send what we have", fx: { clarity: 2, trust: -3 }, log: "Dalia replied within the hour: this is not a case file. She copied her manager." },
+      ignore: { fx: { mrrPct: -0.05, trust: -5 }, log: "Nothing reached the bank by Thursday. It capped your new merchant approvals at 5 a week until further notice." },
+    },
+    {
+      kind: "mail",
+      id: "mx_fin_04",
+      when: (s) => s.sector.id === "fintech" && s.mkt.licensed === true && s.monthlyRevenue >= 2500,
+      from: "🛍 Mona · Founder, abaya label",
+      title: "I lost a chargeback I can prove",
+      body: "A customer disputed a $640 order she signed for. Your dashboard says I lost and owe the $15 fee. Nobody ever asked me for the delivery proof.",
+      left: { label: "Re-file it with her proof", fx: { clarity: -3, churn: -0.2, techDebt: 2 }, log: "You re-filed with the signed delivery note. Tariq added an evidence upload to the dispute screen the same week." },
+      right: { label: "Refund her fees and apologise", fx: { cash: -300, churn: -0.1, pmf: -1 }, log: "You refunded the fee and a month of charges. Mona was polite. The dispute screen still has no upload button." },
+    },
+  ];
+
+  const MAIL_MKT = [
+    {
+      kind: "mail",
+      id: "mx_mkt_01",
+      when: (s) => s.sector.id === "ecommerce_marketplace" && s.week >= 4,
+      from: "📧 Hazem · CartPulse AI",
+      title: "Your abandoned carts cost you $40,000 a year",
+      body: "We scanned your storefront: 71% of carts are abandoned. Our AI recovery suite is $600 a month and pays for itself in week one, guaranteed.",
+      left: { label: "Start the free trial", fx: { cash: -1200, clarity: -3 }, log: "The trial renewed itself twice at $600 a month. It recovered 9 carts, mostly buyers who were coming back anyway." },
+      right: { label: "Archive", log: "Archived. Most of those carts were people comparing delivery fees." },
+    },
+    {
+      kind: "mail",
+      id: "mx_mkt_02",
+      when: (s) => s.sector.id === "ecommerce_marketplace" && s.monthlyRevenue >= 2500,
+      from: "🏛 Consumer Protection · E-commerce unit",
+      title: "Every listing must show the seller's trade licence",
+      body: "Under the e-commerce rules, each listing must show the seller's commercial registration number and a returns policy in Arabic. You have 30 days to comply.",
+      left: { label: "Audit every listing now", fx: { cash: -1500, clarity: -5, trust: 2 }, log: "Salma's team checked 2,300 listings in a week. 140 sellers had no licence and came off the site." },
+      right: { label: "Ask for a 60-day extension", fx: { clarity: -3, techDebt: 2 }, log: "The extension came back approved for 30 days, not 60. The audit happened anyway, in a rush." },
+      ignore: { fx: { cash: -5000, trust: -4 }, log: "An inspector ordered 3 random items. Two listings had no licence number. The fine arrived by courier." },
+    },
+    {
+      kind: "mail",
+      id: "mx_mkt_03",
+      when: (s) => s.sector.id === "ecommerce_marketplace" && s.monthlyRevenue >= 3500,
+      from: "📦 Khaled · SwiftLine Couriers",
+      title: "Your parcel rate goes up next month",
+      body: "Fuel and driver costs are up. Your rate goes from $3.20 to $3.80 a parcel next month, unless you commit to 3,000 parcels a month for 12 months.",
+      left: { label: "Commit to 3,000 a month", fx: { baseBurn: 300, churn: -0.2, clarity: 2 }, log: "You signed. The rate held, and in slow months you'll pay for parcels you never send." },
+      right: { label: "Bring in a second courier", fx: { baseBurn: -200, clarity: -5, techDebt: 3 }, log: "A second courier now covers the north of the city. Ops tracks two dashboards and two sets of excuses." },
+      ignore: { fx: { baseBurn: 400, mrrPct: -0.02 }, log: "The new rate card applied on its own. Every order now earns $0.60 less, and nobody decided it." },
+    },
+    {
+      kind: "mail",
+      id: "mx_mkt_04",
+      when: (s) => s.sector.id === "ecommerce_marketplace" && s.week >= 10,
+      from: "🛍 Dalia · repeat buyer since launch",
+      title: "My Eid gift arrived open, a day late",
+      body: "I've ordered 41 times. The perfume for my mother came on the second day of Eid with the seal broken. I'm not angry. I just want to know you still care.",
+      left: { label: "Call her and refund it", fx: { cash: -150, clarity: -2, churn: -0.2 }, log: "You called her yourself. She shared the call in her stories, and three of her friends ordered that week." },
+      right: { label: "Send the apology code", fx: { clarity: 1, churn: 0.2 }, log: "She got a 10% code by email. Her next order, three weeks later, was on Souqly." },
+    },
+  ];
+
+  const MAIL_HEALTH = [
+    {
+      kind: "mail",
+      id: "mx_health_01",
+      when: (s) => s.sector.id === "healthtech" && s.week >= 4,
+      from: "📧 Kevin · ComplyMed Certification",
+      title: "URGENT: your app is not HIPAA certified",
+      body: "Clinics will reject any telehealth app without our HIPAA Certified badge. Fast-track certification in 10 days for $1,800. Only 3 slots left this month.",
+      left: { label: "Buy the certificate", fx: { cash: -1800, clarity: -2 }, log: "A PDF badge arrived. HIPAA is a US law with no official certificate, and the clinic in Riyadh asked about local data rules instead." },
+      right: { label: "Archive", log: "Archived. Your buyers ask where patient data is stored, not for a badge." },
+    },
+    {
+      kind: "mail",
+      id: "mx_health_02",
+      when: (s) => s.sector.id === "healthtech" && s.week >= 9,
+      from: "🏛 Health ministry · E-health unit",
+      title: "E-prescriptions must go through the national platform",
+      body: "From next quarter, every prescription issued after a virtual consult must be sent through the national e-prescription system. Integration deadline: 60 days.",
+      left: { label: "Put Tariq on it now", fx: { techDebt: -3, clarity: -4, pmf: -1 }, log: "Tariq paused the roadmap and spent three weeks on the ministry's test server. Your doctors' prescriptions now reach any pharmacy." },
+      right: { label: "Ask for an extension", fx: { clarity: 2, trust: -2 }, log: "The unit granted 30 more days and copied your licence file on the reply." },
+      ignore: { fx: { mrrPct: -0.08, churn: 0.5 }, log: "Day 61: pharmacies stopped accepting your doctors' prescriptions. Patients came back to the app asking why." },
+    },
+    {
+      kind: "mail",
+      id: "mx_health_03",
+      when: (s) => s.sector.id === "healthtech" && s.monthlyRevenue >= 1500,
+      from: "🩺 Dr. Samir Khalil · Partner clinic",
+      title: "I'll send you my diabetes patients, but",
+      body: "I have 30 patients a month who need home glucose monitoring. Other platforms pay me $15 per patient I refer. What can you do?",
+      left: { label: "Pay the referral fee", fx: { users: 200, cash: -1500, trust: -2 }, log: "Thirty patients a month started arriving. Your lawyer asked you to stop calling it a referral fee in writing." },
+      right: { label: "Offer him their data, not cash", fx: { users: 80, techDebt: 3, pmf: 2 }, log: "You built Dr. Samir a weekly summary of his patients' readings. He sent eight patients and called it 'the first useful app'." },
+    },
+    {
+      kind: "mail",
+      id: "mx_health_04",
+      when: (s) => s.sector.id === "healthtech" && s.week >= 12,
+      from: "🤝 Omar Sabry · Care-plan patient",
+      title: "My mother's readings stopped syncing",
+      body: "Her glucose meter hasn't sent anything for 9 days. She's 74 and she thinks she broke it, so she stopped measuring. I pay for both our plans.",
+      left: { label: "Send a nurse to the house", fx: { cash: -300, clarity: -2, churn: -0.3, pmf: 2 }, log: "Nurse Huda re-paired the meter in ten minutes and stayed for tea. Omar posted about it in his family group." },
+      right: { label: "Courier a new meter", fx: { cash: -60, churn: 0.1 }, log: "The new meter arrived in two days. Omar's mother asked her grandson to set it up on Friday." },
+      ignore: { fx: { churn: 0.4, mrrPct: -0.03 }, log: "No reply for a week. Omar cancelled both plans and booked his mother at the clinic near their house." },
+    },
+  ];
+
+  const MAIL_EDU = [
+    {
+      kind: "mail",
+      id: "mx_edu_01",
+      when: (s) => s.sector.id === "edtech" && s.week >= 4,
+      from: "📧 Bassem · CertChain Credentials",
+      title: "Your certificates can be faked in 5 minutes",
+      body: "Employers no longer trust PDF certificates. Our blockchain credentials end fraud for good. Setup is $4,000 plus $6 per graduate. Demo this week?",
+      left: { label: "Book the demo", fx: { clarity: -3 }, log: "The demo was a QR code that opens a web page. No employer has ever asked you to verify a certificate." },
+      right: { label: "Archive", log: "Archived. Employers open the GitHub link, not the PDF." },
+    },
+    {
+      kind: "mail",
+      id: "mx_edu_02",
+      when: (s) => s.sector.id === "edtech" && s.week >= 10 && s.monthlyRevenue >= 3000,
+      from: "🏛 Training Licensing Directorate · Inspections",
+      title: "Your certificate wording breaks the licensing rules",
+      body: "Your certificates say Diploma. Only accredited institutes may use that word. Correct every issued certificate within 30 days or your licence is suspended.",
+      left: { label: "Reissue them all as certificates", fx: { cash: -1500, clarity: -3, trust: 2 }, log: "You reissued 214 certificates and emailed every graduate. Four asked whether their old one had been fake." },
+      right: { label: "Start full accreditation", fx: { cash: -5000, baseBurn: 300, trust: 4, pmf: 2 }, log: "The accreditation file runs to 120 pages and needs a quality manager. The inspector gave you 90 days to show progress." },
+      ignore: { fx: { trust: -5, users: -200, mrrPct: -0.08 }, log: "On day 31 an inspector arrived with a stamped notice. You couldn't enrol new students for three weeks." },
+    },
+    {
+      kind: "mail",
+      id: "mx_edu_03",
+      when: (s) => s.sector.id === "edtech" && s.week % 52 >= 20 && s.week % 52 < 30 && s.monthlyRevenue >= 2000,
+      from: "🤝 Rasha Kamal · Northwind Retail talent team",
+      title: "Interviews pause until September",
+      body: "Half our hiring managers travel in July and August. We'll interview your latest graduates after the summer. Can you keep them warm for us?",
+      left: { label: "Run a paid summer project", fx: { cash: -2000, churn: -0.4, pmf: 2 }, log: "Twelve graduates built an inventory tool for a real client over 6 weeks. Three had offers by September." },
+      right: { label: "Tell them to apply elsewhere", fx: { clarity: 2, churn: 0.4 }, log: "The graduates scattered. Four took the first offer they got, two of them outside tech." },
+      ignore: { fx: { churn: 0.6, trust: -2 }, log: "Nobody heard from you for a month. Graduates started posting about the silence in the alumni group." },
+    },
+    {
+      kind: "mail",
+      id: "mx_edu_04",
+      when: (s) => s.sector.id === "edtech" && s.activeUsers >= 400,
+      from: "🕵 Mazen · Current student",
+      title: "Someone is selling our course on Telegram",
+      body: "A channel with 8,000 members sells all your recorded lessons for $15. It already has last week's AI module. Thought you should know.",
+      left: { label: "Send takedowns, watermark videos", fx: { cash: -1200, techDebt: 3, clarity: -2 }, log: "Telegram removed the channel in nine days. Two new ones appeared. Every video now carries the viewer's email." },
+      right: { label: "Let it go, sell the mentoring", fx: { arpu: -1, users: 100, pmf: 2 }, log: "You stopped guarding the videos and doubled live code reviews. Three people from the channel applied for the paid cohort." },
+    },
+  ];
+
   // ================================================================ stories
   // Phase 4 of the content plan: depth.
   //   * a library of 80+ dilemmas (content/dl_*.js) dealt alongside the
@@ -3765,10 +4466,37 @@ __d(function (g, r, i, a, m, _e, d) {
   //   * the inbox gets noise and threads that remember (content/mail.js)
   // shares App's scope (see economy.js / market.js / org.js).
 
-  const LIBRARY = [].concat(DL_PRODUCT, DL_PEOPLE, DL_LIFE, DL_MENA);
+  // general dilemmas, minus the B2B-only stories for consumer industries, plus
+  // each industry's own pack (shown only in that industry, and favoured there)
+  const B2B_ONLY = ["dl_prod_01", "dl_prod_02", "dl_prod_11", "dl_prod_16", "dl_ppl_15", "dl_life_01", "dl_life_02", "dl_mena_09"];
+  // a condition that can't be checked yet (say, market data on day one) just means "not now"
+  const safe = (f) => (s) => {
+    try {
+      return !f || !!f(s);
+    } catch (e) {
+      return false;
+    }
+  };
+  const onlyIn = (sectors, d, extra) => {
+    const ok = safe(d.when);
+    return { ...d, ...extra, when: (s) => !!s.sector && sectors.includes(s.sector.id) && ok(s) };
+  };
+  const INDUSTRY = (id, list) => list.map((d) => onlyIn([id], d, { industry: true }));
+  const LIBRARY = []
+    .concat(DL_PRODUCT, DL_PEOPLE, DL_LIFE, DL_MENA)
+    .map((d) => (B2B_ONLY.includes(d.id) ? onlyIn(["saas_ai", "fintech"], d) : d))
+    .concat(INDUSTRY("saas_ai", DL_SAAS), INDUSTRY("fintech", DL_FIN), INDUSTRY("ecommerce_marketplace", DL_MKT), INDUSTRY("healthtech", DL_HEALTH), INDUSTRY("edtech", DL_EDU));
+  const MAIL_ALL = [].concat(
+    MAIL_EXTRA,
+    INDUSTRY("saas_ai", MAIL_SAAS),
+    INDUSTRY("fintech", MAIL_FIN),
+    INDUSTRY("ecommerce_marketplace", MAIL_MKT),
+    INDUSTRY("healthtech", MAIL_HEALTH),
+    INDUSTRY("edtech", MAIL_EDU),
+  );
 
   // new mail: noise to learn to ignore, and threads that follow up earlier answers
-  MAIL_EXTRA.forEach((c) => {
+  MAIL_ALL.forEach((c) => {
     const side = (x) => x && { label: x.label, log: x.log, effects: {}, mx: x.fx };
     INBOX.push({
       id: c.id,
@@ -3921,7 +4649,10 @@ __d(function (g, r, i, a, m, _e, d) {
         }
       });
     if (!pool.length) return null;
-    const d = pool[Math.floor(Math.random() * pool.length)];
+    // the industry's own dilemmas come up about every other time while any are left
+    const own = pool.filter((x) => x.industry),
+      from = own.length && Math.random() < 0.45 ? own : pool;
+    const d = from[Math.floor(Math.random() * from.length)];
     st.seen[d.id] = s.week;
     return {
       id: d.id,
@@ -4697,6 +5428,301 @@ __d(function (g, r, i, a, m, _e, d) {
     },
   };
 
+  const NOTES_SAAS = {
+    dl_saas_01: {
+      lesson: "A free pilot with no success metric, no end date and no agreed price is a science project. Agree all three before you switch anything on.",
+      example: "Enterprise AI buyers often run several vendor pilots at once. The ones that convert usually had a finance sponsor and a conversion price agreed on day one.",
+      read: "Mastering the Complex Sale, Jeff Thull",
+      page: "pricing",
+      skills: { A: { discovery: 1, frugality: -1 }, B: { frugality: 1, discovery: -1 } },
+    },
+    dl_saas_02: {
+      lesson: "In enterprise AI, the question about training on their data is a sales question. Have a short, written, true answer before the first meeting.",
+      example: "In 2023 Samsung restricted staff use of public chatbots after engineers pasted source code into one. Enterprise legal teams still bring that story to every AI vendor call.",
+      read: "Competing in the Age of AI, Marco Iansiti and Karim Lakhani",
+      page: "security",
+      skills: { A: { integrity: 1, frugality: -1 }, B: { frugality: 1, discovery: 1 } },
+    },
+    dl_saas_03: {
+      lesson: "An agent that can't say it doesn't know will eventually invent something in front of the wrong person. Build evaluations before you add features.",
+      example: "In 2024 a Canadian tribunal held Air Canada liable for a refund policy its website chatbot made up, rejecting the argument that the bot was responsible for itself.",
+      read: "Designing Machine Learning Systems, Chip Huyen",
+      page: "sector_saas",
+      skills: { A: { integrity: 1, discovery: 1 }, B: { frugality: 1 } },
+    },
+    dl_saas_04: {
+      lesson: "In AI software, your costs move with usage. If your price doesn't move with usage too, your best customers become your least profitable ones.",
+      example: "Many AI startups found that their heaviest users on flat plans were losing them money. Usage tiers and per-task pricing spread fast across the industry after 2023.",
+      read: "The New Business of AI, Martin Casado and Matt Bornstein",
+      page: "sector_saas",
+      skills: { A: { frugality: 1, discovery: -1 }, B: { discovery: 1, selfcare: -1 } },
+    },
+    dl_saas_05: {
+      lesson: "One model provider is one supplier: fine until the price, the version or the uptime changes. Keep an exit you have actually tested, not one on a slide.",
+      example: "In January 2024 OpenAI retired its older GPT-3 completion models. Teams that had tuned prompts to them had to re-test and migrate their products.",
+      read: "7 Powers, Hamilton Helmer",
+      page: "sector_saas",
+      skills: { A: { frugality: 1 }, B: { discovery: 1, frugality: -1 } },
+    },
+    dl_saas_06: {
+      lesson: "A contract held up by one champion is one resignation away from a tender. Know at least three people in every account who would miss you.",
+      example: "Enterprise sales teams treat a champion changing jobs as a top churn signal. The good ones follow the champion to the new company and rebuild the old account.",
+      read: "The Challenger Sale, Matthew Dixon and Brent Adamson",
+      page: "churn",
+      skills: { A: { discovery: 1, selfcare: -1 }, B: { fundraising: 1, discovery: -1 } },
+    },
+    dl_saas_07: {
+      lesson: "An on-prem deal buys a second product you must maintain forever. Price it for the second team you'll need, or offer the closest cloud option first.",
+      example: "Many enterprise software companies built an on-prem edition for one large client and watched every release slow down for everyone else afterwards.",
+      read: "Crossing the Chasm, Geoffrey Moore",
+      page: "custom_work",
+      skills: { A: { frugality: 1, discovery: -1 }, B: { discovery: 1, fundraising: -1 } },
+    },
+    dl_saas_08: {
+      lesson: "Services revenue pays the bills and lowers your valuation multiple. Report software and services margins separately so you see which company you're becoming.",
+      example: "Investors usually value services revenue at a fraction of recurring software revenue, so two companies with the same revenue can be worth very different amounts.",
+      read: "SaaS Metrics 2.0, David Skok",
+      page: "sector_saas",
+      skills: { A: { fundraising: 1, frugality: -1 }, B: { frugality: 1, fundraising: -1 } },
+    },
+  };
+
+  const NOTES_FIN = {
+    dl_fin_01: {
+      lesson: "In payments, compliance is part of the product the regulator and the bank are buying. Hire the person before the licence, not after the first finding.",
+      example: "Licensing teams usually interview the named compliance officer. Files signed by a part-time consultant shared across applicants often come back with long comment lists.",
+      read: "Who: The A Method for Hiring, Geoff Smart and Randy Street",
+      page: "sector_fin",
+      skills: { A: { hiring: 1, frugality: -1 }, B: { frugality: 1, hiring: -1 } },
+    },
+    dl_fin_02: {
+      lesson: "KYC friction is a risk control, not just a funnel leak. Cut steps by risk tier: low limits until papers arrive, full checks before real volume.",
+      example: "Tiered onboarding, with small limits until documents are verified, is how many wallets and gateways grow quickly without letting the riskiest accounts in unchecked.",
+      read: "Lean Analytics, Alistair Croll and Benjamin Yoskovitz",
+      page: "sector_fin",
+      skills: { A: { discovery: 1, integrity: -1 }, B: { integrity: 1, frugality: -1 } },
+    },
+    dl_fin_03: {
+      lesson: "High-risk merchants pay more because they lend you their risk. Price in the chargebacks, the scheme fines and the bank's patience, not just the rate.",
+      example: "Card schemes run dispute monitoring programmes: once a merchant or acquirer stays above the thresholds, fines rise each month until the ratio comes down.",
+      read: "The Pay Off, Gottfried Leibbrandt and Natasha de Terán",
+      page: "unit_economics",
+      skills: { A: { frugality: 1, integrity: -1 }, B: { integrity: 1, hiring: -1 } },
+    },
+    dl_fin_04: {
+      lesson: "Fraud you block tonight costs a merchant; fraud you let through comes back as chargebacks weeks later. Decide which bill you can pay, then write the rule.",
+      example: "Card-testing attacks push thousands of tiny payments through a weak checkout to check stolen cards. Velocity limits and checks at checkout are the usual first fix.",
+      read: "Payments Systems in the U.S., Carol Coye Benson and Scott Loftesness",
+      page: "crisis",
+      skills: { A: { integrity: 1, discovery: -1 }, B: { discovery: 1, selfcare: -1 } },
+    },
+    dl_fin_05: {
+      lesson: "When one merchant is a third of your volume, they set your price. Spread concentration before the renewal, because at the renewal it is too late.",
+      example: "Large merchants negotiate cost-plus pricing on card fees. Processors that grew on one anchor client often saw their margin on it shrink to a few basis points.",
+      read: "Monetizing Innovation, Madhavan Ramanujam and Georg Tacke",
+      page: "pricing",
+      skills: { A: { fundraising: 1, discovery: -1 }, B: { discovery: 1, frugality: -1 } },
+    },
+    dl_fin_06: {
+      lesson: "Reconcile every day against the bank, your ledger and the scheme. A payments company that can't say where every dirham sits will eventually be told.",
+      example: "In 2024 the middleware firm Synapse collapsed, and end users of fintechs built on it waited months for their money while records failed to reconcile.",
+      read: "Bits about Money, Patrick McKenzie",
+      page: "sector_fin",
+      skills: { A: { frugality: 1, discovery: -1 }, B: { integrity: 1, frugality: -1 } },
+    },
+    dl_fin_07: {
+      lesson: "Your sponsor bank's risk appetite is your real licence. Open a second banking relationship while the first one still likes you.",
+      example: "In 2023 and 2024 several US partner banks under regulatory orders cut fintech programmes at short notice. Fintechs with a single bank had nowhere to move.",
+      read: "Antifragile, Nassim Nicholas Taleb",
+      page: "mena_regulation",
+      skills: { A: { integrity: 1, fundraising: -1 }, B: { fundraising: 1, selfcare: -1 } },
+    },
+    dl_fin_08: {
+      lesson: "In payments your worst day is your busiest day. Load-test to the peak your merchants are planning, not the one you hope for.",
+      example: "Gulf and Egyptian retailers pack sales into White Friday, Ramadan nights and payday weekends. A gateway that fails then can lose merchants for the year.",
+      read: "Site Reliability Engineering, Betsy Beyer et al.",
+      page: "mena_seasons",
+      skills: { A: { integrity: 1, frugality: -1 }, B: { frugality: 1, discovery: -1 } },
+    },
+  };
+
+  const NOTES_MKT = {
+    dl_mkt_01: {
+      lesson: "Sellers take buyers off-platform when you add nothing after the first meeting. Make payment, delivery and returns worth the fee, then enforce the rules.",
+      example: "Many home-services marketplaces lost cleaners and plumbers to WhatsApp after one booking. The survivors added insurance, scheduling and payment protection.",
+      read: "All Markets Are Not Created Equal, Bill Gurley",
+      page: "sector_mkt",
+      skills: { A: { integrity: 1 }, B: { discovery: 1, frugality: -1 } },
+    },
+    dl_mkt_02: {
+      lesson: "Early marketplaces win by depth in one niche, not breadth. Every weak listing teaches a buyer that your search is not worth trying again.",
+      example: "Etsy grew on handmade goods and has spent years arguing with its own sellers over resellers listing factory products as handmade.",
+      read: "The Cold Start Problem, Andrew Chen",
+      page: "sector_mkt",
+      skills: { A: { frugality: 1, discovery: -1 }, B: { discovery: 1, selfcare: -1 } },
+    },
+    dl_mkt_03: {
+      lesson: "In e-commerce, revenue hides the truth. Track contribution margin per order after courier, packaging, payment fees and returns, every week.",
+      example: "Many quick-commerce startups grew orders fast on free delivery, then closed whole cities when funding dried up because each order lost money.",
+      read: "The Everything Store, Brad Stone",
+      page: "unit_economics",
+      skills: { A: { frugality: 1 }, B: { frugality: -1, fundraising: 1 } },
+    },
+    dl_mkt_04: {
+      lesson: "Your take rate is capped by what sellers can't get elsewhere. Raise it only when you deliver demand they can't buy cheaper on their own.",
+      example: "Marketplaces that raised fees faster than their value pushed big sellers to their own web stores, which modern store builders make cheap and easy.",
+      read: "A Rake Too Far, Bill Gurley",
+      page: "pricing",
+      skills: { A: { fundraising: 1, discovery: -1 }, B: { discovery: 1, fundraising: -1 } },
+    },
+    dl_mkt_05: {
+      lesson: "A delivery promise is tested at peak, not on a quiet Tuesday. Book courier capacity six weeks before Ramadan, Eid and White Friday.",
+      example: "Gulf shops routinely see orders multiply in the last ten days of Ramadan. The ones that pre-booked couriers and packers kept their promise.",
+      read: "The Goal, Eliyahu Goldratt",
+      page: "mena_seasons",
+      skills: { A: { integrity: 1, frugality: -1 }, B: { selfcare: 1, frugality: 1 } },
+    },
+    dl_mkt_06: {
+      lesson: "Owning stock turns a marketplace into a retailer: better margin, and cash locked in boxes. Buy only what you can sell before the trend turns.",
+      example: "Phil Knight describes years of financing Nike's inventory with bank loans, growing faster than its cash and nearly running out more than once.",
+      read: "Shoe Dog, Phil Knight",
+      page: "runway",
+      skills: { A: { discovery: 1, frugality: -1 }, B: { frugality: 1 } },
+    },
+    dl_mkt_07: {
+      lesson: "On a marketplace, a seller's fake is your fake in the buyer's eyes. Trust is the product: refund first, investigate second.",
+      example: "Large marketplaces have spent years and fortunes fighting counterfeits, and luxury brands have taken platforms to court over fakes sold by third parties.",
+      read: "The Business of Platforms, Cusumano, Gawer and Yoffie",
+      page: "ethics",
+      skills: { A: { integrity: 1, frugality: -1 }, B: { frugality: 1, integrity: -1 } },
+    },
+    dl_mkt_08: {
+      lesson: "Your best sellers learn your playbook. Keep them by owning what they can't copy: repeat buyers, fast delivery and trusted returns.",
+      example: "Many brands that grew on big marketplaces later built their own sites. The marketplaces that kept them offered buyers and logistics, not just traffic.",
+      read: "Platform Revolution, Parker, Van Alstyne and Choudary",
+      page: "sector_mkt",
+      skills: { A: { discovery: 1, frugality: -1 }, B: { selfcare: 1, discovery: -1 } },
+    },
+  };
+
+  const NOTES_HEALTH = {
+    dl_health_01: {
+      lesson: "In telehealth your supply is doctor-hours, and demand peaks when clinics are closed. Staff the hours your patients worry, not the hours doctors like.",
+      example: "Most virtual clinics that grew started with moonlighting hospital doctors, then learned the evening and weekend shifts needed their own paid, dedicated roster.",
+      read: "The Innovator's Prescription, Clayton Christensen et al.",
+      page: "sector_health",
+      skills: { A: { discovery: 1, frugality: -1 }, B: { frugality: 1, discovery: -1 } },
+    },
+    dl_health_02: {
+      lesson: "When patient ratings drive bookings, doctors learn to prescribe for the review. Measure clinical quality separately, or ratings will quietly set your medicine.",
+      example: "A study of US direct-to-consumer telemedicine found children with respiratory infections were prescribed antibiotics more often than at their paediatrician's office.",
+      read: "How Doctors Think, Jerome Groopman",
+      page: "ethics",
+      skills: { A: { integrity: 1, hiring: -1 }, B: { hiring: 1, integrity: -1 } },
+    },
+    dl_health_03: {
+      lesson: "An insurer contract trades price and cash timing for volume. Model the 90-day wait and the rejection rate before you celebrate the member count.",
+      example: "Health startups across the region have run out of cash while profitable on paper, waiting for insurers to settle claims coded the wrong way.",
+      read: "Redefining Health Care, Michael Porter and Elizabeth Teisberg",
+      page: "sector_health",
+      skills: { A: { fundraising: 1, frugality: -1 }, B: { frugality: 1, discovery: -1 } },
+    },
+    dl_health_04: {
+      lesson: "A medical device that measures wrong is worse than no device: doctors act on it. Validate every batch before it ships, not after a patient feels it.",
+      example: "Many home blood pressure monitors sold online have never passed a formal validation protocol, which is why clinical groups publish lists of validated devices.",
+      read: "The Checklist Manifesto, Atul Gawande",
+      page: "crisis",
+      skills: { A: { integrity: 1, frugality: -1 }, B: { frugality: 1, integrity: -1 } },
+    },
+    dl_health_05: {
+      lesson: "Employers pay for wellness, but employees only engage if they trust their health data stays away from their boss. Guard that line, it is your engagement.",
+      example: "Corporate wellness programmes often show low engagement; surveys of employees repeatedly name fear of the employer seeing their data as a reason to stay away.",
+      read: "The Digital Doctor, Robert Wachter",
+      page: "security",
+      skills: { A: { integrity: 1, discovery: -1 }, B: { discovery: 1, integrity: -1 } },
+    },
+    dl_health_06: {
+      lesson: "A medical director is not just a hire: your licence, your insurer and your hospital partners lean on that name. Price keeping them against replacing them.",
+      example: "Hospitals in the Gulf compete hard for experienced consultants, and digital health startups often lose their first clinical leads to a department-head offer.",
+      read: "Slicing Pie, Mike Moyer",
+      page: "vesting",
+      skills: { A: { hiring: 1, fundraising: -1 }, B: { frugality: 1, hiring: -1 } },
+    },
+    dl_health_07: {
+      lesson: "In medicine, the words on your marketing define your regulatory class. Software that diagnoses is a device; software that helps a doctor decide is a tool.",
+      example: "Babylon Health's claims for its AI symptom checker drew public criticism from doctors, and the company collapsed in 2023 after years of promising more than it proved.",
+      read: "Deep Medicine, Eric Topol",
+      page: "sector_health",
+      skills: { A: { fundraising: 1, integrity: -1 }, B: { integrity: 1, fundraising: -1 } },
+    },
+    dl_health_08: {
+      lesson: "Every clinical service will have a bad outcome. What buyers and regulators judge is whether you found it, learned from it and wrote it down.",
+      example: "Since the report To Err Is Human, hospitals have been pushed to report and review errors openly, because hidden mistakes tend to repeat.",
+      read: "To Err Is Human, Institute of Medicine",
+      page: "crisis",
+      skills: { A: { integrity: 1, frugality: -1 }, B: { frugality: 1, integrity: -1 } },
+    },
+  };
+
+  const NOTES_EDU = {
+    dl_edu_01: {
+      lesson: "Your first cohort is research you get paid for. Nine graduates who succeed will sell the next fifteen seats better than any ad.",
+      example: "Many bootcamps that now run cohorts of hundreds started with a handful of students in a borrowed room, and grew on their graduates' word of mouth.",
+      read: "Do Things That Don't Scale, Paul Graham",
+      page: "do_things",
+      skills: { A: { discovery: 1, frugality: -1 }, B: { frugality: 1, discovery: -1 } },
+    },
+    dl_edu_02: {
+      lesson: "In education the payer and the learner are often different people. Admit the student, not the wallet, and put the parent's expectations in writing.",
+      example: "Across the Gulf and Egypt, parents fund much of private education and judge it by certificates and jobs, so a weak admit often becomes a loud refund request.",
+      read: "The Case Against Education, Bryan Caplan",
+      page: "sector_edu",
+      skills: { A: { frugality: 1, integrity: -1 }, B: { integrity: 1, discovery: 1 } },
+    },
+    dl_edu_03: {
+      lesson: "Students experience your instructors, not your brand. Pay the best ones well, and build a bench so no one person can walk out with a cohort.",
+      example: "Bootcamps regularly lose top instructors to the employers they train for. The ones that cope have assistants teaching a module from their first month.",
+      read: "Teach Like a Champion, Doug Lemov",
+      page: "delegation",
+      skills: { A: { hiring: 1, frugality: -1 }, B: { frugality: 1, hiring: -1 } },
+    },
+    dl_edu_04: {
+      lesson: "A placement rate is only as good as its definition. Publish the method with the number, because sooner or later a graduate will count for you.",
+      example: "In the late 2010s a group of US coding bootcamps created CIRR, a shared standard for reporting outcomes, after years of placement claims nobody could compare.",
+      read: "How to Lie with Statistics, Darrell Huff",
+      page: "sector_edu",
+      skills: { A: { integrity: -1 }, B: { integrity: 1, discovery: 1 } },
+    },
+    dl_edu_05: {
+      lesson: "A placement guarantee is a liability that rests on other companies' hiring plans. Spread it across many employers before the economy tests it.",
+      example: "During the 2022 to 2023 tech hiring slowdown, bootcamps that leaned on a few big hiring partners saw placement rates fall within a single cohort.",
+      read: "Antifragile, Nassim Nicholas Taleb",
+      page: "sector_edu",
+      skills: { A: { discovery: 1, frugality: -1 }, B: { frugality: 1, integrity: -1 } },
+    },
+    dl_edu_06: {
+      lesson: "An income-share agreement is a loan with a friendlier name. Collections are part of your product, and how you collect is part of your brand.",
+      example: "In 2024 a US regulator barred BloomTech, formerly Lambda School, from consumer lending after finding it had misled students about its income-share financing.",
+      read: "Never Split the Difference, Chris Voss",
+      page: "unit_economics",
+      skills: { A: { frugality: 1 }, B: { integrity: 1, discovery: 1 } },
+    },
+    dl_edu_07: {
+      lesson: "Government money is real, slow and paper-heavy. Price in the payment delay and the reporting staff before you count the seats.",
+      example: "Upskilling programmes across the Gulf fund thousands of seats a year; providers that win them usually need months of working capital to wait for payment.",
+      read: "Seeing Like a State, James C. Scott",
+      page: "mena_regulation",
+      skills: { A: { fundraising: 1, frugality: -1 }, B: { frugality: 1, fundraising: -1 } },
+    },
+    dl_edu_08: {
+      lesson: "Corporate training pays faster and steadier than students do, but it borrows your best teachers. Decide which business you are before it decides for you.",
+      example: "Many bootcamps added corporate training to survive slow intake years. For several it became the main business while the public bootcamp quietly shrank.",
+      read: "Good Strategy Bad Strategy, Richard Rumelt",
+      page: "pivot",
+      skills: { A: { frugality: 1, discovery: -1 }, B: { discovery: 1 } },
+    },
+  };
+
   const PLAYBOOK = [
     { id: "default_alive", icon: "🌱", title: "Default alive", body: "Paul Graham's question: if costs and revenue growth stay where they are today, do you reach profitability before the money runs out? If yes, you are default alive. If no, you are default dead and need a plan, not hope. Most founders don't know which one they are. This week, put the last 3 months of revenue growth and burn into a sheet and find the month the lines cross, or the month cash hits zero.", source: "Paul Graham, Default Alive or Default Dead? (2015)" },
     { id: "runway", icon: "⏳", title: "Runway", body: "Runway is cash in the bank divided by net monthly burn. With $300,000 and a $25,000 burn you have 12 months, but a round takes 3 to 6 months to close, so your real deadline is month 6 to 9. Founders who start raising with less than 6 months left negotiate from fear. This week, recompute runway with next quarter's planned hires included, not just today's payroll.", source: "Paul Graham, Startups in 13 Sentences (2009)" },
@@ -4786,7 +5812,7 @@ __d(function (g, r, i, a, m, _e, d) {
   // Content lives in content/notes_*.js and content/playbook.js.
   // shares App's scope (see economy.js and the other modules).
 
-  const NOTES = Object.assign({}, NOTES_A, NOTES_B, NOTES_C);
+  const NOTES = Object.assign({}, NOTES_A, NOTES_B, NOTES_C, NOTES_SAAS, NOTES_FIN, NOTES_MKT, NOTES_HEALTH, NOTES_EDU);
   const PAGE_BY_ID = {};
   PLAYBOOK.forEach((p) => (PAGE_BY_ID[p.id] = p));
   const SKILLS = [
@@ -5915,6 +6941,521 @@ __d(function (g, r, i, a, m, _e, d) {
     score: { fontFamily: "AzeretMono_600SemiBold", fontSize: 15, color: COLOR.vital },
   });
 
+  const SECTOR_SAAS = {
+    sector: "saas_ai",
+    roles: { c1: "Enterprise client", c2: "Design partner" },
+    insights: [
+      { area: "onboarding", text: "Your agent was ready on day two. Our IT took three weeks just to approve the API keys." },
+      { area: "pricing", text: "Finance won't buy seats for a bot. They'll pay per ticket it actually closes." },
+      { area: "feature", text: "Show me which policy page the answer came from. If the agent can't cite it, legal won't sign." },
+      { area: "feature", text: "Your formal Arabic is fine. Our customers write in Khaleeji, Egyptian and Arabizi." },
+      { area: "channel", text: "We found you because one of our developers used your open-source connector on a weekend." },
+      { area: "support", text: "When the agent gets it wrong at 11pm, we need a human on your side, not a ticket form." },
+    ],
+    experiments: [
+      { id: "xs_saas_01", area: "pricing", title: "Charge per resolved ticket instead of per seat", win: { arpu: 6, pmf: 4 }, winText: "Finance signed off in one meeting: they pay for outcomes, and your price now grows with their usage.", lose: { churn: 0.4, pmf: 1 }, loseText: "Clients couldn't forecast the bill. Two asked to go back to seats, and one capped usage at half." },
+      { id: "xs_saas_02", area: "feature", title: "Tune the agent on 5,000 real Gulf-dialect tickets", win: { pmf: 5, churn: -0.5, trust: 2 }, winText: "Escalations from the Riyadh queue fell by half. Omar's team stopped sending screenshots.", lose: { techDebt: 4, clarity: -3, pmf: 1 }, loseText: "The tuned model got better at Khaleeji and worse at English. Two weeks went into rolling it back." },
+    ],
+    targets: [
+      {
+        id: "st_saas_01", urgency: 60, once: true,
+        when: (s) => s.sector.id === "saas_ai" && s.week >= 4 && s.week <= 12,
+        title: "🔒 This Week: Pass the Security Review",
+        tasks: "• Northwind's InfoSec team sent 214 questions | • The contract waits on your answers",
+        why: "Enterprise AI deals in the Gulf rarely die in the demo; they die in InfoSec. A security questionnaire answered late or vaguely tells the buyer you're a risk, and nobody gets fired for choosing the bigger vendor.",
+        strategies: [
+          { path: "bootstrap", title: "1. Answer all 214 yourself over the weekend", desc: "You and Tariq write every answer honestly, including the No next to penetration testing.", cost: 0, tab: "Journal", fx: { mentalClarity: -8, monthlyRevenue: 650 }, log: "Sunday night, question 214 done. InfoSec came back with 11 follow-ups, and the deal moved." },
+          { path: "capital", title: "2. Hire a consultant and buy a penetration test", desc: "A security firm runs the test and helps write the policies you don't have yet.", cost: 4000, tab: "Assets", fx: { monthlyRevenue: 1050, investorTrust: 4, techDebt: -5 }, log: "The test found 2 medium issues. You fixed them and attached the report. Their CISO signed off in 9 days." },
+          { path: "defensive", title: "3. Ask for a review scoped to the pilot only", desc: "Only what the pilot touches gets reviewed now. The full questionnaire waits for the bigger contract.", cost: 0, tab: "Relationships", fx: { monthlyRevenue: 300, mentalClarity: -2 }, log: "They agreed to review only the pilot. The full questionnaire comes back next year, with the bigger contract." },
+        ],
+      },
+      {
+        id: "st_saas_02", urgency: 55, once: true,
+        when: (s) => s.sector.id === "saas_ai" && s.week >= 7 && s.week <= 14,
+        title: "🧪 This Week: Convert the Pilot Before It Expires",
+        tasks: "• The 60-day pilot ends on Friday | • Nobody has talked about price yet",
+        why: "Most enterprise AI pilots end in polite silence. A pilot without a sponsor in finance, an agreed success metric and a price on paper isn't a sale in progress; it's free consulting. The last week is your strongest leverage.",
+        strategies: [
+          { path: "bootstrap", title: "1. Write the ROI memo from their own data", desc: "Tickets resolved, hours saved, cost per ticket before and after, on one page their CFO can forward.", cost: 0, tab: "Journal", fx: { mentalClarity: -6, monthlyRevenue: 850 }, log: "The memo showed 1,900 agent-hours saved. The CFO forwarded it with one line: why are we not paying for this?" },
+          { path: "bold", title: "2. Switch it off on Friday, as agreed", desc: "Let them feel the queue without the agent. They may call you, or they may call Flowly.", cost: 0, tab: "Relationships", fx: { monthlyRevenue: 1250, churnRate: 1, teamMorale: -4 }, log: "By Tuesday their queue was back to 6-hour waits. The contract arrived on Thursday, with a 10% discount they insisted on." },
+          { path: "defensive", title: "3. Extend the pilot 30 days for a token fee", desc: "A small fee buys time and proves they'll pay something. It also delays the real decision.", cost: 800, tab: "Relationships", fx: { monthlyRevenue: 200, mentalClarity: 3 }, log: "They agreed to $500 for 30 more days. It's revenue. It's also another month without a decision." },
+        ],
+      },
+      {
+        id: "st_saas_03", urgency: 62, once: false,
+        when: (s) => s.sector.id === "saas_ai" && s.monthlyRevenue >= 4000 && s.week % 7 == 3,
+        title: "💸 This Week: The Inference Bill Doubled",
+        tasks: "• Model spend jumped from $1,800 to $3,700 | • One client's agent is looping on old tickets",
+        why: "In AI software every extra unit of usage costs you money. One client on a flat seat price who triples usage can drag an 85% gross margin toward 50% before anyone looks. Watch cost per task the way a restaurant watches food cost.",
+        strategies: [
+          { path: "bootstrap", title: "1. Find the loop and cache repeated answers", desc: "Tariq digs through the logs for a week. Nothing else ships.", cost: 0, tab: "Departments", fx: { teamMorale: -3, techDebt: -4, cash: 1500 }, log: "A retry loop was sending each ticket to the model 4 times. Fixed by Wednesday. Next month's bill should be half." },
+          { path: "capital", title: "2. Hire an ML engineer on contract to cut costs", desc: "Smaller models for simple tasks, shorter prompts, batching. Expensive for a month.", cost: 2500, tab: "Departments", fx: { techDebt: -6, arpu: 3, mentalClarity: 3 }, log: "The contractor moved summaries to a smaller model and trimmed prompts by 40%. Cost per ticket fell from $0.11 to $0.05." },
+          { path: "bold", title: "3. Put usage tiers into every contract", desc: "Seats stay, but every 10,000 tasks above the plan is billed. Some clients will push back.", cost: 0, tab: "Relationships", fx: { arpu: 6, monthlyRevenue: 550, churnRate: 0.8 }, log: "Four clients accepted the tiers. One asked for 3 months of grace. One asked Flowly for a quote." },
+        ],
+      },
+      {
+        id: "st_saas_04", urgency: 50, once: true,
+        when: (s) => s.sector.id === "saas_ai" && s.monthlyRevenue >= 3000 && s.week >= 14,
+        title: "🏛 This Week: Get Registered as a Vendor",
+        tasks: "• Procurement needs 23 documents and a bank guarantee | • Payment terms are 90 days",
+        why: "Winning the business user is half the sale. Gulf enterprises and government buyers want a commercial registration, audited accounts, sometimes a local entity and a bank guarantee, and then they pay in 90 days. Plan cash for the gap.",
+        strategies: [
+          { path: "bootstrap", title: "1. Assemble the file yourself, stamp by stamp", desc: "Chamber of commerce stamps, attested certificates and three trips to the bank.", cost: 0, tab: "Journal", fx: { mentalClarity: -7, monthlyRevenue: 500 }, log: "Eleven days, four stamps, one translated certificate. You're vendor number 40217. The first invoice is payable in 90 days." },
+          { path: "capital", title: "2. Pay a local reseller to hold the contract", desc: "A registered reseller signs as the vendor for 12% of the deal and handles the paperwork.", cost: 2000, tab: "Relationships", fx: { monthlyRevenue: 1000, arpu: -3, mentalClarity: 3 }, log: "The reseller already had a vendor number. The contract was signed in a week, at 12% below your price." },
+          { path: "defensive", title: "3. Ask for a small purchase under the tender limit", desc: "Below the threshold, a department head can buy without the full process. Smaller, but now.", cost: 0, tab: "Relationships", fx: { monthlyRevenue: 350, mentalClarity: 2 }, log: "They bought 20 seats on a corporate card. Small, fast, and procurement hasn't noticed yet." },
+        ],
+      },
+      {
+        id: "st_saas_05", urgency: 45, once: true,
+        when: (s) => s.sector.id === "saas_ai" && (s.stage >= 2 || s.week >= 26) && s.monthlyRevenue >= 6000,
+        title: "📈 This Week: Land the Second Department",
+        tasks: "• Northwind's finance team saw the call-centre results | • They want an agent for invoice matching",
+        why: "In B2B AI, a second department is cheaper to win than a new customer. Expansion is what pushes net revenue retention above 100%, the number Series A investors check first. But every new use case is a new chance of a bad answer.",
+        strategies: [
+          { path: "bootstrap", title: "1. Reuse the call-centre agent with new prompts", desc: "Fast and cheap. Invoice data is much messier than support tickets.", cost: 0, tab: "Departments", fx: { monthlyRevenue: 850, techDebt: 6 }, log: "Live in two weeks. Matching accuracy started at 81%. Finance now checks every fifth invoice by hand." },
+          { path: "capital", title: "2. Hire a finance-ops specialist and build it right", desc: "Someone who knows their ERP's quirks builds a proper finance agent with their team.", cost: 4500, tab: "Departments", fx: { monthlyRevenue: 1750, churnRate: -1, mentalClarity: -3 }, log: "The specialist knew every quirk of their ERP. Accuracy hit 96% in week 6, and finance signed a 3-year expansion." },
+          { path: "defensive", title: "3. Sell it as a paid pilot first", desc: "60 days, fixed fee, written success criteria. Slower, with no promises you can't keep.", cost: 0, tab: "Relationships", fx: { monthlyRevenue: 550, investorTrust: 2 }, log: "Finance agreed to a $4,000 paid pilot. The full contract waits on the results." },
+        ],
+      },
+    ],
+    challenge: { id: "sc_saas", icon: "🏢", name: "The Enterprise Ladder", goal: "Reach $15,000 MRR by week 32 with monthly churn at or below 3% and tech debt under 50.", mode: "venture", deadline: 32, done: (s) => s.monthlyRevenue >= 15000 && s.churnRate <= 3 && s.techDebt < 50 },
+    page: { id: "sector_saas", icon: "🤖", title: "Gross margin is a product decision", body: "Classic SaaS costs almost nothing to serve one more user. AI SaaS doesn't: every answer burns inference, every big client wants custom connectors, and both quietly pull gross margin from 85% toward 50%. Investors value you on that margin, not on revenue. This week, calculate cost per task for your three biggest clients, and check that your price grows when their usage does.", source: "The New Business of AI, Martin Casado and Matt Bornstein (a16z, 2020)" },
+  };
+
+  const SECTOR_FIN = {
+    sector: "fintech",
+    roles: { c1: "Top merchant", c2: "Merchant · founder" },
+    insights: [
+      { area: "onboarding", text: "It took me 11 days and 6 documents to go live with you. The other gateway took two days." },
+      { area: "pricing", text: "I don't really care about 2.2% or 1.9%. I care what day the money lands in my account." },
+      { area: "feature", text: "Your dashboard shows payments. My accountant needs each payout matched to the orders inside it." },
+      { area: "support", text: "When payments fail at 11pm on payday, I need a person on the phone, not a ticket number." },
+      { area: "channel", text: "Our bank's relationship manager mentioned you. We trust their shortlist more than any ad." },
+      { area: "support", text: "Chargeback emails arrive in English legalese. My team can't tell what evidence to send back." },
+    ],
+    experiments: [
+      { id: "xs_fin_01", area: "onboarding", title: "Instant go-live under $5,000 a month in volume", win: { users: 250, cacPct: -0.15, pmf: 5 }, winText: "Small merchants went live in minutes and sent papers once sales started. None hit the cap before verification.", lose: { trust: -2, churn: 0.3, pmf: 1 }, loseText: "Signups jumped, and so did fake shops. Ops spent the fortnight closing accounts the bank flagged." },
+      { id: "xs_fin_02", area: "pricing", title: "Sell next-day settlement for 0.4% more", win: { arpu: 5, pmf: 4 }, winText: "A third of merchants paid for faster money. Cash flow mattered more to them than the headline rate.", lose: { churn: 0.4, clarity: -2, pmf: 1 }, loseText: "Few merchants paid, and funding the early payouts squeezed your own float for two weeks." },
+    ],
+    targets: [
+      {
+        id: "st_fin_01", urgency: 62, once: true,
+        when: (s) => s.sector.id === "fintech" && s.week >= 3 && s.week <= 14 && !s.mkt.licensed,
+        title: "🏛 This Week: Close the Licence File",
+        tasks: "• The central bank sent 31 follow-up questions | • Your licence waits on the answers",
+        why: "Without the licence there is no real growth. Every week the file sits with open questions is a week merchants stay on a waitlist and your $800 monthly compliance bill buys nothing.",
+        strategies: [
+          { path: "bootstrap", title: "1. Answer all 31 questions yourself", desc: "Nights with the AML policy and the risk register. Free, but nothing else gets your attention this week.", cost: 0, tab: "Journal", fx: { mentalClarity: -10, investorTrust: 4 }, log: "You answered 31 questions in 5 nights. Three answers came back with a request for more detail." },
+          { path: "capital", title: "2. Retain a licensing law firm", desc: "A firm that has filed 20 payment licences answers in 4 days and knows how this examiner reads.", cost: 3500, tab: "Assets", fx: { investorTrust: 6, mentalClarity: 4 }, log: "The law firm rewrote 12 answers and attached a capital adequacy model. The examiner replied with one question, not ten." },
+          { path: "defensive", title: "3. Ask the examiner for a meeting", desc: "Walk through the gaps in person and agree what complete means before anyone writes a word.", cost: 0, tab: "Relationships", fx: { mentalClarity: -3, investorTrust: 2, teamMorale: 3 }, log: "The examiner gave you 40 minutes and crossed out 9 of the questions. The rest now have a clear format." },
+        ],
+      },
+      {
+        id: "st_fin_02", urgency: 55, once: true,
+        when: (s) => s.sector.id === "fintech" && s.week >= 6 && s.week <= 20,
+        title: "🔒 This Week: Pass the PCI-DSS Assessment",
+        tasks: "• The assessor arrives on Thursday | • Raw card numbers still touch 2 of your servers",
+        why: "The card schemes and your sponsor bank won't let you handle card data without PCI-DSS. Fail and the bank can pause new merchants; pass and larger merchants stop asking for your audit report.",
+        strategies: [
+          { path: "bootstrap", title: "1. Shrink scope: tokenise and stop touching cards", desc: "Move card capture to a hosted field so card numbers never reach your servers. Fewer systems to audit, a hard week.", cost: 0, tab: "Departments", fx: { techDebt: -6, mentalClarity: -6, teamMorale: -4 }, log: "Card numbers no longer touch your servers. The audit scope went from 14 systems to 3." },
+          { path: "capital", title: "2. Hire a security firm for a remediation sprint", desc: "Consultants who do this every month fix logging, keys and access reviews before the assessor lands.", cost: 4000, tab: "Assets", fx: { investorTrust: 5, techDebt: -4, mentalClarity: 3 }, log: "The firm closed 18 findings in 5 days. The assessor signed off with two minor notes." },
+          { path: "defensive", title: "3. Agree a 60-day remediation plan", desc: "Tell the bank what isn't ready and give dates. Honest, but new enterprise merchants will have to wait.", cost: 0, tab: "Relationships", fx: { investorTrust: -3, mentalClarity: 3, activeUsers: -40 }, log: "The bank accepted the plan with monthly check-ins. Two large merchants paused their onboarding until it's done." },
+        ],
+      },
+      {
+        id: "st_fin_03", urgency: 66, once: false,
+        when: (s) => s.sector.id === "fintech" && s.mkt.licensed === true && s.monthlyRevenue > 2000 && s.week % 7 == 3,
+        title: "🚨 This Week: Chargebacks Crossed 1%",
+        tasks: "• 3 merchants drive most of the disputes | • The schemes count every one against you",
+        why: "Card schemes measure disputes across your whole portfolio. Stay over the line and the fines grow each month, and your sponsor bank starts asking whether you can manage risk at all.",
+        strategies: [
+          { path: "bootstrap", title: "1. Call the 3 merchants and fix their checkouts", desc: "Clear refund policies, recognisable billing names, 3-D Secure on risky orders. Slow, but it fixes causes.", cost: 0, tab: "Relationships", fx: { mentalClarity: -6, churnRate: -0.5, investorTrust: 2 }, log: "Two merchants changed their billing name and refund page. Disputes from them halved within the month." },
+          { path: "capital", title: "2. Buy a dispute-management tool", desc: "Automatic evidence packs and pre-dispute alerts that refund before a chargeback is filed.", cost: 2500, tab: "Assets", fx: { churnRate: -1, monthlyRevenue: 400, mentalClarity: 2 }, log: "The tool stopped 140 disputes before they became chargebacks. It also sends you an invoice every month now." },
+          { path: "defensive", title: "3. Hold reserves on the riskiest merchants", desc: "Keep 10% of their payouts for 90 days. The bank relaxes; the merchants don't.", cost: 0, tab: "Departments", fx: { investorTrust: 5, churnRate: 0.8, mentalClarity: 2 }, log: "Reserves went live on Sunday. One merchant left by Tuesday. The bank called it a mature step." },
+        ],
+      },
+      {
+        id: "st_fin_04", urgency: 63, once: false,
+        when: (s) => s.sector.id === "fintech" && s.mkt.licensed === true && s.monthlyRevenue > 4000 && s.week % 9 == 4,
+        title: "📅 This Week: Survive the Payday Rush",
+        tasks: "• Salaries land on Thursday and volume will triple | • Last month checkout slowed for 18 minutes",
+        why: "In the Gulf and Egypt, salaries and promotions cluster at month-end. Your merchants make a big share of their sales in a few hours, and a slow gateway in that window costs them money and costs you their trust.",
+        strategies: [
+          { path: "bootstrap", title: "1. Freeze releases and watch the dashboards", desc: "No deploys from Tuesday, everyone on call Thursday night. Cheap, tiring and mostly reliable.", cost: 0, tab: "Departments", fx: { teamMorale: -5, mentalClarity: -4, churnRate: -0.5 }, log: "Payday passed with one 3-minute slowdown. The team slept in on Friday." },
+          { path: "capital", title: "2. Pre-scale servers and add a backup acquirer", desc: "Double capacity for the week and route overflow to a second acquiring bank if the first one slows.", cost: 3000, tab: "Assets", fx: { churnRate: -1, monthlyRevenue: 600, techDebt: 2 }, log: "At 9pm the main acquirer slowed and traffic moved to the backup within seconds. Merchants never noticed." },
+          { path: "bold", title: "3. Offer merchants a payday fee discount", desc: "Lower fees for payday campaigns to pull volume from rivals. Risky if the platform can't take it.", cost: 0, tab: "Relationships", fx: { monthlyRevenue: 1200, arpu: -2, techDebt: 3, mentalClarity: -3 }, log: "Eight merchants moved their payday campaigns to you. Volume hit a record, and so did the error rate at 10pm." },
+        ],
+      },
+      {
+        id: "st_fin_05", urgency: 48, once: true,
+        when: (s) => s.sector.id === "fintech" && s.mkt.licensed === true && s.stage >= 2 && s.monthlyRevenue > 10000,
+        title: "🏦 This Week: Win a Second Sponsor Bank",
+        tasks: "• Your only bank can switch you off by email | • A second bank wants a 90-page due diligence pack",
+        why: "Every merchant, every payout and your licence conditions ride on one bank's appetite for risk. A second bank turns a single point of failure into a negotiation, and shows investors you can survive a no.",
+        strategies: [
+          { path: "bootstrap", title: "1. Write the due diligence pack in-house", desc: "You and your finance lead pull policies, audits and volumes into one pack. Free, and it eats a month of evenings.", cost: 0, tab: "Journal", fx: { mentalClarity: -8, investorTrust: 5 }, log: "The pack went out at 94 pages. The bank came back with 17 questions and a meeting date." },
+          { path: "capital", title: "2. Hire a former banker to run the process", desc: "Someone who has sat on a bank's onboarding committee knows which answers end the questions.", cost: 5000, tab: "Departments", fx: { investorTrust: 8, monthlyRevenue: 800, mentalClarity: 2 }, log: "The banker knew the committee chair from a previous job. Approval took 7 weeks instead of 6 months." },
+          { path: "bold", title: "3. Offer the bank a revenue share for speed", desc: "Give the second bank 10% of your fee income on its merchants and get approved in weeks, not months.", cost: 1000, tab: "Relationships", fx: { monthlyRevenue: 1500, arpu: -3, investorTrust: 3 }, log: "The bank said yes within a month. Your margin on every merchant it brings is now thinner." },
+        ],
+      },
+    ],
+    challenge: { id: "sc_fin", icon: "💳", name: "Licensed and Scaling", goal: "Hold your central bank licence and reach $12,000 monthly revenue with churn at 4% or less by week 36.", mode: "venture", deadline: 36, done: (s) => s.mkt.licensed === true && s.monthlyRevenue >= 12000 && s.churnRate <= 4 },
+    page: { id: "sector_fin", icon: "🏦", title: "Payments run on borrowed permission", body: "A payment company sells trust it borrows: from the central bank that licenses it, the sponsor bank that settles for it and the card schemes whose rules it follows. Any one of them can stop you faster than a competitor can. That is why compliance, reconciliation and fraud controls are the product, not overhead. This week, list everyone who can switch you off and what each one checks.", source: "The Pay Off, Gottfried Leibbrandt and Natasha de Terán (2021)" },
+  };
+
+  const SECTOR_MKT = {
+    sector: "ecommerce_marketplace",
+    roles: { c1: "Anchor retail partner", c2: "Top seller · brand founder" },
+    insights: [
+      { area: "onboarding", text: "Uploading my 40 products took 3 days. Your photo rules made me shoot half of them again." },
+      { area: "onboarding", text: "I didn't trust a shop I'd never heard of until I saw the returns policy written in Arabic." },
+      { area: "pricing", text: "Free delivery above a minimum is fine. Paying $4 delivery on a $20 scarf is not." },
+      { area: "feature", text: "I'd order more often if I could pay by card at the door instead of hunting for cash." },
+      { area: "channel", text: "I found you through a creator's unboxing, not your ad. The ad looked like every other shop." },
+      { area: "support", text: "When a parcel is late, message me on WhatsApp before I ask. Not a ticket number after." },
+    ],
+    experiments: [
+      { id: "xs_mkt_01", area: "pricing", title: "Free delivery only on baskets above $35", win: { arpu: 5, pmf: 4 }, winText: "Average basket rose by a third. Fewer small orders, and each one finally covers its courier.", lose: { churn: 0.5, users: -150, pmf: 1 }, loseText: "Buyers left carts at $28 and didn't come back. The small orders were the habit." },
+      { id: "xs_mkt_02", area: "channel", title: "Pay 20 micro-creators in product, not cash", win: { cacPct: -0.25, users: 300, pmf: 4 }, winText: "Twelve of the 20 videos sold. Creators with 8,000 real followers beat the ads on cost per first order.", lose: { cacPct: 0.1, clarity: -3, pmf: 0 }, loseText: "Twenty unboxings, 140 orders, and half used a code that leaked to a coupon site." },
+    ],
+    targets: [
+      {
+        id: "st_mkt_01", urgency: 55, once: true,
+        when: (s) => s.sector.id === "ecommerce_marketplace" && s.week >= 3 && s.week <= 12 && s.monthlyRevenue < 5000,
+        title: "🧲 This Week: Get 30 Brands Live Before the Ads Run",
+        tasks: "• 11 brands are live and searches come back thin | • Paid social starts in two weeks",
+        why: "Thin supply wastes every ad dollar: buyers land, find three abayas and never return. Below $5k MRR, being complete in one category beats being thin everywhere. Fill one shelf before you buy traffic.",
+        strategies: [
+          { path: "bootstrap", title: "1. Visit 20 brands in person this week", desc: "Go to their home studios with a phone and a tripod. Sign them on the spot and shoot their products yourself.", cost: 0, tab: "Relationships", fx: { mentalClarity: -10, activeUsers: 150, monthlyRevenue: 400 }, log: "You signed 14 brands over cardamom coffee and shot 300 photos on your phone. Search finally returns real results." },
+          { path: "capital", title: "2. Pay a studio to onboard 30 brands", desc: "A product studio photographs, writes and uploads 30 catalogues in ten days. Fast and polished, paid up front.", cost: 3000, tab: "Assets", fx: { activeUsers: 300, monthlyRevenue: 900, cac: -2 }, log: "Thirty catalogues went live in ten days. They look great, and a few brands still don't know how to update their stock." },
+          { path: "defensive", title: "3. Narrow the shop to modest fashion only", desc: "Hide every half-empty category. Launch as the place for abayas and modest wear, and nothing else for now.", cost: 0, tab: "Departments", fx: { activeUsers: -100, churnRate: -1, arpu: 3 }, log: "The home page shrank to one category. Visitors dropped, but the ones who came found what they searched for." },
+        ],
+      },
+      {
+        id: "st_mkt_02", urgency: 62, once: false,
+        when: (s) => s.sector.id === "ecommerce_marketplace" && s.week >= 5 && s.week % 7 === 5,
+        title: "📦 This Week: 1 in 5 COD Parcels Came Back",
+        tasks: "• 212 parcels refused at the door this month | • Each one paid the courier twice",
+        why: "A refused cash-on-delivery parcel pays the courier twice, locks stock for a week and often returns damaged. Most refusals are impulse orders nobody confirmed. Fix confirmation before you try to change how the region pays.",
+        strategies: [
+          { path: "bootstrap", title: "1. Call every COD order before it ships", desc: "Two people confirm each cash order by phone or WhatsApp voice note before it leaves the warehouse.", cost: 0, tab: "Departments", fx: { teamMorale: -6, mentalClarity: -4, churnRate: -0.5, monthlyRevenue: 300 }, log: "The team made 600 calls this week. Refusals halved, and so did everyone's patience." },
+          { path: "capital", title: "2. Add a $2 COD fee and a card discount", desc: "Integrate card-on-delivery terminals and price cash orders honestly. Some buyers will leave.", cost: 1200, tab: "Assets", fx: { arpu: 2, activeUsers: -80, monthlyRevenue: 500 }, log: "Card share went from 35% to 52% in a month. A few loyal cash buyers stopped ordering." },
+          { path: "defensive", title: "3. Block phone numbers that refuse twice", desc: "Repeat refusers lose cash on delivery and must prepay. Cheap, quick and a little blunt.", cost: 0, tab: "Journal", fx: { activeUsers: -60, churnRate: -0.4, cash: 800 }, log: "187 numbers lost cash on delivery. Four of them called support to complain, at length." },
+        ],
+      },
+      {
+        id: "st_mkt_03", urgency: 66, once: false,
+        when: (s) => s.sector.id === "ecommerce_marketplace" && s.week >= 14 && s.monthlyRevenue >= 4000 && s.week % 13 === 9,
+        title: "🏷 This Week: White Friday Is 10 Days Away",
+        tasks: "• Sellers ask how much of the discount you'll fund | • The courier caps you at 600 parcels a day",
+        why: "White Friday can bring a fifth of a quarter's orders and a fifth of the year's returns. Sellers inflate prices to fake discounts, couriers jam, and buyers won with a 50% coupon rarely buy twice. Decide which buyers you want.",
+        strategies: [
+          { path: "bold", title: "1. Fund 20% off sitewide from your margin", desc: "The biggest banner in the market for one week. You pay the discount, sellers keep their price.", cost: 4000, tab: "Assets", fx: { activeUsers: 900, monthlyRevenue: 1500, churnRate: 0.8 }, log: "Orders hit four times a normal day. By January most of those buyers were nowhere to be found." },
+          { path: "defensive", title: "2. Run early access for repeat buyers only", desc: "Two days before the crowd, for people who have ordered twice. Smaller, calmer and kinder to the courier.", cost: 500, tab: "Relationships", fx: { churnRate: -0.8, monthlyRevenue: 600, mentalClarity: -3 }, log: "Repeat buyers got two quiet days and on-time parcels. The rival banners were louder." },
+          { path: "bootstrap", title: "3. Let sellers run deals, and police the prices", desc: "Sellers fund their own discounts. Salma rejects any deal on a price raised in the last 30 days.", cost: 0, tab: "Departments", fx: { mentalClarity: -6, monthlyRevenue: 700, techDebt: 4 }, log: "Salma rejected 60 fake discounts. The real ones sold well, and two sellers are still sulking." },
+        ],
+      },
+      {
+        id: "st_mkt_04", urgency: 58, once: false,
+        when: (s) => s.sector.id === "ecommerce_marketplace" && s.week >= 12 && s.monthlyRevenue >= 3000 && s.week % 9 === 4,
+        title: "📉 This Week: Your Paid Social Cost per Order Doubled",
+        tasks: "• A first order cost $9 in spring and $18 now | • Bazaarist and Souqly bid on your buyers",
+        why: "Paid social is rented demand. When funded rivals bid on the same audience your CAC rises with no change in your product. If a first order loses money, only the second and third orders pay it back. Know your payback first.",
+        strategies: [
+          { path: "capital", title: "1. Keep the budget and test new creatives", desc: "Ten new videos a week, shot in-house. The algorithm rewards fresh ads, for a while.", cost: 3000, tab: "Assets", fx: { activeUsers: 400, monthlyRevenue: 700, cac: 4 }, log: "Two of the ten videos worked. Cost per order fell back to $14, still well above spring." },
+          { path: "bootstrap", title: "2. Halve ads and push WhatsApp referrals", desc: "Give every buyer a code to share in family groups. Slower, cheaper, and it only works if they liked you.", cost: 0, tab: "Relationships", fx: { activeUsers: -150, cac: -5, mentalClarity: -4, monthlyRevenue: 200 }, log: "Referral codes travelled through family groups. New buyers slowed, but they cost a third of an ad." },
+          { path: "defensive", title: "3. Spend only on buyers who ordered once", desc: "Retarget people who already bought. No new audiences until the numbers make sense.", cost: 800, tab: "Journal", fx: { churnRate: -0.7, activeUsers: -100, arpu: 2 }, log: "New faces dried up. Second orders rose, and the dashboard looked healthier than it felt." },
+        ],
+      },
+      {
+        id: "st_mkt_05", urgency: 60, once: true,
+        when: (s) => s.sector.id === "ecommerce_marketplace" && s.week >= 20 && s.monthlyRevenue >= 8000,
+        title: "🔄 This Week: Only 22% of Buyers Ever Order Twice",
+        tasks: "• Most buyers ordered once, in a sale | • Layla asks for your 90-day repeat rate",
+        why: "In e-commerce the second order is the real conversion. The first is bought with ad money; the second is earned by product, delivery and returns. A marketplace whose buyers never return is an ad agency with a warehouse.",
+        strategies: [
+          { path: "bootstrap", title: "1. Call 50 one-time buyers and ask why", desc: "You make the calls. No script, no discount, just: why didn't you order again?", cost: 0, tab: "Journal", fx: { mentalClarity: -8, churnRate: -0.6, investorTrust: 3 }, log: "Thirty-one picked up. Late parcels and a confusing returns page came up again and again." },
+          { path: "capital", title: "2. Launch a paid membership with free delivery", desc: "A yearly fee for free 24-hour delivery and early access. It needs building and it needs the courier to keep up.", cost: 4500, tab: "Assets", fx: { churnRate: -1.2, monthlyRevenue: 1200, techDebt: 5 }, log: "1,400 buyers joined in a month. Members now order twice as often, and the courier is busier." },
+          { path: "bold", title: "3. Switch off all ads for a month and watch", desc: "See who comes back without being paid for. Painful numbers, honest ones.", cost: 0, tab: "Departments", fx: { activeUsers: -400, cac: -6, investorTrust: -4, churnRate: -0.4 }, log: "Orders fell by a third. What remained was your real business, and Layla asked what the plan was." },
+        ],
+      },
+    ],
+    challenge: { id: "sc_mkt", icon: "🛍", name: "Buyers who come back", goal: "Reach $10,000 MRR with monthly churn at or below 4% by week 36.", mode: "venture", deadline: 36, done: (s) => s.monthlyRevenue >= 10000 && s.churnRate <= 4 },
+    page: { id: "sector_mkt", icon: "🛍", title: "Liquidity before growth", body: "A marketplace works when a buyer who searches usually finds something worth buying, and a seller who lists usually sells within a week. Below that line, ads buy disappointed visitors who never return. Win one category in one city first: enough brands that search never comes back empty, delivered fast enough to earn a second order. This week, measure one number: the share of searches that end in an order.", source: "The Cold Start Problem, Andrew Chen (2021)" },
+  };
+
+  const SECTOR_HEALTH = {
+    sector: "healthtech",
+    roles: { c1: "Corporate wellness client", c2: "Care-plan patient" },
+    insights: [
+      { area: "onboarding", text: "\"I unboxed the cuff, then waited three days for someone to tell me if my first reading was bad.\"" },
+      { area: "pricing", text: "\"My company pays for the app. I'd pay myself for one thing: a doctor who already knows my numbers.\"" },
+      { area: "feature", text: "\"I stopped measuring when nobody reacted. If my sugar is high, I want a human to notice that week.\"" },
+      { area: "channel", text: "Our best patients came from their own GP. Not one of the ads brought a patient who stayed past month two." },
+      { area: "support", text: "\"My father can't pair Bluetooth. Half the calls to support are from his children, not from him.\"" },
+      { area: "pricing", text: "\"HR asked if they could pay only for staff who actually use it. They can see the engagement report too.\"" },
+    ],
+    experiments: [
+      { id: "xs_health_01", area: "support", title: "A nurse calls after three missed readings", win: { churn: -0.6, pmf: 5, arpu: 2 }, winText: "Patients who got the call measured again within days. Several said it was the first time a service checked on them.", lose: { clarity: -3, pmf: 1 }, loseText: "Most calls went to voicemail. The patients who answered were the ones still measuring anyway." },
+      { id: "xs_health_02", area: "pricing", title: "Bill employers per active patient, not per head", win: { arpu: 4, pmf: 4, trust: 2 }, winText: "Two HR heads signed faster because they only pay for staff who measure. Your team started caring about engagement.", lose: { arpu: -3, churn: 0.3, pmf: 0 }, loseText: "Engagement stayed at 12%. Revenue per company fell by half and nobody's behaviour changed." },
+    ],
+    targets: [
+      {
+        id: "st_health_01", urgency: 64, once: true,
+        when: (s) => s.sector.id === "healthtech" && s.week >= 3 && s.week <= 12,
+        title: "🛡 This Week: Get Malpractice Cover in Place",
+        tasks: "• A partner clinic asked for your policy number | • Two doctors won't take calls without cover",
+        why: "In telehealth every call is a clinical act. No hospital, insurer or serious doctor will work with you until each consultation is covered by malpractice insurance, and the policy must match the specialties and countries you serve.",
+        strategies: [
+          { path: "bootstrap", title: "1. Ride on each doctor's personal policy", desc: "Ask doctors to extend their own hospital cover to your calls. Free, but patchy, and some policies exclude telehealth.", cost: 0, tab: "Relationships", fx: { mentalClarity: -6, monthlyRevenue: 300, teamMorale: -3 }, log: "Four doctors sent their certificates. Two policies excluded remote consultations, so those doctors now only do follow-ups." },
+          { path: "capital", title: "2. Buy a group telehealth policy", desc: "One company policy that covers every doctor on the platform. Expensive, but every call is covered from Monday.", cost: 3500, tab: "Assets", fx: { monthlyRevenue: 900, investorTrust: 4, mentalClarity: 4 }, log: "The broker placed a group policy on Thursday. The partner clinic received the certificate the same afternoon and booked a launch date." },
+          { path: "defensive", title: "3. Limit calls to follow-ups until cover lands", desc: "No new diagnoses on video for now: only follow-ups of existing patients. Safer, but growth pauses.", cost: 0, tab: "Departments", fx: { churnRate: -0.5, activeUsers: -60, mentalClarity: 3 }, log: "First consultations went back to the clinics. Follow-ups continued, and the doctors stopped asking about cover." },
+        ],
+      },
+      {
+        id: "st_health_02", urgency: 52, once: false,
+        when: (s) => s.sector.id === "healthtech" && s.week >= 6 && s.week % 7 == 3 && s.activeUsers >= 100,
+        title: "📉 This Week: Patients Stopped Measuring",
+        tasks: "• 41% of patients sent no reading in 14 days | • Employers will see it in the next report",
+        why: "Remote monitoring only works if patients measure. Adherence falls fast after the first month, and a patient who stops measuring stops seeing the value, then stops paying. Silence in the data is your earliest churn signal.",
+        strategies: [
+          { path: "bootstrap", title: "1. Founders call the silent patients", desc: "You and Tariq phone the quiet ones yourselves. Cheap, and you will hear why they stopped.", cost: 0, tab: "Journal", fx: { mentalClarity: -8, churnRate: -0.6, arpu: 1 }, log: "Two evenings of calls. The top reason was a confusing reminder at 6am. The second was 'nobody looks at my numbers anyway'." },
+          { path: "capital", title: "2. Hire a care coordinator nurse", desc: "A nurse owns adherence: calls, WhatsApp check-ins, escalation to doctors. Costly, but it compounds.", cost: 2800, tab: "Departments", fx: { churnRate: -1.2, monthlyRevenue: 600, teamMorale: 3 }, log: "Nurse Huda started on Sunday with a list of 140 names. By the end of the month two in three were measuring again." },
+          { path: "bold", title: "3. Doctors reply to every abnormal reading", desc: "Promise a doctor's note within 24 hours of any high reading. Patients feel watched; doctors feel stretched.", cost: 1200, tab: "Relationships", fx: { churnRate: -0.9, teamMorale: -5, activeUsers: 80 }, log: "Patients started measuring to get the reply. The doctors' queue doubled, and Dr. Mona asked who covers weekends." },
+        ],
+      },
+      {
+        id: "st_health_03", urgency: 60, once: false,
+        when: (s) => s.sector.id === "healthtech" && s.monthlyRevenue > 3000 && s.week % 8 == 5,
+        title: "💸 This Week: Chase the Insurer's Unpaid Claims",
+        tasks: "• $11,000 in claims older than 90 days | • 18% came back with coding errors",
+        why: "Insurer revenue is real only when it lands. Claims rejected for a wrong code or missing note sit unpaid for months, and a healthtech company can be growing on paper while running out of cash in the bank.",
+        strategies: [
+          { path: "bootstrap", title: "1. Recode and resubmit them yourself", desc: "A weekend with the rejection letters and the coding manual. Free, slow, and you learn exactly what the insurer wants.", cost: 0, tab: "Journal", fx: { mentalClarity: -9, cash: 4000 }, log: "You resubmitted 63 claims. Most rejections were the same missing field. The insurer paid part of them within three weeks." },
+          { path: "capital", title: "2. Hire a revenue cycle agency", desc: "Specialists who recode, appeal and chase, for a share of what they recover. Faster cash, smaller margin.", cost: 2000, tab: "Assets", fx: { cash: 7000, arpu: -1, mentalClarity: 4 }, log: "The agency recovered most of the backlog in a month and fixed your claim template. Their fee came out of every payment." },
+          { path: "defensive", title: "3. Make doctors code claims at the call", desc: "No consult note closes without a diagnosis code. Fewer rejections later, more clicks for doctors now.", cost: 500, tab: "Departments", fx: { churnRate: 0.3, teamMorale: -4, cash: 2500 }, log: "Tariq made the code field mandatory. Rejections dropped sharply. Two doctors complained the note now takes longer than the call." },
+        ],
+      },
+      {
+        id: "st_health_04", urgency: 48, once: true,
+        when: (s) => s.sector.id === "healthtech" && s.monthlyRevenue > 5000 && s.week >= 14,
+        title: "🧪 This Week: Build the Evidence a Hospital Will Buy",
+        tasks: "• A hospital group wants outcome data | • 'Show us blood pressure falling, not app downloads'",
+        why: "Hospitals and insurers don't buy features; they buy outcomes they can defend to their own boards. Six months of clean, before-and-after data on blood pressure or HbA1c is worth more than any sales deck in this industry.",
+        strategies: [
+          { path: "bootstrap", title: "1. Publish your own six-month cohort", desc: "Pull your existing patients' readings and write it up honestly. Free, but buyers trust self-reported data less.", cost: 0, tab: "Journal", fx: { mentalClarity: -6, investorTrust: 3, monthlyRevenue: 500 }, log: "Rania wrote up 212 patients over six months. The hospital asked good questions and requested the raw data." },
+          { path: "capital", title: "2. Fund a study with a university", desc: "An independent researcher designs and runs it with ethics approval. Slow and costly, but it opens doors for years.", cost: 4500, tab: "Relationships", fx: { investorTrust: 8, monthlyRevenue: 1500, mentalClarity: -3 }, log: "A university department agreed to run the study. Ethics approval took seven weeks. The hospital group put the pilot on hold until results." },
+          { path: "bold", title: "3. Offer the hospital a risk-sharing pilot", desc: "They pay only if their patients' readings improve. You win the deal now and carry the risk.", cost: 1500, tab: "Relationships", fx: { monthlyRevenue: 2000, cash: -2000, mentalClarity: -5 }, log: "The hospital signed within a week. Their patients started on Monday. Payment depends on the numbers in six months." },
+        ],
+      },
+      {
+        id: "st_health_05", urgency: 68, once: true,
+        when: (s) => s.sector.id === "healthtech" && (s.stage >= 2 || s.week >= 24),
+        title: "🏛 This Week: The Ministry Inspection Is Here",
+        tasks: "• Inspectors arrive Tuesday at 9am | • They want consent records, doctor licences and incident logs",
+        why: "A telehealth licence is not a one-time stamp. Health regulators inspect clinical governance: are all doctors licensed and current, is consent recorded, are incidents logged and reviewed. A bad inspection can suspend new consultations overnight.",
+        strategies: [
+          { path: "bootstrap", title: "1. Pull an all-nighter on the paperwork", desc: "You and Rania assemble every file by hand before Tuesday. Free, exhausting, and gaps may still show.", cost: 0, tab: "Journal", fx: { mentalClarity: -12, teamMorale: -4, investorTrust: 2 }, log: "The inspectors found two expired doctor licences and a missing consent form. You got a written warning and 30 days to fix them." },
+          { path: "capital", title: "2. Bring in a healthcare compliance consultant", desc: "A former inspector runs a mock audit on Sunday and fixes the gaps. Expensive, but the real one goes smoothly.", cost: 4000, tab: "Assets", fx: { investorTrust: 6, mentalClarity: 4, churnRate: -0.3 }, log: "The mock audit caught everything the real one would have. The inspectors left at noon with one minor note." },
+          { path: "defensive", title: "3. Pause new consults until files are clean", desc: "Freeze new patients this week, audit every doctor and form. Revenue dips, but nothing surprises the inspector.", cost: 0, tab: "Departments", fx: { monthlyRevenue: -800, investorTrust: 4, churnRate: -0.2, mentalClarity: 3 }, log: "New bookings paused for five days. Two doctors were taken off the roster until their licences were renewed. The inspection passed clean." },
+        ],
+      },
+    ],
+    challenge: { id: "sc_health", icon: "🩺", name: "Care That Patients Keep", goal: "Reach $8,000 in monthly revenue with monthly churn at or below 3% within 32 weeks.", mode: "venture", deadline: 32, done: (s) => s.monthlyRevenue >= 8000 && s.churnRate <= 3 },
+    page: { id: "sector_health", icon: "🩺", title: "In healthtech, trust is the product", body: "Patients, doctors, employers and insurers all buy the same thing from you: confidence that the medicine is safe. Trust builds slowly, through licensed doctors, validated devices, recorded consent and honest incident reviews, and one hidden mistake can undo a year of it. Growth that outruns clinical governance is borrowed. This week, ask who reviews your last 20 consultations, and where that review is written down.", source: "The Innovator's Prescription, Christensen, Grossman and Hwang (2009)" },
+  };
+
+  const SECTOR_EDU = {
+    sector: "edtech",
+    roles: { c1: "Hiring partner", c2: "Alumnus · hiring manager" },
+    insights: [
+      { area: "onboarding", text: "Week 2 decides everything. Students who miss two live sessions in a row almost never finish." },
+      { area: "pricing", text: "My father pays, so my father decides. Show him the salary table, not the syllabus." },
+      { area: "pricing", text: "I'd rather owe 12% of a salary I don't have yet than pay $2,400 I don't have now." },
+      { area: "feature", text: "Employers never read the certificate. They open the GitHub link and watch the capstone demo." },
+      { area: "channel", text: "Every student who enrolled this month heard about us from a graduate, not from an ad." },
+      { area: "support", text: "The scary part is after week 12. Career coaching then matters more than one more lecture now." },
+    ],
+    experiments: [
+      { id: "xs_edu_01", area: "pricing", title: "A $400 deposit plus income share, no full fee", win: { arpu: 5, users: 80, pmf: 4 }, winText: "Enrolments rose, and the deposit filtered out students who weren't serious. Completion held at last cohort's level.", lose: { churn: 0.5, pmf: 1 }, loseText: "More students signed up and fewer finished. The collections bill for this test arrives in a year." },
+      { id: "xs_edu_02", area: "onboarding", title: "A free two-week pre-course before anyone pays", win: { churn: -0.8, pmf: 5 }, winText: "Half the pre-course students dropped before paying. The half who paid finished at the best rate you've seen.", lose: { clarity: -3, pmf: 1 }, loseText: "Most pre-course students treated it as a free sample and never came back. Instructors taught two cohorts for one." },
+    ],
+    targets: [
+      {
+        id: "st_edu_01", urgency: 58, once: true,
+        when: (s) => s.sector.id === "edtech" && s.week >= 3 && s.week <= 12,
+        title: "📅 This Week: Fill the Cohort Before Its Start Date",
+        tasks: "• 8 of 20 seats are paid | • The start date is printed on every contract",
+        why: "A bootcamp's costs land on the start date: instructors, space, mentors. An empty seat on day one is revenue you never get back, and moving the date costs the trust of the students who already paid.",
+        strategies: [
+          { path: "bootstrap", title: "1. Call every applicant who stalled", desc: "You and Tariq phone the 60 applicants who started an application and stopped. Slow, personal and free.", cost: 0, tab: "Relationships", fx: { mentalClarity: -8, monthlyRevenue: 900, activeUsers: 40 }, log: "Sixty calls over four evenings. Most were waiting for a parent's yes. Seven paid by Thursday." },
+          { path: "capital", title: "2. Run an early-bird discount with paid ads", desc: "A $300 discount for anyone who pays this week, pushed with ads to last year's applicant list.", cost: 2500, tab: "Assets", fx: { monthlyRevenue: 1400, activeUsers: 90, arpu: -2 }, log: "The seats filled by Saturday. Two students who paid full price last week asked for the difference back." },
+          { path: "defensive", title: "3. Start with eight, merge with the next intake", desc: "Run the eight on time and fold them into the next cohort in week 4. Saves a full instructor's salary.", cost: 0, tab: "Departments", fx: { cash: 1500, teamMorale: -4, churnRate: 0.5 }, log: "The eight started on time. The merge in week 4 left them repeating two lessons, and one of them said so on LinkedIn." },
+        ],
+      },
+      {
+        id: "st_edu_02", urgency: 62, once: false,
+        when: (s) => s.sector.id === "edtech" && s.week >= 5 && s.week % 9 === 5,
+        title: "💸 This Week: Three Students Want Their Money Back",
+        tasks: "• Two are in week 3, one never logged in | • One parent threatens a public review",
+        why: "Bootcamp refund requests cluster in the first four weeks, when the work gets hard. A clear, fair policy protects both cash and reputation; arguing case by case burns both, and the parents all talk to each other.",
+        strategies: [
+          { path: "bootstrap", title: "1. Coach them through week 4 first", desc: "Each gets a one-to-one with an instructor and a 7-day pause before any refund. Most quitters are just stuck.", cost: 0, tab: "Journal", fx: { mentalClarity: -6, teamMorale: -2, churnRate: -0.5 }, log: "Two of the three stayed after the one-to-ones. The third had already started a job and only wanted the money." },
+          { path: "capital", title: "2. Refund all three in full today", desc: "No questions, no forms, money back by tonight. Expensive, and the story you want parents to tell.", cost: 2400, tab: "Assets", fx: { mentalClarity: 5, teamMorale: 2, activeUsers: -3 }, log: "All three refunds went out before 6pm. The parent who threatened a review posted a thank-you instead." },
+          { path: "defensive", title: "3. Write a pro-rata refund policy", desc: "Refund only the unused weeks, written into every contract from now on. Firm and fair, and not everyone will like it.", cost: 0, tab: "Departments", fx: { cash: 800, mentalClarity: -3, churnRate: 0.3 }, log: "The policy went into the contract template. The parent posted the review anyway, and quoted the new clause." },
+        ],
+      },
+      {
+        id: "st_edu_03", urgency: 50, once: false,
+        when: (s) => s.sector.id === "edtech" && s.week % 52 === 29,
+        title: "📈 This Week: The Back-to-School Rush Starts",
+        tasks: "• Applications doubled overnight | • Admissions can interview 40 people a week",
+        why: "In education a few weeks a year bring most of the demand: families decide around the school calendar and graduates job-hunt in autumn. If admissions can't keep up now, the quiet season starts with empty cohorts.",
+        strategies: [
+          { path: "bootstrap", title: "1. Everyone interviews, Tariq included", desc: "Instructors, engineers and you run admission interviews every evening for two weeks. The product waits.", cost: 0, tab: "Journal", fx: { monthlyRevenue: 1200, teamMorale: -5, techDebt: 4 }, log: "Ninety interviews in two weeks. Tariq turned out to be a strict examiner. The bug list grew by a third." },
+          { path: "capital", title: "2. Hire two temporary admissions advisors", desc: "Two experienced advisors on a three-month contract, trained on your admissions test in two days.", cost: 3000, tab: "Departments", fx: { monthlyRevenue: 2000, activeUsers: 150, mentalClarity: -2 }, log: "The advisors cleared the backlog in nine days. One of them admitted a student your test would have stopped." },
+          { path: "bold", title: "3. Open a second start date in October", desc: "Turn the overflow into a new cohort six weeks later. More revenue, if you can staff it.", cost: 1500, tab: "Assets", fx: { monthlyRevenue: 2200, churnRate: 0.6, teamMorale: -4 }, log: "The October cohort filled in a week. You still don't have its lead instructor." },
+        ],
+      },
+      {
+        id: "st_edu_04", urgency: 55, once: true,
+        when: (s) => s.sector.id === "edtech" && s.week >= 16 && s.monthlyRevenue >= 4000,
+        title: "🛠 This Week: Your AI Module Is Already Out of Date",
+        tasks: "• Employers ask about tools you don't teach | • The next cohort starts in 3 weeks",
+        why: "Tech curricula go stale in six to nine months. Employers test on what's used today, and graduates who learned last year's stack fail the take-home task. Your placement rate drops a full cohort before anyone sees why.",
+        strategies: [
+          { path: "bootstrap", title: "1. Instructors rewrite it on weekends", desc: "The teaching team rebuilds the module themselves over three weekends. Free, current, and tiring.", cost: 0, tab: "Journal", fx: { teamMorale: -8, mentalClarity: -3, churnRate: -0.4 }, log: "The new module shipped two days before the cohort started. One instructor asked if every quarter will be like this." },
+          { path: "capital", title: "2. Pay two working engineers to co-teach", desc: "Two engineers from hiring partners teach the new tools one evening a week and bring their own case studies.", cost: 3500, tab: "Relationships", fx: { churnRate: -0.8, arpu: 3, teamMorale: 2 }, log: "The guest engineers brought real code from production. One of them hired two students before the module ended." },
+          { path: "defensive", title: "3. Patch it now, rebuild after this cohort", desc: "Add two new lessons on top of the old module and plan the full rewrite for the quiet weeks.", cost: 0, tab: "Departments", fx: { mentalClarity: 2, techDebt: 6, churnRate: -0.2 }, log: "Two lessons were bolted on. Students noticed the module now contradicts itself in week 9." },
+        ],
+      },
+      {
+        id: "st_edu_05", urgency: 45, once: true,
+        when: (s) => s.sector.id === "edtech" && (s.stage >= 2 || s.week >= 30),
+        title: "🏛 This Week: The Accreditation Inspectors Visit",
+        tasks: "• Three inspectors, two days, 140 checklist items | • Accreditation unlocks funded students",
+        why: "Accreditation is slow, paper-heavy and changes little in the classroom. It also decides whether government programmes, HR departments and parents' bank loans will pay for your seats. Here, the stamp often matters as much as the skill.",
+        strategies: [
+          { path: "bootstrap", title: "1. Prepare the files yourself", desc: "You spend the week assembling attendance logs, instructor CVs and curriculum maps for 140 checklist items.", cost: 0, tab: "Journal", fx: { mentalClarity: -10, investorTrust: 3, monthlyRevenue: 800 }, log: "You passed with eleven conditions. Each one needs a document you didn't know existed." },
+          { path: "capital", title: "2. Hire a quality consultant who knows them", desc: "A consultant who has prepared twenty institutes for this exact inspection runs the visit with you.", cost: 4500, tab: "Relationships", fx: { investorTrust: 6, monthlyRevenue: 1800, mentalClarity: -2 }, log: "The consultant knew which inspector cares about fire exits. You passed with two minor notes." },
+          { path: "defensive", title: "3. Ask to postpone by one semester", desc: "Request a later visit and keep running as a licensed training centre for now.", cost: 0, tab: "Departments", fx: { mentalClarity: 4, investorTrust: -3, activeUsers: -50 }, log: "The visit moved to next semester. A government programme gave this year's seats to an accredited rival." },
+        ],
+      },
+    ],
+    challenge: { id: "sc_edu", icon: "🎓", name: "Keep the Placement Promise", goal: "Reach $15,000 monthly revenue with churn at or below 5.5% within 36 weeks, with cash still above zero.", mode: "venture", deadline: 36, done: (s) => s.monthlyRevenue >= 15000 && s.churnRate <= 5.5 && s.cash > 0 },
+    page: { id: "sector_edu", icon: "🎓", title: "Outcomes are the product", body: "A bootcamp doesn't sell lessons, it sells the job after them. Students, and the parents who pay, judge you on one number: how many graduates got hired, at what salary, how fast. Completion, instructors and employer partners all feed that number, and a placement guarantee turns it into a debt. This week, list every graduate of your last cohort with their job, salary and start date, and count honestly.", source: "Competing Against Luck, Clayton M. Christensen et al. (2016)" },
+  };
+
+  // ================================================================ sectors
+  // Industry packs: each sector gets its own dilemmas, mail and mentor notes
+  // (wired in stories.js and teach.js) plus, from content/sector_*.js, the
+  // role names of its key relationships, customer insights, experiments,
+  // weekly targets, a challenge and a Founder Playbook page.
+  // shares App's scope.
+
+  const SECTOR_PACKS = [SECTOR_SAAS, SECTOR_FIN, SECTOR_MKT, SECTOR_HEALTH, SECTOR_EDU];
+  function sectorPack(s) {
+    const id = s && s.sector && s.sector.id;
+    return SECTOR_PACKS.find((p) => p.sector === id) || null;
+  }
+
+  // what customers say in this industry, mixed with the general insights
+  function sectorInsights(s) {
+    const p = sectorPack(s);
+    return p ? p.insights : [];
+  }
+
+  // two industry experiments, run like the general ones
+  const XFX = {
+    arpu: (s, v) => (s.arpu = Math.max(1, s.arpu + v)),
+    churn: (s, v) => (s.churnRate = Math.min(25, Math.max(0.5, s.churnRate + v))),
+    cacPct: (s, v) => (s.cac = Math.max(10, Math.round(s.cac * (1 + v)))),
+    users: (s, v) => (s.activeUsers = Math.max(0, s.activeUsers + v)),
+    clarity: (s, v) => (s.mentalClarity = Math.min(100, Math.max(0, s.mentalClarity + v))),
+    techDebt: (s, v) => (s.techDebt = Math.min(100, Math.max(0, s.techDebt + v))),
+    trust: (s, v) => (s.investorTrust = Math.min(100, Math.max(0, (s.investorTrust == null ? 80 : s.investorTrust) + v))),
+  };
+  const runXfx = (s, fx) => {
+    Object.keys(fx || {}).forEach((k) => XFX[k] && XFX[k](s, fx[k]));
+    return (fx && fx.pmf) || 0;
+  };
+  const SECTOR_EXPERIMENTS = [].concat(
+    ...SECTOR_PACKS.map((p) =>
+      p.experiments.map((x) => ({ id: x.id, sector: p.sector, area: x.area, title: x.title, win: (s) => runXfx(s, x.win), winText: x.winText, lose: (s) => runXfx(s, x.lose), loseText: x.loseText })),
+    ),
+  );
+  function experimentsFor(s) {
+    const id = s && s.sector && s.sector.id;
+    return SECTOR_EXPERIMENTS.filter((x) => x.sector === id).concat(EXPERIMENTS);
+  }
+
+  // the weekly target generator (engine module 264) gets each industry's targets
+  (function () {
+    const G = typeof __r === "function" ? __r(264) : null;
+    if (!G || !G.__addTemplates || G.__sectors) return;
+    G.__sectors = true;
+    const H = G.__helpers;
+    const scale = (fx, stage) => {
+      const out = {};
+      Object.keys(fx).forEach((k) => (out[k] = k === "monthlyRevenue" || k === "cash" ? Math.sign(fx[k]) * H.t(Math.abs(fx[k]), stage) : fx[k]));
+      return out;
+    };
+    const templates = [];
+    SECTOR_PACKS.forEach((p) =>
+      p.targets.forEach((t) =>
+        templates.push({
+          id: t.id,
+          urgency: t.urgency,
+          // milestones come once; recurring situations at most every 10 weeks
+          condition: (s) => !!s.sector && s.sector.id === p.sector && (t.once ? !(s.msDone || []).includes(t.id) : s.week - ((s.msLast || {})[t.id] || -99) >= 10) && t.when(s),
+          build: (s) => {
+            if (t.once) (s.msDone = s.msDone || []).push(t.id);
+            else (s.msLast = s.msLast || {})[t.id] = s.week;
+            return {
+              title: t.title,
+              tasks: t.tasks,
+              reward_exp: t.once ? 120 : 95,
+              whyItMatters: t.why,
+              strategies: t.strategies.map((x, i) => H.o(t.id + "_" + (i + 1), x.path, x.title, x.desc, x.cost, s.stage, x.tab, scale(x.fx, s.stage), x.log)),
+            };
+          },
+        }),
+      ),
+    );
+    G.__addTemplates(templates);
+  })();
+
+  // one challenge per industry (the setup screen fixes the market)
+  SECTOR_PACKS.forEach((p) => {
+    const c = p.challenge;
+    const done = (s) => {
+      try {
+        return !!c.done(s);
+      } catch (e) {
+        return false;
+      }
+    };
+    CHALLENGES[c.id] = { icon: c.icon, name: c.name, goal: c.goal, mode: c.mode, deadline: c.deadline, done: done, sector: p.sector };
+  });
+  const sectorChallenges = () => SECTOR_PACKS.map((p) => ({ id: p.challenge.id, icon: p.challenge.icon, name: p.challenge.name, goal: p.challenge.goal, mode: p.challenge.mode, sector: p.sector }));
+
+  // and one Founder Playbook page each
+  SECTOR_PACKS.forEach((p) => {
+    if (PAGE_BY_ID[p.page.id]) return;
+    PLAYBOOK.push(p.page);
+    PAGE_BY_ID[p.page.id] = p.page;
+  });
+
+  // who Northwind Retail and Omar Sabry are to a company in this industry
+  function applySectorRoles(s) {
+    const p = sectorPack(s);
+    if (!p) return;
+    (s.relationships || []).forEach((r) => {
+      if (r.id === "c1" && p.roles.c1) r.role = p.roles.c1;
+      if (r.id === "c2" && p.roles.c2) r.role = p.roles.c2;
+    });
+  }
+
 
   function buildReport(before, after) {
     const rows = [
@@ -6034,6 +7575,7 @@ __d(function (g, r, i, a, m, _e, d) {
       eng.state.avatar = avatar || "avatar_m1";
       if (daily) eng.state.daily = { day: daily.day, n: daily.n };
       ensureFeatureState(eng.state);
+      applySectorRoles(eng.state);
       if (challenge && CHALLENGES[challenge]) eng.state.challenge = challenge;
       applyMode(eng, challenge && CHALLENGES[challenge] ? CHALLENGES[challenge].mode : mode);
       applyBackground(eng.state, daily ? "first" : background);
@@ -6083,6 +7625,7 @@ __d(function (g, r, i, a, m, _e, d) {
               daily: dailyInfo(),
               backgrounds: BACKGROUNDS.map((b) => ({ id: b.id, icon: b.icon, name: b.name, desc: b.desc, how: b.how, unlocked: b.unlocked() })),
               DailyPanel: DailyPanel,
+              challenges: sectorChallenges(),
               TrophyPanel: TrophyPanel,
             },
             saved: saved,
@@ -7221,7 +8764,7 @@ __d(function(g,r,i,a,m,_e,d){"use strict";Object.defineProperty(_e,'__esModule',
 {id:"ms_investor_update",urgency:44,condition:e=>e.stage>=2&&e.week%6==0,build:e=>({title:"📮 This Week: The Monthly Investor Update",tasks:"• Good news, bad news, and one ask | • Send it even when it hurts",reward_exp:85,whyItMatters:"Investors who hear from you every month help you. Investors who only hear from you when you need money do not. The update is how you earn the next round a year early.",strategies:[o("ms_upd_honest","bootstrap","1. Send it, bad numbers included","Lead with the truth and the plan.",0,e.stage,"Relationships",{investorTrust:10,mentalClarity:-2},"Sent an honest update. Two investors replied with help."),o("ms_upd_ask","bold","2. End with a specific ask","One intro, one hire, one customer. Make it easy to help.",0,e.stage,"Relationships",{investorTrust:6,monthlyRevenue:t(500,e.stage),mentalClarity:-4},"Ended the update with a specific ask. Someone delivered within a week."),o("ms_upd_skip","defensive","3. Skip it this month","Nothing exciting to say.",0,e.stage,"Journal",{investorTrust:-8,mentalClarity:4},"Skipped the update. Silence is its own kind of news.")]})},
 {id:"ms_scale_ops",urgency:55,condition:e=>e.stage>=3&&e.week%5==4,build:e=>({title:"🏗️ This Week: Processes Before Chaos",tasks:`• ${e.team.length} people | • What worked at ten breaks at thirty`,reward_exp:120,whyItMatters:"Growth breaks things in order: communication first, then hiring, then quality. Fix the next thing to break before it breaks.",strategies:[o("ms_ops_managers","capital","1. Promote your first managers","Give your best people teams, and train them to lead.",t(3000,e.stage),e.stage,"Departments",{teamMorale:10,techDebt:-6,mentalClarity:5},"Promoted the first managers. You stopped being everyone's boss."),o("ms_ops_quality","defensive","2. Pay down the debt for a sprint","No new features until the foundations hold.",t(2000,e.stage),e.stage,"Assets",{techDebt:-20,churnRate:-.6,monthlyRevenue:-t(300,e.stage)},"Paid down tech debt for a sprint. Slower this week, faster every week after."),o("ms_ops_push","bold","3. Keep shipping and fix it later","Momentum is everything at this stage.",0,e.stage,"Departments",{monthlyRevenue:t(2500,e.stage),techDebt:14,teamMorale:-8},"Kept pushing. The numbers grew, and so did the cracks.")]})},
 {id:"ms_reflect",urgency:40,condition:e=>e.week>=8&&e.week%8==0,build:e=>({title:"🗓️ This Week: A Founder's Quarterly Review",tasks:"• Step back from the weekly fires | • Decide what to stop doing",reward_exp:80,whyItMatters:"Founders rarely fail from doing too little. They fail from doing too many things at once. Once a quarter, look at everything you're doing and stop something.",strategies:[o("ms_ref_stop","bootstrap","1. Kill one project","Pick the thing that's not working and end it properly.",0,e.stage,"Journal",{mentalClarity:12,teamMorale:-3},"Killed a project that wasn't working. Lighter, and more focused."),o("ms_ref_coach","capital","2. Spend a day with a mentor","An outside view on the decisions you're too close to.",t(800,e.stage),e.stage,"Relationships",{mentalClarity:10,investorTrust:4},"Spent a day with a mentor. Saw two blind spots clearly."),o("ms_ref_push","bold","3. Skip the review, keep running","There is no time to stop.",0,e.stage,"Journal",{monthlyRevenue:t(600,e.stage),mentalClarity:-10},"Skipped the review and kept running. A little further, a little foggier.")]})},
-{id:"growth_push",urgency:20,condition:()=>!0,build:e=>{const n=u(e);return{title:"\ud83d\udcc8 This Week: Compound the Growth",tasks:`\u2022 Company is stable | \u2022 Convert stability into ${n.customer}`,reward_exp:85,whyItMatters:"Nothing is on fire this week \u2014 which is exactly when most founders coast. Stable weeks are the only ones where you get to choose your direction instead of reacting to it. Spend this one deliberately.",strategies:[o("gen_growth_channel","bootstrap",`1. Double down on ${n.channel}`,"Take the channel that's already working and push it twice as hard. Boring, and it compounds.",0,e.stage,"Departments",{activeUsers:70,monthlyRevenue:t(900,e.stage),mentalClarity:-5},"Doubled down on the working channel. Boring, repeatable, compounding growth."),o("gen_growth_product","capital","2. Ship the feature customers keep asking for","Build the thing that's been on every customer call for a month.",t(3200,e.stage),e.stage,"Assets",{monthlyRevenue:t(1600,e.stage),churnRate:-1.2,techDebt:6},"Shipped the most-requested feature. Retention improved and expansion revenue followed."),o("gen_growth_partnership","bold","3. Land one big partnership","Go after a single distribution partner who could change the trajectory. High effort, high variance.",t(2500,e.stage),e.stage,"Relationships",{activeUsers:180,monthlyRevenue:t(2400,e.stage),mentalClarity:-12,investorTrust:8},"Landed a major distribution partnership. Big step change, big effort spent.")]}}}];const h=l.map(e=>e.id)},264,[]);
+{id:"growth_push",urgency:20,condition:()=>!0,build:e=>{const n=u(e);return{title:"\ud83d\udcc8 This Week: Compound the Growth",tasks:`\u2022 Company is stable | \u2022 Convert stability into ${n.customer}`,reward_exp:85,whyItMatters:"Nothing is on fire this week \u2014 which is exactly when most founders coast. Stable weeks are the only ones where you get to choose your direction instead of reacting to it. Spend this one deliberately.",strategies:[o("gen_growth_channel","bootstrap",`1. Double down on ${n.channel}`,"Take the channel that's already working and push it twice as hard. Boring, and it compounds.",0,e.stage,"Departments",{activeUsers:70,monthlyRevenue:t(900,e.stage),mentalClarity:-5},"Doubled down on the working channel. Boring, repeatable, compounding growth."),o("gen_growth_product","capital","2. Ship the feature customers keep asking for","Build the thing that's been on every customer call for a month.",t(3200,e.stage),e.stage,"Assets",{monthlyRevenue:t(1600,e.stage),churnRate:-1.2,techDebt:6},"Shipped the most-requested feature. Retention improved and expansion revenue followed."),o("gen_growth_partnership","bold","3. Land one big partnership","Go after a single distribution partner who could change the trajectory. High effort, high variance.",t(2500,e.stage),e.stage,"Relationships",{activeUsers:180,monthlyRevenue:t(2400,e.stage),mentalClarity:-12,investorTrust:8},"Landed a major distribution partnership. Big step change, big effort spent.")]}}}];const h=l.map(e=>e.id);_e.__addTemplates=function(a){l.splice(l.length-1,0,...a)};_e.__helpers={o:o,t:t,n:n,u:u}},264,[]);
 __d(function (g, r, i, a, m, _e, d) {
   "use strict";
   function e(e) {
@@ -7484,18 +9027,22 @@ __d(function (g, r, i, a, m, _e, d) {
           jsx(ScrollView, {
             style: { flex: 1 },
             contentContainerStyle: st.list,
-            children: CHALLENGES.map((c, idx) =>
+            // general challenges, then one per industry (those fix the market too)
+            children: CHALLENGES.concat((meta && meta.challenges) || []).map((c, idx) =>
               jsxs(
                 Touchable,
                 {
                   style: st.sector,
                   activeOpacity: 0.85,
                   dataSet: { ff: "rise" + Math.min(idx + 1, 4) },
-                  onPress: () => (setChallenge(c.id), setMode(c.mode), setStep(1)),
+                  onPress: () => (setChallenge(c.id), setMode(c.mode), c.sector ? (setSectorId(c.sector), setStep(2)) : setStep(1)),
                   children: [
                     jsxs(View, {
                       style: st.sectorTop,
-                      children: [jsx(View, { style: st.sectorIcon, children: jsx(Pic, { e: c.icon, size: 36 }) }), jsx(Text, { style: [st.sectorName, { flex: 1 }], children: c.name })],
+                      children: [
+                        jsx(View, { style: st.sectorIcon, children: jsx(Pic, { e: c.icon, size: 36 }) }),
+                        jsxs(View, { style: { flex: 1 }, children: [jsx(Text, { style: st.sectorName, children: c.name }), c.sector && jsx(Text, { style: st.desc, children: ICONS[c.sector] + "  " + sectorName(Engine.SECTORS.find((x) => x.id === c.sector) || {}) })] }),
+                      ],
                     }),
                     jsx(Text, { style: st.desc, children: c.goal }),
                   ],
@@ -7584,7 +9131,7 @@ __d(function (g, r, i, a, m, _e, d) {
     return jsxs(View, {
       style: st.container,
       children: [
-        jsx(StepHeader, { step: 2, title: "Name your company", sub: ICONS[sector.id] + "  " + sectorName(sector), onBack: () => setStep(challenge === "daily" ? "daily" : 1) }),
+        jsx(StepHeader, { step: 2, title: "Name your company", sub: ICONS[sector.id] + "  " + sectorName(sector), onBack: () => setStep(challenge === "daily" ? "daily" : challenge && challenge.indexOf("sc_") === 0 ? "ch" : 1) }),
         jsxs(ScrollView, {
           style: { flex: 1 },
           contentContainerStyle: st.list,
@@ -7606,7 +9153,7 @@ __d(function (g, r, i, a, m, _e, d) {
             jsx(Text, { style: st.inputLabel, children: "COMPANY" }),
             jsx(TextInput, { style: st.input, value: company, onChangeText: setCompany, placeholder: "Company name", placeholderTextColor: COLOR.text3, maxLength: 28 }),
             challenge && jsx(Text, { style: st.inputLabel, children: "CHALLENGE" }),
-            challenge && jsx(Text, { style: st.modeDesc, children: "🎯 " + (challenge === "daily" ? "Still running at week 26, with the highest valuation you can build. Your first try today goes on the leaderboard." : (CHALLENGES.find((c) => c.id === challenge) || {}).goal) }),
+            challenge && jsx(Text, { style: st.modeDesc, children: "🎯 " + (challenge === "daily" ? "Still running at week 26, with the highest valuation you can build. Your first try today goes on the leaderboard." : (CHALLENGES.concat((meta && meta.challenges) || []).find((c) => c.id === challenge) || {}).goal) }),
             !challenge && jsx(Text, { style: st.inputLabel, children: "DIFFICULTY" }),
             !challenge && jsx(View, {
               style: st.modes,

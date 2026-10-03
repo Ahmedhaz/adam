@@ -1,0 +1,58 @@
+  const NOTES_MKT = {
+    dl_mkt_01: {
+      lesson: "Sellers take buyers off-platform when you add nothing after the first meeting. Make payment, delivery and returns worth the fee, then enforce the rules.",
+      example: "Many home-services marketplaces lost cleaners and plumbers to WhatsApp after one booking. The survivors added insurance, scheduling and payment protection.",
+      read: "All Markets Are Not Created Equal, Bill Gurley",
+      page: "sector_mkt",
+      skills: { A: { integrity: 1 }, B: { discovery: 1, frugality: -1 } },
+    },
+    dl_mkt_02: {
+      lesson: "Early marketplaces win by depth in one niche, not breadth. Every weak listing teaches a buyer that your search is not worth trying again.",
+      example: "Etsy grew on handmade goods and has spent years arguing with its own sellers over resellers listing factory products as handmade.",
+      read: "The Cold Start Problem, Andrew Chen",
+      page: "sector_mkt",
+      skills: { A: { frugality: 1, discovery: -1 }, B: { discovery: 1, selfcare: -1 } },
+    },
+    dl_mkt_03: {
+      lesson: "In e-commerce, revenue hides the truth. Track contribution margin per order after courier, packaging, payment fees and returns, every week.",
+      example: "Many quick-commerce startups grew orders fast on free delivery, then closed whole cities when funding dried up because each order lost money.",
+      read: "The Everything Store, Brad Stone",
+      page: "unit_economics",
+      skills: { A: { frugality: 1 }, B: { frugality: -1, fundraising: 1 } },
+    },
+    dl_mkt_04: {
+      lesson: "Your take rate is capped by what sellers can't get elsewhere. Raise it only when you deliver demand they can't buy cheaper on their own.",
+      example: "Marketplaces that raised fees faster than their value pushed big sellers to their own web stores, which modern store builders make cheap and easy.",
+      read: "A Rake Too Far, Bill Gurley",
+      page: "pricing",
+      skills: { A: { fundraising: 1, discovery: -1 }, B: { discovery: 1, fundraising: -1 } },
+    },
+    dl_mkt_05: {
+      lesson: "A delivery promise is tested at peak, not on a quiet Tuesday. Book courier capacity six weeks before Ramadan, Eid and White Friday.",
+      example: "Gulf shops routinely see orders multiply in the last ten days of Ramadan. The ones that pre-booked couriers and packers kept their promise.",
+      read: "The Goal, Eliyahu Goldratt",
+      page: "mena_seasons",
+      skills: { A: { integrity: 1, frugality: -1 }, B: { selfcare: 1, frugality: 1 } },
+    },
+    dl_mkt_06: {
+      lesson: "Owning stock turns a marketplace into a retailer: better margin, and cash locked in boxes. Buy only what you can sell before the trend turns.",
+      example: "Phil Knight describes years of financing Nike's inventory with bank loans, growing faster than its cash and nearly running out more than once.",
+      read: "Shoe Dog, Phil Knight",
+      page: "runway",
+      skills: { A: { discovery: 1, frugality: -1 }, B: { frugality: 1 } },
+    },
+    dl_mkt_07: {
+      lesson: "On a marketplace, a seller's fake is your fake in the buyer's eyes. Trust is the product: refund first, investigate second.",
+      example: "Large marketplaces have spent years and fortunes fighting counterfeits, and luxury brands have taken platforms to court over fakes sold by third parties.",
+      read: "The Business of Platforms, Cusumano, Gawer and Yoffie",
+      page: "ethics",
+      skills: { A: { integrity: 1, frugality: -1 }, B: { frugality: 1, integrity: -1 } },
+    },
+    dl_mkt_08: {
+      lesson: "Your best sellers learn your playbook. Keep them by owning what they can't copy: repeat buyers, fast delivery and trusted returns.",
+      example: "Many brands that grew on big marketplaces later built their own sites. The marketplaces that kept them offered buyers and logistics, not just traffic.",
+      read: "Platform Revolution, Parker, Van Alstyne and Choudary",
+      page: "sector_mkt",
+      skills: { A: { discovery: 1, frugality: -1 }, B: { selfcare: 1, discovery: -1 } },
+    },
+  };

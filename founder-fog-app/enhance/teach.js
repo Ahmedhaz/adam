@@ -9,7 +9,7 @@
   // Content lives in content/notes_*.js and content/playbook.js.
   // shares App's scope (see economy.js and the other modules).
 
-  const NOTES = Object.assign({}, NOTES_A, NOTES_B, NOTES_C);
+  const NOTES = Object.assign({}, NOTES_A, NOTES_B, NOTES_C, NOTES_SAAS, NOTES_FIN, NOTES_MKT, NOTES_HEALTH, NOTES_EDU);
   const PAGE_BY_ID = {};
   PLAYBOOK.forEach((p) => (PAGE_BY_ID[p.id] = p));
   const SKILLS = [

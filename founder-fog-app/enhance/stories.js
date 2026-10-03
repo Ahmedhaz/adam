@@ -9,10 +9,37 @@
   //   * the inbox gets noise and threads that remember (content/mail.js)
   // shares App's scope (see economy.js / market.js / org.js).
 
-  const LIBRARY = [].concat(DL_PRODUCT, DL_PEOPLE, DL_LIFE, DL_MENA);
+  // general dilemmas, minus the B2B-only stories for consumer industries, plus
+  // each industry's own pack (shown only in that industry, and favoured there)
+  const B2B_ONLY = ["dl_prod_01", "dl_prod_02", "dl_prod_11", "dl_prod_16", "dl_ppl_15", "dl_life_01", "dl_life_02", "dl_mena_09"];
+  // a condition that can't be checked yet (say, market data on day one) just means "not now"
+  const safe = (f) => (s) => {
+    try {
+      return !f || !!f(s);
+    } catch (e) {
+      return false;
+    }
+  };
+  const onlyIn = (sectors, d, extra) => {
+    const ok = safe(d.when);
+    return { ...d, ...extra, when: (s) => !!s.sector && sectors.includes(s.sector.id) && ok(s) };
+  };
+  const INDUSTRY = (id, list) => list.map((d) => onlyIn([id], d, { industry: true }));
+  const LIBRARY = []
+    .concat(DL_PRODUCT, DL_PEOPLE, DL_LIFE, DL_MENA)
+    .map((d) => (B2B_ONLY.includes(d.id) ? onlyIn(["saas_ai", "fintech"], d) : d))
+    .concat(INDUSTRY("saas_ai", DL_SAAS), INDUSTRY("fintech", DL_FIN), INDUSTRY("ecommerce_marketplace", DL_MKT), INDUSTRY("healthtech", DL_HEALTH), INDUSTRY("edtech", DL_EDU));
+  const MAIL_ALL = [].concat(
+    MAIL_EXTRA,
+    INDUSTRY("saas_ai", MAIL_SAAS),
+    INDUSTRY("fintech", MAIL_FIN),
+    INDUSTRY("ecommerce_marketplace", MAIL_MKT),
+    INDUSTRY("healthtech", MAIL_HEALTH),
+    INDUSTRY("edtech", MAIL_EDU),
+  );
 
   // new mail: noise to learn to ignore, and threads that follow up earlier answers
-  MAIL_EXTRA.forEach((c) => {
+  MAIL_ALL.forEach((c) => {
     const side = (x) => x && { label: x.label, log: x.log, effects: {}, mx: x.fx };
     INBOX.push({
       id: c.id,
@@ -165,7 +192,10 @@
         }
       });
     if (!pool.length) return null;
-    const d = pool[Math.floor(Math.random() * pool.length)];
+    // the industry's own dilemmas come up about every other time while any are left
+    const own = pool.filter((x) => x.industry),
+      from = own.length && Math.random() < 0.45 ? own : pool;
+    const d = from[Math.floor(Math.random() * from.length)];
     st.seen[d.id] = s.week;
     return {
       id: d.id,
