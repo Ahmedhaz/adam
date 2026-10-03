@@ -32,7 +32,7 @@
       when: (s) => s.sector.id === "ecommerce_marketplace" && s.monthlyRevenue >= 3000 && s.week >= 8,
       A: { title: "Raise free delivery to $45", fx: { arpu: 4, mrrPct: -0.05, users: -200, clarity: 3 }, log: "Orders dropped 18% in the first week. The average basket rose from $31 to $43 and stayed there." },
       B: { title: "Keep it and fix margin with volume", fx: { users: 250, mrrPct: 0.03, cash: -2500 }, log: "Orders kept climbing. So did the red line in Youssef's spreadsheet.",
-           echo: { after: [6, 14], icon: "💸", title: "Volume made the hole deeper", text: "The courier added $0.40 per parcel on the new rate card. At your volume, free delivery now costs more each month than your two engineers.", fx: { cash: -4000, clarity: -5, trust: -3 } } },
+           echo: { after: [6, 14], icon: "💸", title: "Volume made the hole deeper", text: "The courier added $0.40 per parcel on the new rate card. At your volume, free delivery now costs more each month than your two engineers.", fx: { cash: -2500, clarity: -5, trust: -3 } } },
     },
     {
       id: "dl_mkt_04",
@@ -74,7 +74,7 @@
       title: "Your bestselling sneaker seller is selling fakes",
       desc: "A buyer sent a side-by-side video: the $140 sneakers from your top seller, Fadi, have the wrong stitching. Fadi is 9% of your orders, 340 pairs shipped this year, and a brand's lawyer is copied on the email.",
       when: (s) => s.sector.id === "ecommerce_marketplace" && s.week >= 20,
-      A: { title: "Delist Fadi and refund all 340 buyers", fx: { cash: -8000, mrrPct: -0.07, churn: -0.4, pmf: 2 }, log: "Refunds went out before most buyers knew there was a problem. Fadi's lawyer called before lunch.",
+      A: { title: "Delist Fadi and refund all 340 buyers", fx: { cash: -5000, mrrPct: -0.07, churn: -0.4, pmf: 2 }, log: "Refunds went out before most buyers knew there was a problem. Most of it came out of Fadi's held payouts. His lawyer called before lunch.",
            echo: { after: [6, 14], icon: "🛡", title: "Buyers trust the refund", text: "Buyers who got refunds without asking posted about it. Your authentic-or-your-money-back badge now converts better than any ad.", fx: { users: 400, churn: -0.4, trust: 3 } } },
       B: { title: "Refund one buyer and audit quietly", fx: { cash: -140, clarity: -6, trust: -2 }, log: "The buyer got her money back. Fadi swore the batch was original and sent a supplier invoice nobody could verify.",
            echo: { after: [8, 18], icon: "📰", title: "The video reaches 2 million views", text: "A sneaker account reposted the side-by-side video to 2 million views. The brand's lawyer sent a second letter, this one with a deadline.", fx: { churn: 0.8, users: -400, cash: -5000 } } },
@@ -88,6 +88,6 @@
       when: (s) => s.sector.id === "ecommerce_marketplace" && (s.stage >= 2 || s.week >= 24),
       A: { title: "Lock top brands into 12-month exclusives", fx: { arpu: -3, churn: -0.5, cash: -3000, pmf: 2 }, log: "Twenty-two brands signed for a 10% fee and a home-page slot. Four said no.",
            echo: { after: [10, 20], icon: "🧊", title: "Rami's marketplace goes quiet", text: "Without the brands that mattered, Rami's site filled up with the phone cases you had rejected. He asked to talk about coming back.", fx: { mrrPct: 0.05, pmf: 2 } } },
-      B: { title: "Delist Rami and spend on buyers", fx: { mrrPct: -0.05, users: 300, cash: -4000, morale: 3 }, log: "Rami's products vanished from your site on Sunday. By Monday his WhatsApp group had 31 of your sellers in it." },
+      B: { title: "Delist Rami and spend on buyers", fx: { mrrPct: -0.05, users: 300, cash: -2500, morale: 3 }, log: "Rami's products vanished from your site on Sunday. By Monday his WhatsApp group had 31 of your sellers in it." },
     },
   ];

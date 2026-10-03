@@ -75,6 +75,6 @@
         ],
       },
     ],
-    challenge: { id: "sc_edu", icon: "🎓", name: "Keep the Placement Promise", goal: "Reach $12,000 monthly revenue with churn at or below 5.5% within 36 weeks, with cash still above zero.", mode: "venture", deadline: 36, done: (s) => s.monthlyRevenue >= 12000 && s.churnRate <= 5.5 && s.cash > 0 },
+    challenge: { id: "sc_edu", icon: "🎓", name: "Keep the Placement Promise", goal: "Reach $15,000 monthly revenue with churn at or below 5.5% within 36 weeks, with cash still above zero.", mode: "venture", deadline: 36, done: (s) => s.monthlyRevenue >= 15000 && s.churnRate <= 5.5 && s.cash > 0 },
     page: { id: "sector_edu", icon: "🎓", title: "Outcomes are the product", body: "A bootcamp doesn't sell lessons, it sells the job after them. Students, and the parents who pay, judge you on one number: how many graduates got hired, at what salary, how fast. Completion, instructors and employer partners all feed that number, and a placement guarantee turns it into a debt. This week, list every graduate of your last cohort with their job, salary and start date, and count honestly.", source: "Competing Against Luck, Clayton M. Christensen et al. (2016)" },
   };

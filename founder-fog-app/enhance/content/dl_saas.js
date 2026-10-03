@@ -9,7 +9,7 @@
       A: { title: "Start the free pilot now", fx: { users: 150, pmf: 2, clarity: -4, cash: -1200 }, log: "Tariq set up the sandbox on a Sunday. The kickoff call had 14 people on it and nobody from finance.",
            echo: { after: [10, 16], icon: "⏳", title: "The pilot ended in next year's budget", text: "Northwind's team loved the dashboards. Their CFO had never heard of the pilot. The deal is now pencilled in for the next fiscal year.", fx: { clarity: -6, morale: -5, trust: -3 } } },
       B: { title: "Ask for $6,000 and written success criteria", fx: { cash: 6000, pmf: -2, trust: -2, morale: -2 }, log: "Procurement took 5 weeks to raise a $6,000 purchase order. Meanwhile Flowly started a free pilot in the queue next door.",
-           echo: { after: [10, 18], icon: "✅", title: "The pilot converted on day 61", text: "The criteria said 30% of tickets resolved without a human. You hit 34%. The contract discussion took one meeting.", fx: { mrrPct: 0.08, trust: 3 } } },
+           echo: { after: [10, 18], icon: "✅", title: "The pilot converted on day 61", text: "The criteria said 30% of tickets resolved without a human. You hit 34%. The contract discussion took one meeting.", fx: { mrrPct: 0.05, trust: 3 } } },
     },
     {
       id: "dl_saas_02",
@@ -55,7 +55,7 @@
       A: { title: "Migrate to the new version and move on", fx: { cash: -1000, techDebt: 3, pmf: 2, morale: -2 }, log: "Three weeks of rewriting prompts. The new model is better in English and slightly worse with Arabic numbers.",
            echo: { after: [10, 20], icon: "🌫", title: "The provider was down for 7 hours", text: "A regional outage on a Monday morning. Every one of your clients' agents went silent at once, and you had nowhere to switch them.", fx: { churn: 0.7, trust: -4, clarity: -6 } } },
       B: { title: "Build a switch layer and add an in-region model", fx: { cash: -4000, techDebt: 6, cofounder: 4, pmf: 1 }, log: "Tariq's team spent 6 weeks on the abstraction layer. Two clients asked why nothing new shipped this month.",
-           echo: { after: [10, 20], icon: "🛡", title: "The day the big provider went down", text: "A 7-hour outage hit every company on the main provider. Your agents switched to the in-region model in 4 minutes. Two banks asked for a meeting.", fx: { mrrPct: 0.07, trust: 4, churn: -0.3 } } },
+           echo: { after: [10, 20], icon: "🛡", title: "The day the big provider went down", text: "A 7-hour outage hit every company on the main provider. Your agents switched to the in-region model in 4 minutes. Two banks asked for a meeting.", fx: { mrrPct: 0.04, trust: 4, churn: -0.3 } } },
     },
     {
       id: "dl_saas_06",
@@ -75,7 +75,7 @@
       title: "A ministry wants it on their own servers",
       desc: "A government entity will sign $180,000 a year if the agent runs fully on-prem: their data centre, no internet, an open-weight model on GPUs they'll buy next year. Your product has only ever run in the cloud.",
       when: (s) => s.sector.id === "saas_ai" && (s.stage >= 2 || s.week >= 20),
-      A: { title: "Sign and build the on-prem edition", fx: { cash: 25000, techDebt: 10, pmf: -3, morale: -4 }, log: "The signing had a photographer. Tariq spent the evening drawing two architectures on the whiteboard instead of one.",
+      A: { title: "Sign and build the on-prem edition", fx: { cash: 12000, baseBurn: 400, techDebt: 10, pmf: -3, morale: -4 }, log: "The signing had a photographer. Tariq spent the evening drawing two architectures on the whiteboard instead of one.",
            echo: { after: [12, 24], icon: "🕳", title: "Two products, one team", text: "Every cloud release now needs a separate on-prem build, a USB drive and a security escort. Three engineers do nothing else, and the cloud roadmap slowed to a crawl.", fx: { techDebt: 8, morale: -6, pmf: -2 } } },
       B: { title: "Offer a private tenant in a local cloud region", fx: { pmf: 2, trust: -3, cash: -1500 }, log: "Their IT director took your architecture diagram to the committee. The committee meets once a quarter." },
     },
@@ -88,6 +88,6 @@
       when: (s) => s.sector.id === "saas_ai" && (s.stage >= 2 || s.week >= 22) && s.monthlyRevenue >= 6000,
       A: { title: "Hand implementations to a partner firm", fx: { mrrPct: -0.08, trust: 5, pmf: 3, morale: -3 }, log: "A Cairo integrator took over implementations for a 15% referral fee. Two of your engineers moved with the work.",
            echo: { after: [10, 20], icon: "📈", title: "Margin is back above 75%", text: "With the top connectors packaged as product, new clients go live in 3 weeks instead of 11. The fund's analyst asked for an updated deck.", fx: { trust: 4, mrrPct: 0.05 } } },
-      B: { title: "Keep services and the cash they bring", fx: { cash: 8000, trust: -4, techDebt: 4, pmf: -2 }, log: "The services team billed 600 hours this month. The product team shipped one feature." },
+      B: { title: "Keep services and the cash they bring", fx: { cash: 4000, trust: -4, techDebt: 4, pmf: -2 }, log: "The services team billed 600 hours this month. The product team shipped one feature." },
     },
   ];

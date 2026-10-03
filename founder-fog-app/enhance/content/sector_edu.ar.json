@@ -1,21 +1,18 @@
 {
   "Hiring partner": "شريك توظيف",
   "Alumnus · hiring manager": "خرّيج · مدير توظيف",
-
   "Week 2 decides everything. Students who miss two live sessions in a row almost never finish.": "الأسبوع 2 يحسم كل شيء. الطالب الذي يفوّت جلستين مباشرتين متتاليتين نادرًا ما يُكمل.",
   "My father pays, so my father decides. Show him the salary table, not the syllabus.": "أبي هو من يدفع، إذن أبي هو من يقرّر. أروه جدول الرواتب، لا المنهج.",
   "I'd rather owe 12% of a salary I don't have yet than pay $2,400 I don't have now.": "أفضّل أن أدين بـ 12% من راتب لم أحصل عليه بعد على أن أدفع $2,400 لا أملكها الآن.",
   "Employers never read the certificate. They open the GitHub link and watch the capstone demo.": "أصحاب العمل لا يقرؤون الشهادة أبدًا. يفتحون رابط GitHub ويشاهدون عرض مشروع التخرّج.",
   "Every student who enrolled this month heard about us from a graduate, not from an ad.": "كل طالب سجّل هذا الشهر سمع عنّا من خرّيج، لا من إعلان.",
   "The scary part is after week 12. Career coaching then matters more than one more lecture now.": "الجزء المخيف يبدأ بعد الأسبوع 12. الإرشاد المهني وقتها أهم من محاضرة إضافية الآن.",
-
   "A $400 deposit plus income share, no full fee": "عربون $400 مع حصة دخل، بلا رسوم كاملة",
   "Enrolments rose, and the deposit filtered out students who weren't serious. Completion held at last cohort's level.": "ارتفع التسجيل، وصفّى العربون غير الجادّين. وبقيت نسبة الإتمام عند مستوى الدفعة السابقة.",
   "More students signed up and fewer finished. The collections bill for this test arrives in a year.": "سجّل طلاب أكثر وأكمل عدد أقل. وفاتورة التحصيل لهذه التجربة تصل بعد عام.",
   "A free two-week pre-course before anyone pays": "دورة تمهيدية مجانية لأسبوعين قبل أي دفع",
   "Half the pre-course students dropped before paying. The half who paid finished at the best rate you've seen.": "نصف طلاب الدورة التمهيدية انسحبوا قبل الدفع. والنصف الذي دفع أكمل بأفضل نسبة رأيتها.",
   "Most pre-course students treated it as a free sample and never came back. Instructors taught two cohorts for one.": "معظم طلاب الدورة التمهيدية عاملوها كعيّنة مجانية ولم يعودوا. ودرّس المدرّبون دفعتين بأجر دفعة واحدة.",
-
   "📅 This Week: Fill the Cohort Before Its Start Date": "📅 هذا الأسبوع: املأ الدفعة قبل موعد بدايتها",
   "• 8 of 20 seats are paid | • The start date is printed on every contract": "• 8 من 20 مقعدًا مدفوعة | • موعد البداية مطبوع في كل عقد",
   "A bootcamp's costs land on the start date: instructors, space, mentors. An empty seat on day one is revenue you never get back, and moving the date costs the trust of the students who already paid.": "تكاليف المعسكر التدريبي كلها تقع في يوم البداية: المدرّبون، والمكان، والموجّهون. المقعد الفارغ في اليوم الأول إيراد لن يعود أبدًا، وتأجيل الموعد يكلّفك ثقة الطلاب الذين دفعوا بالفعل.",
@@ -28,7 +25,6 @@
   "3. Start with eight, merge with the next intake": "3. ابدأ بالثمانية وادمجهم مع الدفعة التالية",
   "Run the eight on time and fold them into the next cohort in week 4. Saves a full instructor's salary.": "ابدأ مع الثمانية في الموعد وادمجهم في الدفعة التالية في الأسبوع 4. يوفّر راتب مدرّب كامل.",
   "The eight started on time. The merge in week 4 left them repeating two lessons, and one of them said so on LinkedIn.": "بدأ الثمانية في موعدهم. لكن الدمج في الأسبوع 4 جعلهم يعيدون درسين، وكتب أحدهم ذلك على لينكدإن.",
-
   "💸 This Week: Three Students Want Their Money Back": "💸 هذا الأسبوع: ثلاثة طلاب يريدون استرداد أموالهم",
   "• Two are in week 3, one never logged in | • One parent threatens a public review": "• اثنان في الأسبوع 3، وواحد لم يسجّل الدخول قط | • وليّ أمر يهدّد بتقييم علني",
   "Bootcamp refund requests cluster in the first four weeks, when the work gets hard. A clear, fair policy protects both cash and reputation; arguing case by case burns both, and the parents all talk to each other.": "طلبات الاسترداد في المعسكرات التدريبية تتكدّس في الأسابيع الأربعة الأولى، حين يصعب العمل. السياسة الواضحة العادلة تحمي النقد والسمعة معًا، والجدال حالةً بحالة يحرقهما معًا، والأهل كلهم يتحدّثون مع بعضهم.",
@@ -41,7 +37,6 @@
   "3. Write a pro-rata refund policy": "3. اكتب سياسة استرداد نسبية",
   "Refund only the unused weeks, written into every contract from now on. Firm and fair, and not everyone will like it.": "استرداد الأسابيع غير المستخدمة فقط، مكتوبًا في كل عقد من الآن. حازمة وعادلة، ولن تعجب الجميع.",
   "The policy went into the contract template. The parent posted the review anyway, and quoted the new clause.": "دخلت السياسة في نموذج العقد. ونشر وليّ الأمر التقييم على أي حال، واقتبس البند الجديد.",
-
   "📈 This Week: The Back-to-School Rush Starts": "📈 هذا الأسبوع: يبدأ زحام العودة إلى الدراسة",
   "• Applications doubled overnight | • Admissions can interview 40 people a week": "• الطلبات تضاعفت في ليلة | • فريق القبول يستطيع مقابلة 40 شخصًا أسبوعيًا",
   "In education a few weeks a year bring most of the demand: families decide around the school calendar and graduates job-hunt in autumn. If admissions can't keep up now, the quiet season starts with empty cohorts.": "في التعليم تأتي معظم الطلبات في أسابيع قليلة من السنة: الأسر تقرّر وفق التقويم الدراسي، والخرّيجون يبحثون عن عمل في الخريف. إن لم يلحق فريق القبول بالطلب الآن، يبدأ الموسم الهادئ بدفعات فارغة.",
@@ -54,7 +49,6 @@
   "3. Open a second start date in October": "3. افتح موعد بداية ثانيًا في أكتوبر",
   "Turn the overflow into a new cohort six weeks later. More revenue, if you can staff it.": "حوّل الفائض إلى دفعة جديدة بعد ستة أسابيع. إيراد أكبر، إن وجدت من يدرّسها.",
   "The October cohort filled in a week. You still don't have its lead instructor.": "امتلأت دفعة أكتوبر في أسبوع. وما زلت بلا مدرّب رئيسي لها.",
-
   "🛠 This Week: Your AI Module Is Already Out of Date": "🛠 هذا الأسبوع: وحدة الذكاء الاصطناعي عندك قديمة بالفعل",
   "• Employers ask about tools you don't teach | • The next cohort starts in 3 weeks": "• أصحاب العمل يسألون عن أدوات لا تدرّسها | • الدفعة التالية تبدأ بعد 3 أسابيع",
   "Tech curricula go stale in six to nine months. Employers test on what's used today, and graduates who learned last year's stack fail the take-home task. Your placement rate drops a full cohort before anyone sees why.": "المناهج التقنية تتقادم خلال ستة إلى تسعة أشهر. أصحاب العمل يختبرون على ما يُستخدم اليوم، والخرّيج الذي تعلّم أدوات العام الماضي يرسب في المهمة المنزلية. نسبة توظيفك تهبط لدفعة كاملة قبل أن يفهم أحد السبب.",
@@ -67,7 +61,6 @@
   "3. Patch it now, rebuild after this cohort": "3. رقّعها الآن وأعد بناءها بعد هذه الدفعة",
   "Add two new lessons on top of the old module and plan the full rewrite for the quiet weeks.": "أضف درسين جديدين فوق الوحدة القديمة وخطّط لإعادة الكتابة الكاملة في الأسابيع الهادئة.",
   "Two lessons were bolted on. Students noticed the module now contradicts itself in week 9.": "أُلصق درسان بالوحدة. ولاحظ الطلاب أنها صارت تناقض نفسها في الأسبوع 9.",
-
   "🏛 This Week: The Accreditation Inspectors Visit": "🏛 هذا الأسبوع: زيارة مفتّشي الاعتماد",
   "• Three inspectors, two days, 140 checklist items | • Accreditation unlocks funded students": "• ثلاثة مفتّشين، يومان، 140 بندًا في القائمة | • الاعتماد يفتح باب الطلاب الممولين",
   "Accreditation is slow, paper-heavy and changes little in the classroom. It also decides whether government programmes, HR departments and parents' bank loans will pay for your seats. Here, the stamp often matters as much as the skill.": "الاعتماد بطيء، كثير الأوراق، ولا يغيّر الكثير داخل الفصل. لكنه يقرّر هل ستدفع البرامج الحكومية وإدارات الموارد البشرية وقروض الأهل البنكية ثمن مقاعدك. هنا، الختم كثيرًا ما يعادل المهارة في أهميته.",
@@ -80,10 +73,8 @@
   "3. Ask to postpone by one semester": "3. اطلب التأجيل فصلًا دراسيًا واحدًا",
   "Request a later visit and keep running as a licensed training centre for now.": "اطلب زيارة لاحقة واستمر كمركز تدريب مرخّص في الوقت الحالي.",
   "The visit moved to next semester. A government programme gave this year's seats to an accredited rival.": "تأجّلت الزيارة إلى الفصل القادم. ومنح برنامج حكومي مقاعد هذا العام لمنافس معتمد.",
-
   "Keep the Placement Promise": "أوفِ بوعد التوظيف",
-  "Reach $12,000 monthly revenue with churn at or below 5.5% within 36 weeks, with cash still above zero.": "حقّق $12,000 إيرادًا شهريًا مع تسرّب لا يتجاوز 5.5% خلال 36 أسبوعًا، ورصيدك النقدي فوق الصفر.",
-
   "Outcomes are the product": "النتائج هي المنتج",
-  "A bootcamp doesn't sell lessons, it sells the job after them. Students, and the parents who pay, judge you on one number: how many graduates got hired, at what salary, how fast. Completion, instructors and employer partners all feed that number, and a placement guarantee turns it into a debt. This week, list every graduate of your last cohort with their job, salary and start date, and count honestly.": "المعسكر التدريبي لا يبيع دروسًا، بل يبيع الوظيفة التي تأتي بعدها. الطلاب، والأهل الذين يدفعون، يحكمون عليك برقم واحد: كم خرّيجًا توظّف، وبأي راتب، وبأي سرعة. نسبة الإتمام والمدرّبون وشركاء التوظيف كلهم يغذّون هذا الرقم، وضمان التوظيف يحوّله إلى دَين عليك. هذا الأسبوع، اكتب قائمة بكل خرّيج من دفعتك الأخيرة مع وظيفته وراتبه وتاريخ بدئه، واحسب بصدق."
+  "A bootcamp doesn't sell lessons, it sells the job after them. Students, and the parents who pay, judge you on one number: how many graduates got hired, at what salary, how fast. Completion, instructors and employer partners all feed that number, and a placement guarantee turns it into a debt. This week, list every graduate of your last cohort with their job, salary and start date, and count honestly.": "المعسكر التدريبي لا يبيع دروسًا، بل يبيع الوظيفة التي تأتي بعدها. الطلاب، والأهل الذين يدفعون، يحكمون عليك برقم واحد: كم خرّيجًا توظّف، وبأي راتب، وبأي سرعة. نسبة الإتمام والمدرّبون وشركاء التوظيف كلهم يغذّون هذا الرقم، وضمان التوظيف يحوّله إلى دَين عليك. هذا الأسبوع، اكتب قائمة بكل خرّيج من دفعتك الأخيرة مع وظيفته وراتبه وتاريخ بدئه، واحسب بصدق.",
+  "Reach $15,000 monthly revenue with churn at or below 5.5% within 36 weeks, with cash still above zero.": "حقّق $15,000 إيرادًا شهريًا مع تسرّب لا يتجاوز 5.5% خلال 36 أسبوعًا، ورصيدك النقدي فوق الصفر."
 }

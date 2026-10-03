@@ -88,8 +88,8 @@
       title: "A bank wants your AI course for 300 staff",
       desc: "A regional bank offers $180,000 to train 300 employees in applied AI over five months, under its own brand. It wants your three best instructors full-time and custom case studies. No placements, no refunds.",
       when: (s) => s.sector.id === "edtech" && (s.stage >= 2 || s.week >= 26) && s.monthlyRevenue >= 6000,
-      A: { title: "Sign it and lend them the instructors", fx: { cash: 25000, pmf: -4, churn: 0.6, morale: -3 }, log: "The deposit cleared on Thursday. Your three best instructors now teach risk analysts in a tower across town.",
-           echo: { after: [14, 26], icon: "📈", title: "The bank renews and tells its peers", text: "The bank renewed for 500 staff and introduced you to two insurers. Corporate training is now 30% of revenue, and it pays on time.", fx: { mrrPct: 0.1, cash: 8000, pmf: -2 } } },
+      A: { title: "Sign it and lend them the instructors", fx: { cash: 15000, pmf: -4, churn: 0.6, morale: -3 }, log: "The deposit cleared on Thursday. Your three best instructors now teach risk analysts in a tower across town.",
+           echo: { after: [14, 26], icon: "📈", title: "The bank renews and tells its peers", text: "The bank renewed for 500 staff and introduced you to two insurers. Corporate training is now 30% of revenue, and it pays on time.", fx: { mrrPct: 0.1, cash: 3000, pmf: -2 } } },
       B: { title: "Decline and protect the bootcamp", fx: { pmf: 3, trust: -3, clarity: 2 }, log: "The bank's head of learning said she would keep your deck on file. Your instructors stayed with the cohort." },
     },
   ];

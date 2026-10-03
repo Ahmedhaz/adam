@@ -12,7 +12,18 @@
   // general dilemmas, minus the B2B-only stories for consumer industries, plus
   // each industry's own pack (shown only in that industry, and favoured there)
   const B2B_ONLY = ["dl_prod_01", "dl_prod_02", "dl_prod_11", "dl_prod_16", "dl_ppl_15", "dl_life_01", "dl_life_02", "dl_mena_09"];
-  const onlyIn = (sectors, d, extra) => ({ ...d, ...extra, when: (s) => !!s.sector && sectors.includes(s.sector.id) && (!d.when || d.when(s)) });
+  // a condition that can't be checked yet (say, market data on day one) just means "not now"
+  const safe = (f) => (s) => {
+    try {
+      return !f || !!f(s);
+    } catch (e) {
+      return false;
+    }
+  };
+  const onlyIn = (sectors, d, extra) => {
+    const ok = safe(d.when);
+    return { ...d, ...extra, when: (s) => !!s.sector && sectors.includes(s.sector.id) && ok(s) };
+  };
   const INDUSTRY = (id, list) => list.map((d) => onlyIn([id], d, { industry: true }));
   const LIBRARY = []
     .concat(DL_PRODUCT, DL_PEOPLE, DL_LIFE, DL_MENA)

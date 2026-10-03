@@ -58,9 +58,11 @@
         templates.push({
           id: t.id,
           urgency: t.urgency,
-          condition: (s) => !!s.sector && s.sector.id === p.sector && (!t.once || !(s.msDone || []).includes(t.id)) && t.when(s),
+          // milestones come once; recurring situations at most every 10 weeks
+          condition: (s) => !!s.sector && s.sector.id === p.sector && (t.once ? !(s.msDone || []).includes(t.id) : s.week - ((s.msLast || {})[t.id] || -99) >= 10) && t.when(s),
           build: (s) => {
             if (t.once) (s.msDone = s.msDone || []).push(t.id);
+            else (s.msLast = s.msLast || {})[t.id] = s.week;
             return {
               title: t.title,
               tasks: t.tasks,
@@ -78,7 +80,14 @@
   // one challenge per industry (the setup screen fixes the market)
   SECTOR_PACKS.forEach((p) => {
     const c = p.challenge;
-    CHALLENGES[c.id] = { icon: c.icon, name: c.name, goal: c.goal, mode: c.mode, deadline: c.deadline, done: c.done, sector: p.sector };
+    const done = (s) => {
+      try {
+        return !!c.done(s);
+      } catch (e) {
+        return false;
+      }
+    };
+    CHALLENGES[c.id] = { icon: c.icon, name: c.name, goal: c.goal, mode: c.mode, deadline: c.deadline, done: done, sector: p.sector };
   });
   const sectorChallenges = () => SECTOR_PACKS.map((p) => ({ id: p.challenge.id, icon: p.challenge.icon, name: p.challenge.name, goal: p.challenge.goal, mode: p.challenge.mode, sector: p.sector }));
 
