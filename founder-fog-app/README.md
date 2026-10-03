@@ -72,6 +72,15 @@ any repo. Enhancements are applied on top of it:
 - `enhance/targets.js` adds milestone weekly targets (first ten customers,
   first hire, seed-ready, Series A story, default alive...) to the engine's
   target generator (module 264), spliced in by `build.py`
+- Industry packs: each of the five industries has its own content in
+  `content/dl_<x>.js` (8 dilemmas), `notes_<x>.js` (their mentor notes),
+  `mail_<x>.js` (4 inbox messages) and `sector_<x>.js` (relationship roles,
+  6 customer insights, 2 experiments, 5 weekly targets, a challenge and a
+  Founder Playbook page), each with a `.ar.json` (x = saas, fin, mkt,
+  health, edu). `enhance/sectors.js` wires them in; industry dilemmas come
+  up about half the time while any are left, and the B2B-only general
+  dilemmas appear only for AI SaaS and fintech. Writing brief:
+  `content/BRIEF_SECTOR.md`; validator: `content/check_sector.mjs`.
 - `enhance/meta.js` is everything that outlives a run: trophies, founder
   backgrounds unlocked across runs, the daily challenge (seeded by date,
   26 weeks, one try a day), sound effects, and anonymous analytics.
