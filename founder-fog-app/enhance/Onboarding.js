@@ -396,16 +396,19 @@ function (g, r, i, a, m, _e, d) {
               dataSet: { ff: "rise2" },
               children: [
                 jsx(Text, { style: st.briefKicker, children: "HOW A WEEK WORKS" }),
-                [
+                // with the guided month on, the in-game tour teaches this by doing it
+                guided && !challenge
+                  ? jsxs(View, { style: st.rule, children: [jsx(Text, { style: st.ruleIcon, children: "🎓" }), jsx(Text, { style: st.ruleTxt, children: "A one-minute, hands-on tutorial starts as soon as you found the company. You'll play your first week step by step." })] }, "tour")
+                  : [
                   ["🎯", "Hit the weekly target by picking one strategy."],
                   ["⚡", "You get one personal action a week: rest, network, or reach out."],
                   ["⚖️", "Every few weeks a dilemma lands. There is no right option."],
                   ["🔍", "Talk to customers. Growth only works once people really want what you make."],
                   ["💵", "Costs grow as you grow. You're safe only when revenue after margin pays for everything."],
                   ["🌫️", "Stress drains clarity. Below 40% the fog hides your numbers. At 5% it's over."],
-                ].map(([icon, text]) =>
-                  jsxs(View, { style: st.rule, children: [jsx(Text, { style: st.ruleIcon, children: icon }), jsx(Text, { style: st.ruleTxt, children: text })] }, icon),
-                ),
+                  ].map(([icon, text]) =>
+                    jsxs(View, { style: st.rule, children: [jsx(Text, { style: st.ruleIcon, children: icon }), jsx(Text, { style: st.ruleTxt, children: text })] }, icon),
+                  ),
                 jsx(Text, { style: st.goal, children: "Goal: reach a $100M valuation before the cash — or you — run out." }),
               ],
             }),

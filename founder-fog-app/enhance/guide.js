@@ -34,8 +34,9 @@
   const unlockWeek = (id) => (FEATURES.find((f) => f.id === id) || { week: 0 }).week;
 
   function startGuide(s, on) {
-    s.guide = { off: !on, seen: {}, intro: null };
-    if (on) queueIntros(s);
+    s.guide = { off: !on, seen: {}, intro: null, tour: null };
+    // brand-new players get the hands-on tour (tour.js) instead of the welcome card
+    if (on) (s.guide.tour = "slides"), (s.guide.seen.welcome = 1), queueIntros(s);
   }
   // the next feature whose week has come and whose card hasn't been shown
   function queueIntros(s) {

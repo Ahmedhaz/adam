@@ -66,6 +66,9 @@ any repo. Enhancements are applied on top of it:
   is the brief)
 - `enhance/guide.js` is the guided first month: features unlock one week at
   a time with a one-card intro (switch on the setup screen)
+- `enhance/tour.js` is the hands-on tutorial for week 1 of a guided game:
+  three slides, then a spotlight that has the player hit the weekly target,
+  use their action and press +1 Week themselves (`s.guide.tour`)
 - `enhance/build.py` applies small patches to the game engine and wraps the
   page for mobile (PWA head, safe areas)
 
