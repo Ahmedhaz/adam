@@ -234,6 +234,7 @@ function (g, r, i, a, m, _e, d) {
 // @include content/playbook.js
 // @include teach.js
 // @include guide.js
+// @include tour.js
 
   function buildReport(before, after) {
     const rows = [
@@ -376,6 +377,7 @@ function (g, r, i, a, m, _e, d) {
       setReport(null);
     };
 
+    if (!engine || !S) tourHide();
     if (!engine || !S)
       return jsxs(Screen, {
         style: st.container,
@@ -394,6 +396,7 @@ function (g, r, i, a, m, _e, d) {
       });
 
     // the report card first, then the original ending screen
+    if (S.gameOver || S.victory) tourHide();
     if ((S.gameOver || S.victory) && !endingOpen)
       return jsxs(View, { style: { flex: 1 }, children: [jsx(StatusBar, { barStyle: "dark-content" }), jsx(ReportCard, { S: S, onEnding: () => setEndingOpen(true), onRestart: () => (setEndingOpen(false), restart()) })] });
     if (S.gameOver || S.victory)
@@ -591,6 +594,7 @@ function (g, r, i, a, m, _e, d) {
         }),
         jsxs(Touchable, {
           style: st.bank,
+          dataSet: { tour: "bank" },
           activeOpacity: 0.8,
           onPress: () => setMoneyOpen(true),
           children: [
@@ -609,6 +613,7 @@ function (g, r, i, a, m, _e, d) {
         Touchable,
         {
           style: [st.tile, { backgroundColor: color }, done && { opacity: 0.55 }],
+          dataSet: { tour: "tile-" + key },
           activeOpacity: 0.85,
           onPress: onPress,
           children: [
@@ -712,6 +717,7 @@ function (g, r, i, a, m, _e, d) {
       );
     const statsPanel = jsxs(View, {
       style: st.statsPanel,
+      dataSet: { tour: "stats" },
       children: [
         statBar("🧠", "Clarity", S.mentalClarity, Math.round(S.mentalClarity) + "%"),
         statBar("🤝", "Morale", S.teamMorale, Math.round(S.teamMorale) + "%"),
@@ -1004,6 +1010,22 @@ function (g, r, i, a, m, _e, d) {
         }),
       });
 
+    // ---------- tutorial ----------
+    tourSync({
+      S: S,
+      tab: tab,
+      guideOpen: guideOpen,
+      hasTarget: !!guide,
+      targetDone: targetDone,
+      busy: !!(report || S.pendingEvent || S.perkChoice || (S.teach && S.teach.note && mentorOn()) || inboxOpen || custOpen || moneyOpen || bookOpen),
+      go: (step) => {
+        if (!engine.state.guide) return;
+        engine.state.guide.tour = step;
+        if (!step) queueIntros(engine.state);
+        setS({ ...engine.state });
+      },
+    });
+
     // ---------- shell ----------
     return jsxs(Screen, {
       style: st.container,
@@ -1032,7 +1054,7 @@ function (g, r, i, a, m, _e, d) {
                       style: st.ageBtn,
                       onPress: advance,
                       activeOpacity: 0.85,
-                      dataSet: allDone && !inboxN ? { ff: "pulse" } : undefined,
+                      dataSet: allDone && !inboxN ? { ff: "pulse", tour: "week" } : { tour: "week" },
                       children: [jsx(Text, { style: st.agePlus, children: "+" }), jsx(Text, { style: st.ageTxt, children: "1 Week" })],
                     }),
                     jsx(Text, {
@@ -1085,7 +1107,7 @@ function (g, r, i, a, m, _e, d) {
         guideModal,
         S.perkChoice && !report && !S.pendingEvent && jsx(PerkModal, { S: S, onPick: pickPerk }),
         inboxOpen && !report && !S.pendingEvent && !S.perkChoice && jsx(InboxModal, { S: S, onChoose: chooseMail, onClose: () => setInboxOpen(false) }),
-        S.guide && S.guide.intro && !report && !S.pendingEvent && !(S.teach && S.teach.note && mentorOn()) &&
+        S.guide && S.guide.intro && !S.guide.tour && !report && !S.pendingEvent && !(S.teach && S.teach.note && mentorOn()) &&
           jsx(IntroCard, {
             S: S,
             onDone: () => closeIntro(),

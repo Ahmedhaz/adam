@@ -45,6 +45,11 @@ BADGE_COLORS = {"'#3b2d00'": "'#FFF4CC'", '"#3b2d00"': '"#FFF4CC"', '"#0b3318"':
 
 ENGINE_PATCHES = [
     (
+        "a first log line a new player can use (no raw sector data, no Arabic in the English game)",
+        "title:`\\ud83c\\udf93 Launched ${t} (${n.name_en})`,text:`Welcome ${e}! Sector: ${n.name_en}. What you sell: ${n.what_it_sells}. Initial Capital: $${n.initial_cash.toLocaleString()}. Focus on Week 1 Sprint Target!`",
+        "title:`\\ud83c\\udf93 Launched ${t}`,text:`Welcome, ${e}. You start with $${n.initial_cash.toLocaleString()} in the bank. Each week: hit your target, use your one action, then press +1 Week.`",
+    ),
+    (
         "round the cash figure in the weekly sprint log",
         "Remaining Cash: $${this.state.cash.toLocaleString()}",
         "Remaining Cash: $${Math.round(this.state.cash).toLocaleString()}",
@@ -190,6 +195,31 @@ HEAD = """<!doctype html>
   /* motion */
   @keyframes ff-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
   @keyframes ff-pop { from { opacity: 0; transform: translateY(24px) scale(.97); } to { opacity: 1; transform: none; } }
+  /* first-week tutorial (tour.js) */
+  #ff-tour { position: fixed; inset: 0; z-index: 2147483000; pointer-events: none; }
+  #ff-tour .ft-block { position: fixed; pointer-events: auto; background: rgba(16, 21, 26, .64); }
+  #ff-tour .ft-c { background: transparent; }
+  #ff-tour.ft-modal .ft-t { inset: 0; }
+  #ff-tour.ft-modal .ft-r, #ff-tour.ft-modal .ft-b, #ff-tour.ft-modal .ft-l, #ff-tour.ft-modal .ft-c { display: none; }
+  #ff-tour .ft-ring { position: fixed; border-radius: 18px; pointer-events: none; box-shadow: 0 0 0 3px #FF5A36, 0 0 0 9px rgba(255, 90, 54, .35); animation: ft-pulse 1.4s ease-in-out infinite; }
+  @keyframes ft-pulse { 50% { box-shadow: 0 0 0 3px #FF5A36, 0 0 0 15px rgba(255, 90, 54, .12); } }
+  #ff-tour .ft-card { position: fixed; pointer-events: auto; box-sizing: border-box; background: #FFFFFF; color: #1C2430; border-radius: 20px; padding: 18px; box-shadow: 0 22px 60px rgba(0, 0, 0, .32); font-family: Archivo_500Medium, system-ui, sans-serif; animation: ff-pop .35s cubic-bezier(.2,.8,.2,1) both; }
+  #ff-tour.ft-modal .ft-card { inset: 0; margin: auto; width: calc(100% - 32px); max-width: 340px; height: fit-content; text-align: center; padding: 22px 20px 18px; }
+  #ff-tour.ft-banner .ft-card { top: 10px; left: 0; right: 0; margin: 0 auto; width: calc(100% - 24px); max-width: 380px; padding: 12px 14px; border: 2px solid #FF5A36; pointer-events: none; }
+  #ff-tour.ft-banner .ft-row { display: none; }
+  #ff-tour .ft-pic { width: 84px; height: 84px; margin: 0 auto 10px; font-size: 64px; line-height: 84px; animation: ff-float 3s ease-in-out infinite; }
+  #ff-tour .ft-title { font-family: Archivo_600SemiBold, system-ui, sans-serif; font-size: 18px; line-height: 1.3; margin-bottom: 6px; }
+  #ff-tour.ft-banner .ft-title { font-size: 15px; margin-bottom: 2px; color: #FF5A36; }
+  #ff-tour .ft-text { font-size: 15px; line-height: 1.5; color: #4E5A6B; }
+  #ff-tour.ft-banner .ft-text { font-size: 14px; }
+  #ff-tour .ft-row { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
+  #ff-tour .ft-next { margin-inline-start: auto; background: #FF5A36; color: #FFFFFF; border: 0; border-radius: 13px; padding: 12px 22px; font-family: Archivo_600SemiBold, system-ui, sans-serif; font-size: 15px; cursor: pointer; box-shadow: 0 8px 18px rgba(255, 90, 54, .3); }
+  #ff-tour.ft-modal .ft-row:has(.ft-next:only-child) .ft-next { margin-inline-end: auto; }
+  #ff-tour .ft-skip { background: none; border: 0; padding: 8px 0; color: #8C97A6; font-family: inherit; font-size: 14px; cursor: pointer; }
+  #ff-tour .ft-hint { font-size: 13px; color: #FF5A36; font-family: Archivo_600SemiBold, system-ui, sans-serif; }
+  #ff-tour .ft-dots { display: flex; justify-content: center; gap: 6px; margin-top: 14px; }
+  #ff-tour .ft-dots i { width: 7px; height: 7px; border-radius: 9px; background: #E3E8EF; transition: width .3s; }
+  #ff-tour .ft-dots i.on { width: 20px; background: #FF5A36; }
   @keyframes ff-toast { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
   @keyframes ff-pulse { 0% { box-shadow: 0 0 0 0 rgba(236,48,19,.55); } 70%, 100% { box-shadow: 0 0 0 14px rgba(236,48,19,0); } }
   @keyframes ff-glow { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
