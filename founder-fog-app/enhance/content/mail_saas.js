@@ -25,9 +25,9 @@
       id: "mx_saas_03",
       from: "☁ Rami · Regional cloud, partnerships",
       title: "$20,000 in credits if you host your agents with us",
-      body: "Credits for 12 months, GPUs in-country, and co-selling to our banking clients. One condition: we are your exclusive cloud for 2 years.",
+      body: "Credits for 12 months, GPUs in-country, and co-selling to our banking clients. One condition: we are your exclusive cloud for 24 months.",
       when: (s) => s.sector.id === "saas_ai" && s.week >= 12 && s.monthlyRevenue >= 3000,
-      left: { label: "Take the credits and the deal", fx: { baseBurn: -900, mrrPct: 0.04, techDebt: 5 }, log: "Migration took Tariq 5 weeks. Their sales team introduced you to 2 banks. You're on their cloud for the next 2 years." },
+      left: { label: "Take the credits and the deal", fx: { baseBurn: -900, mrrPct: 0.04, techDebt: 5 }, log: "Migration took Tariq 5 weeks. Their sales team introduced you to two banks. You're on their cloud for the next 24 months." },
       right: { label: "Decline the exclusivity", fx: { baseBurn: -300, clarity: 1 }, log: "Rami came back with $8,000 in credits and no exclusivity. No co-selling either." },
     },
     {

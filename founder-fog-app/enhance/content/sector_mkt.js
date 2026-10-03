@@ -1,0 +1,80 @@
+  const SECTOR_MKT = {
+    sector: "ecommerce_marketplace",
+    roles: { c1: "Anchor retail partner", c2: "Top seller · brand founder" },
+    insights: [
+      { area: "onboarding", text: "Uploading my 40 products took 3 days. Your photo rules made me shoot half of them again." },
+      { area: "onboarding", text: "I didn't trust a shop I'd never heard of until I saw the returns policy written in Arabic." },
+      { area: "pricing", text: "Free delivery above a minimum is fine. Paying $4 delivery on a $20 scarf is not." },
+      { area: "feature", text: "I'd order more often if I could pay by card at the door instead of hunting for cash." },
+      { area: "channel", text: "I found you through a creator's unboxing, not your ad. The ad looked like every other shop." },
+      { area: "support", text: "When a parcel is late, message me on WhatsApp before I ask. Not a ticket number after." },
+    ],
+    experiments: [
+      { id: "xs_mkt_01", area: "pricing", title: "Free delivery only on baskets above $35", win: { arpu: 5, pmf: 4 }, winText: "Average basket rose by a third. Fewer small orders, and each one finally covers its courier.", lose: { churn: 0.5, users: -150, pmf: 1 }, loseText: "Buyers left carts at $28 and didn't come back. The small orders were the habit." },
+      { id: "xs_mkt_02", area: "channel", title: "Pay 20 micro-creators in product, not cash", win: { cacPct: -0.25, users: 300, pmf: 4 }, winText: "Twelve of the 20 videos sold. Creators with 8,000 real followers beat the ads on cost per first order.", lose: { cacPct: 0.1, clarity: -3, pmf: 0 }, loseText: "Twenty unboxings, 140 orders, and half used a code that leaked to a coupon site." },
+    ],
+    targets: [
+      {
+        id: "st_mkt_01", urgency: 55, once: true,
+        when: (s) => s.sector.id === "ecommerce_marketplace" && s.week >= 3 && s.week <= 12 && s.monthlyRevenue < 5000,
+        title: "🧲 This Week: Get 30 Brands Live Before the Ads Run",
+        tasks: "• 11 brands are live and searches come back thin | • Paid social starts in 2 weeks",
+        why: "Thin supply wastes every ad dollar: buyers land, find three abayas and never return. Below $5k MRR, being complete in one category beats being thin everywhere. Fill one shelf before you buy traffic.",
+        strategies: [
+          { path: "bootstrap", title: "1. Visit 20 brands in person this week", desc: "Go to their home studios with a phone and a tripod. Sign them on the spot and shoot their products yourself.", cost: 0, tab: "Relationships", fx: { mentalClarity: -10, activeUsers: 150, monthlyRevenue: 400 }, log: "You signed 14 brands over cardamom coffee and shot 300 photos on your phone. Search finally returns real results." },
+          { path: "capital", title: "2. Pay a studio to onboard 30 brands", desc: "A product studio photographs, writes and uploads 30 catalogues in ten days. Fast and polished, paid up front.", cost: 3000, tab: "Assets", fx: { activeUsers: 300, monthlyRevenue: 900, cac: -2 }, log: "Thirty catalogues went live in ten days. They look great, and a few brands still don't know how to update their stock." },
+          { path: "defensive", title: "3. Narrow the shop to modest fashion only", desc: "Hide every half-empty category. Launch as the place for abayas and modest wear, and nothing else for now.", cost: 0, tab: "Departments", fx: { activeUsers: -100, churnRate: -1, arpu: 3 }, log: "The home page shrank to one category. Visitors dropped, but the ones who came found what they searched for." },
+        ],
+      },
+      {
+        id: "st_mkt_02", urgency: 62, once: false,
+        when: (s) => s.sector.id === "ecommerce_marketplace" && s.week >= 5 && s.week % 7 === 5,
+        title: "📦 This Week: 1 in 5 COD Parcels Came Back",
+        tasks: "• 212 parcels refused at the door this month | • Each one paid the courier twice",
+        why: "A refused cash-on-delivery parcel pays the courier twice, locks stock for a week and often returns damaged. Most refusals are impulse orders nobody confirmed. Fix confirmation before you try to change how the region pays.",
+        strategies: [
+          { path: "bootstrap", title: "1. Call every COD order before it ships", desc: "Two people confirm each cash order by phone or WhatsApp voice note before it leaves the warehouse.", cost: 0, tab: "Departments", fx: { teamMorale: -6, mentalClarity: -4, churnRate: -0.5, monthlyRevenue: 300 }, log: "The team made 600 calls this week. Refusals halved, and so did everyone's patience." },
+          { path: "capital", title: "2. Add a $2 COD fee and a card discount", desc: "Integrate card-on-delivery terminals and price cash orders honestly. Some buyers will leave.", cost: 1200, tab: "Assets", fx: { arpu: 2, activeUsers: -80, monthlyRevenue: 500 }, log: "Card share went from 35% to 52% in a month. A few loyal cash buyers stopped ordering." },
+          { path: "defensive", title: "3. Block phone numbers that refuse twice", desc: "Repeat refusers lose cash on delivery and must prepay. Cheap, quick and a little blunt.", cost: 0, tab: "Journal", fx: { activeUsers: -60, churnRate: -0.4, cash: 800 }, log: "187 numbers lost cash on delivery. Four of them called support to complain, at length." },
+        ],
+      },
+      {
+        id: "st_mkt_03", urgency: 66, once: false,
+        when: (s) => s.sector.id === "ecommerce_marketplace" && s.week >= 14 && s.monthlyRevenue >= 4000 && s.week % 13 === 9,
+        title: "🏷 This Week: White Friday Is 10 Days Away",
+        tasks: "• Sellers ask how much of the discount you'll fund | • The courier caps you at 600 parcels a day",
+        why: "White Friday can bring a fifth of a quarter's orders and a fifth of the year's returns. Sellers inflate prices to fake discounts, couriers jam, and buyers won with a 50% coupon rarely buy twice. Decide which buyers you want.",
+        strategies: [
+          { path: "bold", title: "1. Fund 20% off sitewide from your margin", desc: "The biggest banner in the market for one week. You pay the discount, sellers keep their price.", cost: 4000, tab: "Assets", fx: { activeUsers: 900, monthlyRevenue: 1500, churnRate: 0.8 }, log: "Orders hit four times a normal day. By January most of those buyers were nowhere to be found." },
+          { path: "defensive", title: "2. Run early access for repeat buyers only", desc: "Two days before the crowd, for people who have ordered twice. Smaller, calmer and kinder to the courier.", cost: 500, tab: "Relationships", fx: { churnRate: -0.8, monthlyRevenue: 600, mentalClarity: -3 }, log: "Repeat buyers got two quiet days and on-time parcels. The rival banners were louder." },
+          { path: "bootstrap", title: "3. Let sellers run deals, and police the prices", desc: "Sellers fund their own discounts. Salma rejects any deal on a price raised in the last 30 days.", cost: 0, tab: "Departments", fx: { mentalClarity: -6, monthlyRevenue: 700, techDebt: 4 }, log: "Salma rejected 60 fake discounts. The real ones sold well, and two sellers are still sulking." },
+        ],
+      },
+      {
+        id: "st_mkt_04", urgency: 58, once: false,
+        when: (s) => s.sector.id === "ecommerce_marketplace" && s.week >= 12 && s.monthlyRevenue >= 3000 && s.week % 9 === 4,
+        title: "📉 This Week: Your Paid Social Cost per Order Doubled",
+        tasks: "• A first order cost $9 in spring and $18 now | • Bazaarist and Souqly bid on your buyers",
+        why: "Paid social is rented demand. When funded rivals bid on the same audience your CAC rises with no change in your product. If a first order loses money, only the second and third orders pay it back. Know your payback first.",
+        strategies: [
+          { path: "capital", title: "1. Keep the budget and test new creatives", desc: "Ten new videos a week, shot in-house. The algorithm rewards fresh ads, for a while.", cost: 3000, tab: "Assets", fx: { activeUsers: 400, monthlyRevenue: 700, cac: 4 }, log: "Two of the ten videos worked. Cost per order fell back to $14, still well above spring." },
+          { path: "bootstrap", title: "2. Halve ads and push WhatsApp referrals", desc: "Give every buyer a code to share in family groups. Slower, cheaper, and it only works if they liked you.", cost: 0, tab: "Relationships", fx: { activeUsers: -150, cac: -5, mentalClarity: -4, monthlyRevenue: 200 }, log: "Referral codes travelled through family groups. New buyers slowed, but they cost a third of an ad." },
+          { path: "defensive", title: "3. Spend only on buyers who ordered once", desc: "Retarget people who already bought. No new audiences until the numbers make sense.", cost: 800, tab: "Journal", fx: { churnRate: -0.7, activeUsers: -100, arpu: 2 }, log: "New faces dried up. Second orders rose, and the dashboard looked healthier than it felt." },
+        ],
+      },
+      {
+        id: "st_mkt_05", urgency: 60, once: true,
+        when: (s) => s.sector.id === "ecommerce_marketplace" && s.week >= 20 && s.monthlyRevenue >= 8000,
+        title: "🔄 This Week: Only 22% of Buyers Ever Order Twice",
+        tasks: "• Most buyers ordered once, in a sale | • Layla asks for your 90-day repeat rate",
+        why: "In e-commerce the second order is the real conversion. The first is bought with ad money; the second is earned by product, delivery and returns. A marketplace whose buyers never return is an ad agency with a warehouse.",
+        strategies: [
+          { path: "bootstrap", title: "1. Call 50 one-time buyers and ask why", desc: "You make the calls. No script, no discount, just: why didn't you order again?", cost: 0, tab: "Journal", fx: { mentalClarity: -8, churnRate: -0.6, investorTrust: 3 }, log: "Thirty-one picked up. Late parcels and a confusing returns page came up again and again." },
+          { path: "capital", title: "2. Launch a paid membership with free delivery", desc: "A yearly fee for free 24-hour delivery and early access. It needs building and it needs the courier to keep up.", cost: 4500, tab: "Assets", fx: { churnRate: -1.2, monthlyRevenue: 1200, techDebt: 5 }, log: "1,400 buyers joined in a month. Members now order twice as often, and the courier is busier." },
+          { path: "bold", title: "3. Switch off all ads for a month and watch", desc: "See who comes back without being paid for. Painful numbers, honest ones.", cost: 0, tab: "Departments", fx: { activeUsers: -400, cac: -6, investorTrust: -4, churnRate: -0.4 }, log: "Orders fell by a third. What remained was your real business, and Layla asked what the plan was." },
+        ],
+      },
+    ],
+    challenge: { id: "sc_mkt", icon: "🛍", name: "Buyers who come back", goal: "Reach $10,000 MRR with monthly churn at or below 4% by week 36.", mode: "venture", deadline: 36, done: (s) => s.monthlyRevenue >= 10000 && s.churnRate <= 4 },
+    page: { id: "sector_mkt", icon: "🛍", title: "Liquidity before growth", body: "A marketplace works when a buyer who searches usually finds something worth buying, and a seller who lists usually sells within a week. Below that line, ads buy disappointed visitors who never return. Win one category in one city first: enough brands that search never comes back empty, delivered fast enough to earn a second order. This week, measure one number: the share of searches that end in an order.", source: "The Cold Start Problem, Andrew Chen (2021)" },
+  };

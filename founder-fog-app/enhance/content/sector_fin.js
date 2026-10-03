@@ -1,0 +1,80 @@
+  const SECTOR_FIN = {
+    sector: "fintech",
+    roles: { c1: "Top merchant", c2: "Merchant · founder" },
+    insights: [
+      { area: "onboarding", text: "It took me 11 days and 6 documents to go live with you. The other gateway took 2 days." },
+      { area: "pricing", text: "I don't really care about 2.2% or 1.9%. I care what day the money lands in my account." },
+      { area: "feature", text: "Your dashboard shows payments. My accountant needs each payout matched to the orders inside it." },
+      { area: "support", text: "When payments fail at 11pm on payday, I need a person on the phone, not a ticket number." },
+      { area: "channel", text: "Our bank's relationship manager mentioned you. We trust their shortlist more than any ad." },
+      { area: "support", text: "Chargeback emails arrive in English legalese. My team can't tell what evidence to send back." },
+    ],
+    experiments: [
+      { id: "xs_fin_01", area: "onboarding", title: "Instant go-live under $5,000 a month in volume", win: { users: 250, cacPct: -0.15, pmf: 5 }, winText: "Small merchants went live in minutes and sent papers once sales started. None hit the cap before verification.", lose: { trust: -2, churn: 0.3, pmf: 1 }, loseText: "Signups jumped, and so did fake shops. Ops spent the fortnight closing accounts the bank flagged." },
+      { id: "xs_fin_02", area: "pricing", title: "Sell next-day settlement for 0.4% more", win: { arpu: 5, pmf: 4 }, winText: "A third of merchants paid for faster money. Cash flow mattered more to them than the headline rate.", lose: { churn: 0.4, clarity: -2, pmf: 1 }, loseText: "Few merchants paid, and funding the early payouts squeezed your own float for two weeks." },
+    ],
+    targets: [
+      {
+        id: "st_fin_01", urgency: 62, once: true,
+        when: (s) => s.sector.id === "fintech" && s.week >= 3 && s.week <= 14 && !s.mkt.licensed,
+        title: "🏛 This Week: Close the Licence File",
+        tasks: "• The central bank sent 31 follow-up questions | • Your licence waits on the answers",
+        why: "Without the licence there is no real growth. Every week the file sits with open questions is a week merchants stay on a waitlist and your $800 monthly compliance bill buys nothing.",
+        strategies: [
+          { path: "bootstrap", title: "1. Answer all 31 questions yourself", desc: "Nights with the AML policy and the risk register. Free, but nothing else gets your attention this week.", cost: 0, tab: "Journal", fx: { mentalClarity: -10, investorTrust: 4 }, log: "You answered 31 questions in 5 nights. Three answers came back with a request for more detail." },
+          { path: "capital", title: "2. Retain a licensing law firm", desc: "A firm that has filed 20 payment licences answers in 4 days and knows how this examiner reads.", cost: 3500, tab: "Assets", fx: { investorTrust: 6, mentalClarity: 4 }, log: "The law firm rewrote 12 answers and attached a capital adequacy model. The examiner replied with one question, not ten." },
+          { path: "defensive", title: "3. Ask the examiner for a meeting", desc: "Walk through the gaps in person and agree what complete means before anyone writes a word.", cost: 0, tab: "Relationships", fx: { mentalClarity: -3, investorTrust: 2, teamMorale: 3 }, log: "The examiner gave you 40 minutes and crossed out 9 of the questions. The rest now have a clear format." },
+        ],
+      },
+      {
+        id: "st_fin_02", urgency: 55, once: true,
+        when: (s) => s.sector.id === "fintech" && s.week >= 6 && s.week <= 20,
+        title: "🔒 This Week: Pass the PCI-DSS Assessment",
+        tasks: "• The assessor arrives on Thursday | • Raw card numbers still touch 2 of your servers",
+        why: "The card schemes and your sponsor bank won't let you handle card data without PCI-DSS. Fail and the bank can pause new merchants; pass and larger merchants stop asking for your audit report.",
+        strategies: [
+          { path: "bootstrap", title: "1. Shrink scope: tokenise and stop touching cards", desc: "Move card capture to a hosted field so card numbers never reach your servers. Fewer systems to audit, a hard week.", cost: 0, tab: "Departments", fx: { techDebt: -6, mentalClarity: -6, teamMorale: -4 }, log: "Card numbers no longer touch your servers. The audit scope went from 14 systems to 3." },
+          { path: "capital", title: "2. Hire a security firm for a remediation sprint", desc: "Consultants who do this every month fix logging, keys and access reviews before the assessor lands.", cost: 4000, tab: "Assets", fx: { investorTrust: 5, techDebt: -4, mentalClarity: 3 }, log: "The firm closed 18 findings in 5 days. The assessor signed off with two minor notes." },
+          { path: "defensive", title: "3. Agree a 60-day remediation plan", desc: "Tell the bank what isn't ready and give dates. Honest, but new enterprise merchants will have to wait.", cost: 0, tab: "Relationships", fx: { investorTrust: -3, mentalClarity: 3, activeUsers: -40 }, log: "The bank accepted the plan with monthly check-ins. Two large merchants paused their onboarding until it's done." },
+        ],
+      },
+      {
+        id: "st_fin_03", urgency: 66, once: false,
+        when: (s) => s.sector.id === "fintech" && s.mkt.licensed === true && s.monthlyRevenue > 2000 && s.week % 7 == 3,
+        title: "🚨 This Week: Chargebacks Crossed 1%",
+        tasks: "• 3 merchants drive most of the disputes | • The schemes count every one against you",
+        why: "Card schemes measure disputes across your whole portfolio. Stay over the line and the fines grow each month, and your sponsor bank starts asking whether you can manage risk at all.",
+        strategies: [
+          { path: "bootstrap", title: "1. Call the 3 merchants and fix their checkouts", desc: "Clear refund policies, recognisable billing names, 3-D Secure on risky orders. Slow, but it fixes causes.", cost: 0, tab: "Relationships", fx: { mentalClarity: -6, churnRate: -0.5, investorTrust: 2 }, log: "Two merchants changed their billing name and refund page. Disputes from them halved within the month." },
+          { path: "capital", title: "2. Buy a dispute-management tool", desc: "Automatic evidence packs and pre-dispute alerts that refund before a chargeback is filed.", cost: 2500, tab: "Assets", fx: { churnRate: -1, monthlyRevenue: 400, mentalClarity: 2 }, log: "The tool stopped 140 disputes before they became chargebacks. It also sends you an invoice every month now." },
+          { path: "defensive", title: "3. Hold reserves on the riskiest merchants", desc: "Keep 10% of their payouts for 90 days. The bank relaxes; the merchants don't.", cost: 0, tab: "Departments", fx: { investorTrust: 5, churnRate: 0.8, mentalClarity: 2 }, log: "Reserves went live on Sunday. One merchant left by Tuesday. The bank called it a mature step." },
+        ],
+      },
+      {
+        id: "st_fin_04", urgency: 63, once: false,
+        when: (s) => s.sector.id === "fintech" && s.mkt.licensed === true && s.monthlyRevenue > 4000 && s.week % 9 == 4,
+        title: "📅 This Week: Survive the Payday Rush",
+        tasks: "• Salaries land on Thursday and volume will triple | • Last month checkout slowed for 18 minutes",
+        why: "In the Gulf and Egypt, salaries and promotions cluster at month-end. Your merchants make a big share of their sales in a few hours, and a slow gateway in that window costs them money and costs you their trust.",
+        strategies: [
+          { path: "bootstrap", title: "1. Freeze releases and watch the dashboards", desc: "No deploys from Tuesday, everyone on call Thursday night. Cheap, tiring and mostly reliable.", cost: 0, tab: "Departments", fx: { teamMorale: -5, mentalClarity: -4, churnRate: -0.5 }, log: "Payday passed with one 3-minute slowdown. The team slept in on Friday." },
+          { path: "capital", title: "2. Pre-scale servers and add a backup acquirer", desc: "Double capacity for the week and route overflow to a second acquiring bank if the first one slows.", cost: 3000, tab: "Assets", fx: { churnRate: -1, monthlyRevenue: 600, techDebt: 2 }, log: "At 9pm the main acquirer slowed and traffic moved to the backup within seconds. Merchants never noticed." },
+          { path: "bold", title: "3. Offer merchants a payday fee discount", desc: "Lower fees for payday campaigns to pull volume from rivals. Risky if the platform can't take it.", cost: 0, tab: "Relationships", fx: { monthlyRevenue: 1200, arpu: -2, techDebt: 3, mentalClarity: -3 }, log: "Eight merchants moved their payday campaigns to you. Volume hit a record, and so did the error rate at 10pm." },
+        ],
+      },
+      {
+        id: "st_fin_05", urgency: 48, once: true,
+        when: (s) => s.sector.id === "fintech" && s.mkt.licensed === true && s.stage >= 2 && s.monthlyRevenue > 10000,
+        title: "🏦 This Week: Win a Second Sponsor Bank",
+        tasks: "• Your only bank can switch you off by email | • A second bank wants a 90-page due diligence pack",
+        why: "Every merchant, every payout and your licence conditions ride on one bank's appetite for risk. A second bank turns a single point of failure into a negotiation, and shows investors you can survive a no.",
+        strategies: [
+          { path: "bootstrap", title: "1. Write the due diligence pack in-house", desc: "You and your finance lead pull policies, audits and volumes into one pack. Free, and it eats a month of evenings.", cost: 0, tab: "Journal", fx: { mentalClarity: -8, investorTrust: 5 }, log: "The pack went out at 94 pages. The bank came back with 17 questions and a meeting date." },
+          { path: "capital", title: "2. Hire a former banker to run the process", desc: "Someone who has sat on a bank's onboarding committee knows which answers end the questions.", cost: 5000, tab: "Departments", fx: { investorTrust: 8, monthlyRevenue: 800, mentalClarity: 2 }, log: "The banker knew the committee chair from a previous job. Approval took 7 weeks instead of 6 months." },
+          { path: "bold", title: "3. Offer the bank a revenue share for speed", desc: "Give the second bank 10% of your fee income on its merchants and get approved in weeks, not months.", cost: 1000, tab: "Relationships", fx: { monthlyRevenue: 1500, arpu: -3, investorTrust: 3 }, log: "The bank said yes within a month. Your margin on every merchant it brings is now thinner." },
+        ],
+      },
+    ],
+    challenge: { id: "sc_fin", icon: "💳", name: "Licensed and Scaling", goal: "Hold your central bank licence and reach $12,000 monthly revenue with churn at 4% or less by week 36.", mode: "venture", deadline: 36, done: (s) => s.mkt.licensed === true && s.monthlyRevenue >= 12000 && s.churnRate <= 4 },
+    page: { id: "sector_fin", icon: "🏦", title: "Payments run on borrowed permission", body: "A payment company sells trust it borrows: from the central bank that licenses it, the sponsor bank that settles for it and the card schemes whose rules it follows. Any one of them can stop you faster than a competitor can. That is why compliance, reconciliation and fraud controls are the product, not overhead. This week, list everyone who can switch you off and what each one checks.", source: "The Pay Off, Gottfried Leibbrandt and Natasha de Terán (2021)" },
+  };

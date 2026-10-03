@@ -29,7 +29,7 @@
     },
     dl_edu_05: {
       lesson: "A placement guarantee is a liability that rests on other companies' hiring plans. Spread it across many employers before the economy tests it.",
-      example: "When tech hiring slowed in 2022 and 2023, bootcamps that leaned on a few big hiring partners saw placement rates fall within a single cohort.",
+      example: "During the 2022 to 2023 tech hiring slowdown, bootcamps that leaned on a few big hiring partners saw placement rates fall within a single cohort.",
       read: "Antifragile, Nassim Nicholas Taleb",
       page: "sector_edu",
       skills: { A: { discovery: 1, frugality: -1 }, B: { frugality: 1, integrity: -1 } },
